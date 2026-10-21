@@ -1,0 +1,891 @@
+---
+// Bandeja de Entrada y Gestión de Fichas (/admin/fichas)
+// Docs/05 §1A & Docs/03 §3: Confirmar fichas solicitadas, registrar pases, asignar dorsales y gestionar bajas.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Fichas" seccionActiva="fichas">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Rosters y Pases
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Fichas de Jugadores
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Bandeja de confirmación de fichas solicitadas, control de dorsales y bajas oficiales
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <a
+          href="/admin/jugadores"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          <svg class="h-4 w-4 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+          </svg>
+          Padrón de jugadores
+        </a>
+
+        <button
+          id="btn-nueva-ficha"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nueva ficha
+        </button>
+      </div>
+    </div>
+
+    <!-- Píldoras de estado (Inbox) -->
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        data-filtro-estado="todas"
+        class="filtro-estado-btn rounded-lg border border-orange-500 bg-orange-500/10 px-3 py-1.5 text-xs font-bold text-orange-400 transition-colors"
+      >
+        Todas (<span id="conteo-todas">0</span>)
+      </button>
+
+      <button
+        type="button"
+        data-filtro-estado="solicitada"
+        class="filtro-estado-btn relative rounded-lg border border-navy-700 bg-navy-900 px-3 py-1.5 text-xs font-semibold text-paper hover:border-navy-600 transition-colors"
+      >
+        <span class="inline-flex items-center gap-1.5">
+          <span id="punto-solicitadas" class="hidden h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+          Solicitadas (<span id="conteo-solicitadas">0</span>)
+        </span>
+      </button>
+
+      <button
+        type="button"
+        data-filtro-estado="confirmada"
+        class="filtro-estado-btn rounded-lg border border-navy-700 bg-navy-900 px-3 py-1.5 text-xs font-semibold text-paper hover:border-navy-600 transition-colors"
+      >
+        Confirmadas (<span id="conteo-confirmadas">0</span>)
+      </button>
+
+      <button
+        type="button"
+        data-filtro-estado="baja"
+        class="filtro-estado-btn rounded-lg border border-navy-700 bg-navy-900 px-3 py-1.5 text-xs font-semibold text-paper hover:border-navy-600 transition-colors"
+      >
+        Bajas (<span id="conteo-bajas">0</span>)
+      </button>
+    </div>
+
+    <!-- Filtros combinados y búsqueda -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <div>
+        <label for="filtro-torneo" class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1">
+          Torneo
+        </label>
+        <select
+          id="filtro-torneo"
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="todos">Todos los torneos</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filtro-club" class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1">
+          Club
+        </label>
+        <select
+          id="filtro-club"
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="todos">Todos los clubes</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="input-buscar-ficha" class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1">
+          Buscar jugador / dorsal
+        </label>
+        <div class="relative">
+          <input
+            id="input-buscar-ficha"
+            type="search"
+            placeholder="Ej: Pérez o dorsal 7..."
+            class="w-full rounded-lg border border-navy-700 bg-navy-950 pl-8 pr-3 py-1.5 text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"
+          />
+          <svg class="absolute left-2.5 top-2 h-3.5 w-3.5 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div id="cargando-fichas" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div id="lista-fichas-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No se encontraron fichas con los criterios seleccionados.</p>
+    </div>
+
+    <!-- Tabla de fichas -->
+    <div id="contenedor-fichas" class="hidden overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900 shadow-lg">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
+            <th class="py-3 px-4">Jugador</th>
+            <th class="py-3 px-4">Club / Equipo</th>
+            <th class="py-3 px-4">Torneo</th>
+            <th class="py-3 px-4 text-center">Dorsal</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 px-4">Vigencia</th>
+            <th class="py-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-fichas" class="divide-y divide-navy-800">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Alta de Ficha -->
+  <dialog
+    id="modal-ficha"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-lg w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 class="text-base font-bold text-paper">
+        Nueva Ficha de Jugador
+      </h3>
+      <button id="modal-ficha-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-ficha" class="mt-4 space-y-4">
+      <div>
+        <label for="ficha-torneo" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Torneo oficial
+        </label>
+        <select
+          id="ficha-torneo"
+          required
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="" disabled selected>Seleccione un torneo...</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="ficha-equipo" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Equipo y Club
+        </label>
+        <select
+          id="ficha-equipo"
+          required
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="" disabled selected>Seleccione un equipo...</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="ficha-jugador" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Jugador
+        </label>
+        <select
+          id="ficha-jugador"
+          required
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="" disabled selected>Seleccione un jugador...</option>
+        </select>
+        <p class="mt-1 text-[0.7rem] text-paper-muted">
+          ¿No está en la lista? Regístrelo primero en <a href="/admin/jugadores" class="text-orange-400 underline">Padrón de Jugadores</a>.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="ficha-dorsal" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Dorsal (opcional)
+          </label>
+          <input
+            id="ficha-dorsal"
+            type="number"
+            min="0"
+            max="99"
+            placeholder="Ej: 7"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="ficha-estado" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Estado inicial
+          </label>
+          <select
+            id="ficha-estado"
+            required
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          >
+            <option value="confirmada" selected>Confirmada (oficial)</option>
+            <option value="solicitada">Solicitada (en revisión)</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="ficha-desde" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Fecha de vigencia desde
+        </label>
+        <input
+          id="ficha-desde"
+          type="date"
+          required
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-ficha-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold text-ink hover:bg-orange-700 transition-colors"
+        >
+          Registrar Ficha
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modal Editar Dorsal -->
+  <dialog
+    id="modal-dorsal"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-xs w-[90%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 class="text-base font-bold text-paper">
+        Modificar Dorsal
+      </h3>
+      <button id="modal-dorsal-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-dorsal" class="mt-4 space-y-4">
+      <input type="hidden" id="dorsal-ficha-id" />
+
+      <div>
+        <p id="dorsal-jugador-nombre" class="font-bold text-paper text-sm"></p>
+        <p id="dorsal-equipo-nombre" class="text-xs text-paper-muted"></p>
+      </div>
+
+      <div>
+        <label for="input-nuevo-dorsal" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Nuevo número de dorsal
+        </label>
+        <input
+          id="input-nuevo-dorsal"
+          type="number"
+          min="0"
+          max="99"
+          placeholder="Ej: 10"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        />
+        <p class="mt-1 text-[0.65rem] text-paper-muted">Deje vacío si no tiene dorsal fijo asignado.</p>
+      </div>
+
+      <div class="mt-4 flex justify-end gap-2 border-t border-navy-800 pt-3">
+        <button
+          id="modal-dorsal-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-ink hover:bg-orange-700 transition-colors"
+        >
+          Guardar dorsal
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, obtenerEstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: any = null;
+  let fichasMemoria: any[] = [];
+  let torneosMemoria: any[] = [];
+  let equiposMemoria: any[] = [];
+  let jugadoresMemoria: any[] = [];
+
+  let filtroEstadoActual = 'todas';
+
+  const modalFicha = document.getElementById('modal-ficha') as HTMLDialogElement;
+  const formFicha = document.getElementById('form-ficha') as HTMLFormElement;
+
+  const modalDorsal = document.getElementById('modal-dorsal') as HTMLDialogElement;
+  const formDorsal = document.getElementById('form-dorsal') as HTMLFormElement;
+
+  function calcularEdad(fechaNacimiento: string | null) {
+    if (!fechaNacimiento) return '-';
+    const hoy = new Date();
+    const [y, m, d] = fechaNacimiento.split('-').map(Number);
+    let edad = hoy.getFullYear() - y;
+    const mes = hoy.getMonth() + 1;
+    const dia = hoy.getDate();
+    if (mes < m || (mes === m && dia < d)) {
+      edad--;
+    }
+    return `${edad} años`;
+  }
+
+  function formatearFecha(f: string | null) {
+    if (!f) return '-';
+    const [y, m, d] = f.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  async function cargarAuxiliares() {
+    if (!estadoAdmin?.orgId) return;
+
+    // Torneos
+    const { data: torneos } = await supabaseBrowser
+      .from('torneos')
+      .select('id, nombre, temporada')
+      .eq('org_id', estadoAdmin.orgId)
+      .order('temporada', { ascending: false });
+    torneosMemoria = torneos || [];
+
+    // Equipos
+    const { data: equipos } = await supabaseBrowser
+      .from('equipos')
+      .select('id, nombre_mostrar, club_id, clubes (id, nombre, slug)')
+      .eq('org_id', estadoAdmin.orgId);
+    equiposMemoria = equipos || [];
+
+    // Jugadores
+    const { data: jugadores } = await supabaseBrowser
+      .from('jugadores')
+      .select('id, nombre_completo, fecha_nacimiento')
+      .eq('org_id', estadoAdmin.orgId)
+      .order('nombre_completo', { ascending: true });
+    jugadoresMemoria = jugadores || [];
+
+    // Poblar selects de filtro
+    const selectTorneo = document.getElementById('filtro-torneo') as HTMLSelectElement;
+    if (selectTorneo) {
+      selectTorneo.innerHTML = '<option value="todos">Todos los torneos</option>';
+      torneosMemoria.forEach((t) => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.nombre} (${t.temporada})`;
+        selectTorneo.appendChild(opt);
+      });
+    }
+
+    const selectClub = document.getElementById('filtro-club') as HTMLSelectElement;
+    if (selectClub) {
+      selectClub.innerHTML = '<option value="todos">Todos los clubes</option>';
+      const clubesMap = new Map();
+      equiposMemoria.forEach((eq) => {
+        if (eq.clubes && !clubesMap.has(eq.clubes.id)) {
+          clubesMap.set(eq.clubes.id, eq.clubes.nombre);
+        }
+      });
+      Array.from(clubesMap.entries())
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .forEach(([id, nombre]) => {
+          const opt = document.createElement('option');
+          opt.value = id;
+          opt.textContent = nombre;
+          selectClub.appendChild(opt);
+        });
+    }
+
+    // Poblar selects del modal
+    const modalSelectTorneo = document.getElementById('ficha-torneo') as HTMLSelectElement;
+    if (modalSelectTorneo) {
+      modalSelectTorneo.innerHTML = '<option value="" disabled selected>Seleccione un torneo...</option>';
+      torneosMemoria.forEach((t) => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.nombre} (${t.temporada})`;
+        modalSelectTorneo.appendChild(opt);
+      });
+    }
+
+    const modalSelectEquipo = document.getElementById('ficha-equipo') as HTMLSelectElement;
+    if (modalSelectEquipo) {
+      modalSelectEquipo.innerHTML = '<option value="" disabled selected>Seleccione un equipo...</option>';
+      equiposMemoria.forEach((eq) => {
+        const opt = document.createElement('option');
+        opt.value = eq.id;
+        opt.textContent = eq.nombre_mostrar || (eq.clubes ? eq.clubes.nombre : 'Equipo');
+        modalSelectEquipo.appendChild(opt);
+      });
+    }
+
+    const modalSelectJugador = document.getElementById('ficha-jugador') as HTMLSelectElement;
+    if (modalSelectJugador) {
+      modalSelectJugador.innerHTML = '<option value="" disabled selected>Seleccione un jugador...</option>';
+      jugadoresMemoria.forEach((j) => {
+        const opt = document.createElement('option');
+        opt.value = j.id;
+        opt.textContent = `${j.nombre_completo} (${calcularEdad(j.fecha_nacimiento)})`;
+        modalSelectJugador.appendChild(opt);
+      });
+    }
+  }
+
+  async function cargarFichas() {
+    const cargando = document.getElementById('cargando-fichas');
+    const contenedor = document.getElementById('contenedor-fichas');
+    const vacia = document.getElementById('lista-fichas-vacia');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+    vacia?.classList.add('hidden');
+
+    const { data, error } = await supabaseBrowser
+      .from('fichas')
+      .select(`
+        id, dorsal, estado, desde, hasta, created_at,
+        jugadores (id, nombre_completo, fecha_nacimiento, foto_url),
+        equipos (id, nombre_mostrar, club_id, clubes (id, nombre, slug, escudo_url)),
+        torneos (id, nombre, temporada)
+      `)
+      .order('created_at', { ascending: false });
+
+    cargando?.classList.add('hidden');
+
+    if (error) {
+      console.error('Error al cargar fichas:', error);
+      alert('Error al cargar fichas: ' + error.message);
+      return;
+    }
+
+    fichasMemoria = data || [];
+    actualizarContadores();
+    renderizarFichas();
+  }
+
+  function actualizarContadores() {
+    const total = fichasMemoria.length;
+    const solicitadas = fichasMemoria.filter((f) => f.estado === 'solicitada').length;
+    const confirmadas = fichasMemoria.filter((f) => f.estado === 'confirmada').length;
+    const bajas = fichasMemoria.filter((f) => f.estado === 'baja').length;
+
+    const elTodas = document.getElementById('conteo-todas');
+    const elSolicitadas = document.getElementById('conteo-solicitadas');
+    const elConfirmadas = document.getElementById('conteo-confirmadas');
+    const elBajas = document.getElementById('conteo-bajas');
+    const punto = document.getElementById('punto-solicitadas');
+
+    if (elTodas) elTodas.textContent = String(total);
+    if (elSolicitadas) elSolicitadas.textContent = String(solicitadas);
+    if (elConfirmadas) elConfirmadas.textContent = String(confirmadas);
+    if (elBajas) elBajas.textContent = String(bajas);
+
+    if (punto) {
+      if (solicitadas > 0) {
+        punto.classList.remove('hidden');
+      } else {
+        punto.classList.add('hidden');
+      }
+    }
+  }
+
+  function renderizarFichas() {
+    const contenedor = document.getElementById('contenedor-fichas');
+    const vacia = document.getElementById('lista-fichas-vacia');
+    const tbody = document.getElementById('tbody-fichas');
+    if (!tbody) return;
+
+    const torneoId = (document.getElementById('filtro-torneo') as HTMLSelectElement)?.value || 'todos';
+    const clubId = (document.getElementById('filtro-club') as HTMLSelectElement)?.value || 'todos';
+    const busqueda = (document.getElementById('input-buscar-ficha') as HTMLInputElement)?.value.trim().toLowerCase() || '';
+
+    const filtradas = fichasMemoria.filter((f) => {
+      // Estado
+      if (filtroEstadoActual !== 'todas' && f.estado !== filtroEstadoActual) return false;
+
+      // Torneo
+      if (torneoId !== 'todos' && f.torneos?.id !== torneoId) return false;
+
+      // Club
+      if (clubId !== 'todos' && f.equipos?.clubes?.id !== clubId) return false;
+
+      // Busqueda
+      if (busqueda) {
+        const nombreJugador = f.jugadores?.nombre_completo?.toLowerCase() || '';
+        const dorsalStr = f.dorsal !== null ? String(f.dorsal) : '';
+        const clubNombre = f.equipos?.clubes?.nombre?.toLowerCase() || '';
+        const equipoNombre = f.equipos?.nombre_mostrar?.toLowerCase() || '';
+        const match =
+          nombreJugador.includes(busqueda) ||
+          dorsalStr === busqueda ||
+          clubNombre.includes(busqueda) ||
+          equipoNombre.includes(busqueda);
+        if (!match) return false;
+      }
+
+      return true;
+    });
+
+    if (filtradas.length === 0) {
+      contenedor?.classList.add('hidden');
+      vacia?.classList.remove('hidden');
+      return;
+    }
+
+    vacia?.classList.add('hidden');
+    contenedor?.classList.remove('hidden');
+
+    tbody.innerHTML = filtradas
+      .map((f) => {
+        const jugador = f.jugadores;
+        const equipo = f.equipos;
+        const torneo = f.torneos;
+        const club = equipo?.clubes;
+
+        const edad = calcularEdad(jugador?.fecha_nacimiento);
+
+        let badgeEstado = '';
+        if (f.estado === 'solicitada') {
+          badgeEstado = `
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-amber-400">
+              <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              Solicitada
+            </span>
+          `;
+        } else if (f.estado === 'confirmada') {
+          badgeEstado = `
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-emerald-400">
+              Confirmada
+            </span>
+          `;
+        } else {
+          badgeEstado = `
+            <span class="inline-flex items-center gap-1 rounded-full bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted">
+              Baja
+            </span>
+          `;
+        }
+
+        const dorsalBadge =
+          f.dorsal !== null
+            ? `<span class="inline-block rounded bg-navy-800 border border-navy-700 px-2 py-0.5 font-mono font-bold text-orange-400 text-xs">#${f.dorsal}</span>`
+            : `<span class="text-paper-muted">-</span>`;
+
+        const vigenciaStr = f.hasta
+          ? `${formatearFecha(f.desde)} a ${formatearFecha(f.hasta)}`
+          : `Desde ${formatearFecha(f.desde)}`;
+
+        // Botones de acción según estado
+        let botonesAccion = '';
+        if (f.estado === 'solicitada') {
+          botonesAccion = `
+            <button
+              type="button"
+              data-accion="confirmar"
+              data-id="${f.id}"
+              class="rounded-lg bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500 hover:text-ink transition-colors"
+            >
+              Confirmar
+            </button>
+            <button
+              type="button"
+              data-accion="baja"
+              data-id="${f.id}"
+              data-confirm="¿Rechazar o dar de baja la solicitud de ficha para este jugador?"
+              class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
+            >
+              Rechazar
+            </button>
+          `;
+        } else if (f.estado === 'confirmada') {
+          botonesAccion = `
+            <button
+              type="button"
+              data-accion="dorsal"
+              data-id="${f.id}"
+              data-jugador="${jugador?.nombre_completo || ''}"
+              data-equipo="${equipo?.nombre_mostrar || club?.nombre || ''}"
+              data-dorsal="${f.dorsal !== null ? f.dorsal : ''}"
+              class="rounded-lg border border-navy-700 bg-navy-800 px-2 py-1 text-xs text-paper-muted hover:text-paper hover:bg-navy-700 transition-colors"
+              title="Cambiar número de camiseta"
+            >
+              Dorsal
+            </button>
+            <button
+              type="button"
+              data-accion="baja"
+              data-id="${f.id}"
+              data-confirm="¿Dar de baja esta ficha oficial? El jugador ya no integrará el plantel activo del torneo."
+              class="rounded-lg border border-navy-700 bg-navy-800 px-2 py-1 text-xs text-paper-muted hover:text-red-400 hover:border-red-500/40 transition-colors"
+            >
+              Baja
+            </button>
+          `;
+        } else {
+          // Estado baja
+          botonesAccion = `
+            <button
+              type="button"
+              data-accion="reactivar"
+              data-id="${f.id}"
+              data-confirm="¿Reactivar la ficha de este jugador como confirmada?"
+              class="rounded-lg border border-navy-700 bg-navy-800 px-2 py-1 text-xs text-paper-muted hover:text-emerald-400 hover:border-emerald-500/40 transition-colors"
+            >
+              Reactivar
+            </button>
+          `;
+        }
+
+        return `
+          <tr class="hover:bg-navy-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-bold text-paper">${jugador?.nombre_completo || 'Sin nombre'}</div>
+              <div class="text-[0.7rem] text-paper-muted">${edad} · Nac: ${formatearFecha(jugador?.fecha_nacimiento)}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-semibold text-paper">${equipo?.nombre_mostrar || club?.nombre || 'Equipo'}</div>
+              <div class="text-[0.7rem] text-paper-muted">${club?.nombre || ''}</div>
+            </td>
+            <td class="py-3 px-4 text-paper-muted">
+              <div>${torneo?.nombre || 'Torneo'}</div>
+              <div class="text-[0.7rem]">${torneo?.temporada || ''}</div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${dorsalBadge}
+            </td>
+            <td class="py-3 px-4">
+              ${badgeEstado}
+            </td>
+            <td class="py-3 px-4 text-[0.7rem] text-paper-muted">
+              ${vigenciaStr}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <div class="inline-flex items-center gap-1.5 justify-end">
+                ${botonesAccion}
+              </div>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  // Delegación de eventos para la tabla
+  document.getElementById('tbody-fichas')?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'confirmar') {
+      const hoy = new Date().toISOString().split('T')[0];
+      const { error } = await supabaseBrowser
+        .from('fichas')
+        .update({ estado: 'confirmada', desde: hoy, hasta: null })
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al confirmar ficha: ' + error.message);
+        return;
+      }
+      await cargarFichas();
+    } else if (accion === 'dorsal') {
+      (document.getElementById('dorsal-ficha-id') as HTMLInputElement).value = id;
+      (document.getElementById('dorsal-jugador-nombre') as HTMLElement).textContent = btn.dataset.jugador || '';
+      (document.getElementById('dorsal-equipo-nombre') as HTMLElement).textContent = btn.dataset.equipo || '';
+      (document.getElementById('input-nuevo-dorsal') as HTMLInputElement).value = btn.dataset.dorsal || '';
+      modalDorsal.showModal();
+    }
+  });
+
+  // Manejo de eventos confirmados mediante data-confirm nativo de AdminLayout
+  document.getElementById('tbody-fichas')?.addEventListener('confirmado', async (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    const hoy = new Date().toISOString().split('T')[0];
+
+    if (accion === 'baja') {
+      const { error } = await supabaseBrowser
+        .from('fichas')
+        .update({ estado: 'baja', hasta: hoy })
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al registrar baja: ' + error.message);
+        return;
+      }
+      await cargarFichas();
+    } else if (accion === 'reactivar') {
+      const { error } = await supabaseBrowser
+        .from('fichas')
+        .update({ estado: 'confirmada', hasta: null })
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al reactivar ficha: ' + error.message);
+        return;
+      }
+      await cargarFichas();
+    }
+  });
+
+  // Filtros de estado (Píldoras)
+  document.querySelectorAll('.filtro-estado-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const estado = btn.getAttribute('data-filtro-estado') || 'todas';
+      filtroEstadoActual = estado;
+
+      document.querySelectorAll('.filtro-estado-btn').forEach((b) => {
+        b.classList.remove('border-orange-500', 'bg-orange-500/10', 'text-orange-400', 'font-bold');
+        b.classList.add('border-navy-700', 'bg-navy-900', 'text-paper', 'font-semibold');
+      });
+
+      btn.classList.add('border-orange-500', 'bg-orange-500/10', 'text-orange-400', 'font-bold');
+      btn.classList.remove('border-navy-700', 'bg-navy-900', 'text-paper', 'font-semibold');
+
+      renderizarFichas();
+    });
+  });
+
+  // Filtros select y búsqueda
+  document.getElementById('filtro-torneo')?.addEventListener('change', renderizarFichas);
+  document.getElementById('filtro-club')?.addEventListener('change', renderizarFichas);
+  document.getElementById('input-buscar-ficha')?.addEventListener('input', renderizarFichas);
+
+  // Modal Alta Ficha
+  document.getElementById('btn-nueva-ficha')?.addEventListener('click', () => {
+    formFicha.reset();
+    const hoy = new Date().toISOString().split('T')[0];
+    (document.getElementById('ficha-desde') as HTMLInputElement).value = hoy;
+    modalFicha.showModal();
+  });
+
+  document.getElementById('modal-ficha-cerrar')?.addEventListener('click', () => modalFicha.close());
+  document.getElementById('modal-ficha-cancelar')?.addEventListener('click', () => modalFicha.close());
+
+  formFicha.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const torneoId = (document.getElementById('ficha-torneo') as HTMLSelectElement).value;
+    const equipoId = (document.getElementById('ficha-equipo') as HTMLSelectElement).value;
+    const jugadorId = (document.getElementById('ficha-jugador') as HTMLSelectElement).value;
+    const dorsalVal = (document.getElementById('ficha-dorsal') as HTMLInputElement).value;
+    const dorsal = dorsalVal !== '' ? parseInt(dorsalVal, 10) : null;
+    const estado = (document.getElementById('ficha-estado') as HTMLSelectElement).value as any;
+    const desde = (document.getElementById('ficha-desde') as HTMLInputElement).value;
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      torneo_id: torneoId,
+      equipo_id: equipoId,
+      jugador_id: jugadorId,
+      dorsal,
+      estado,
+      desde,
+    };
+
+    const { error } = await supabaseBrowser
+      .from('fichas')
+      .insert(payload);
+
+    if (error) {
+      if (error.code === '23505') {
+        alert('Conflicto: Este jugador ya cuenta con una ficha activa en este equipo para el torneo seleccionado.');
+      } else {
+        alert('Error al registrar ficha: ' + error.message);
+      }
+      return;
+    }
+
+    modalFicha.close();
+    await cargarFichas();
+  });
+
+  // Modal Editar Dorsal
+  document.getElementById('modal-dorsal-cerrar')?.addEventListener('click', () => modalDorsal.close());
+  document.getElementById('modal-dorsal-cancelar')?.addEventListener('click', () => modalDorsal.close());
+
+  formDorsal.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = (document.getElementById('dorsal-ficha-id') as HTMLInputElement).value;
+    const dorsalVal = (document.getElementById('input-nuevo-dorsal') as HTMLInputElement).value;
+    const dorsal = dorsalVal !== '' ? parseInt(dorsalVal, 10) : null;
+
+    const { error } = await supabaseBrowser
+      .from('fichas')
+      .update({ dorsal })
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al actualizar dorsal: ' + error.message);
+      return;
+    }
+
+    modalDorsal.close();
+    await cargarFichas();
+  });
+
+  // Inicialización
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarAuxiliares();
+    await cargarFichas();
+  });
+
+  obtenerEstadoAdmin().then(async (estado) => {
+    if (estado.autenticado && estado.esOrganizador) {
+      estadoAdmin = estado;
+      await cargarAuxiliares();
+      await cargarFichas();
+    }
+  });
+</script>

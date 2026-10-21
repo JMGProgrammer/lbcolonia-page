@@ -1,5 +1,6 @@
 ---
 // Hub principal del panel administrativo de la liga (/admin)
+// Docs/05 §1A: Bandeja de entrada con pendientes del día, métricas y accesos directos
 import AdminLayout from '../../layouts/AdminLayout.astro';
 ---
 
@@ -17,10 +18,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             Panel de la Secretaría
           </h1>
           <p class="mt-1 text-sm text-paper-muted">
-            Liga de Básquetbol de Colonia · Operaciones del fin de semana
+            Liga de Básquetbol de Colonia · Operaciones del fin de semana y gestión oficial
           </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <a
             href="/admin/fixture/importar"
             class="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
@@ -33,47 +34,136 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             </svg>
             Pegar Excel
           </a>
+          <a
+            href="/admin/fichas"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider text-paper hover:bg-navy-700 transition-colors"
+          >
+            Bandeja de Fichas
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bandeja de Pendientes del Día (Inbox de Secretaría) -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-paper-muted flex items-center gap-2">
+          <span>Bandeja de pendientes del día</span>
+          <span id="badge-total-pendientes" class="hidden rounded-full bg-orange-500/20 border border-orange-500/40 px-2 py-0.5 text-[0.65rem] font-bold text-orange-400">
+            0 pendientes
+          </span>
+        </h2>
+        <span class="text-[0.7rem] text-paper-muted">Actualizado en vivo</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- Pendiente 1: Fichas solicitadas -->
+        <a
+          href="/admin/fichas"
+          id="card-pendiente-fichas"
+          class="group rounded-[14px] border border-navy-700 bg-navy-900 p-4 transition-all hover:border-orange-500 hover:bg-navy-850"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Fichas por confirmar</span>
+            <span id="indicador-fichas" class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <p id="inbox-fichas-solicitadas" class="mt-2 text-2xl font-black num text-paper">0</p>
+          <p class="mt-1 text-[0.7rem] text-paper-muted group-hover:text-orange-400 transition-colors">
+            Revisar solicitudes de clubes →
+          </p>
+        </a>
+
+        <!-- Pendiente 2: Resultados cargados sin publicar -->
+        <a
+          href="/admin/fixture"
+          id="card-pendiente-publicar"
+          class="group rounded-[14px] border border-navy-700 bg-navy-900 p-4 transition-all hover:border-orange-500 hover:bg-navy-850"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Resultados sin publicar</span>
+            <span id="indicador-publicar" class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <p id="inbox-sin-publicar" class="mt-2 text-2xl font-black num text-paper">0</p>
+          <p class="mt-1 text-[0.7rem] text-paper-muted group-hover:text-orange-400 transition-colors">
+            Publicar para actualizar tabla →
+          </p>
+        </a>
+
+        <!-- Pendiente 3: Partidos programados sin sede -->
+        <a
+          href="/admin/fixture"
+          id="card-pendiente-sede"
+          class="group rounded-[14px] border border-navy-700 bg-navy-900 p-4 transition-all hover:border-orange-500 hover:bg-navy-850"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Partidos sin sede fija</span>
+            <span id="indicador-sede" class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <p id="inbox-sin-sede" class="mt-2 text-2xl font-black num text-paper">0</p>
+          <p class="mt-1 text-[0.7rem] text-paper-muted group-hover:text-orange-400 transition-colors">
+            Asignar gimnasio en fixture →
+          </p>
+        </a>
+
+        <!-- Pendiente 4: Planillas con disputa / por verificar -->
+        <div
+          id="card-pendiente-disputas"
+          class="rounded-[14px] border border-navy-700 bg-navy-900 p-4"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Planillas en disputa</span>
+            <span id="indicador-disputas" class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <p id="inbox-disputas" class="mt-2 text-2xl font-black num text-paper">0</p>
+          <p class="mt-1 text-[0.7rem] text-paper-muted">
+            Observaciones de delegados
+          </p>
         </div>
       </div>
     </div>
 
     <!-- Métricas rápidas del torneo -->
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
-        <p class="text-xs uppercase tracking-wider text-paper-muted">Total partidos</p>
-        <p id="stat-total" class="mt-1 text-2xl font-black num text-paper">-</p>
-        <span class="text-[0.7rem] text-paper-muted">En el fixture</span>
-      </div>
+    <div>
+      <h2 class="text-xs font-bold uppercase tracking-wider text-paper-muted mb-3">
+        Métricas generales del torneo
+      </h2>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
+          <p class="text-xs uppercase tracking-wider text-paper-muted">Total partidos</p>
+          <p id="stat-total" class="mt-1 text-2xl font-black num text-paper">-</p>
+          <span class="text-[0.7rem] text-paper-muted">En el fixture</span>
+        </div>
 
-      <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
-        <p class="text-xs uppercase tracking-wider text-paper-muted">Programados</p>
-        <p id="stat-programados" class="mt-1 text-2xl font-black num text-paper">-</p>
-        <span class="text-[0.7rem] text-paper-muted">Por disputarse</span>
-      </div>
+        <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
+          <p class="text-xs uppercase tracking-wider text-paper-muted">Programados</p>
+          <p id="stat-programados" class="mt-1 text-2xl font-black num text-paper">-</p>
+          <span class="text-[0.7rem] text-paper-muted">Por disputarse</span>
+        </div>
 
-      <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
-        <p class="text-xs uppercase tracking-wider text-paper-muted">Finalizados</p>
-        <p id="stat-finalizados" class="mt-1 text-2xl font-black num text-orange-500">-</p>
-        <span class="text-[0.7rem] text-paper-muted">Con resultado</span>
-      </div>
+        <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
+          <p class="text-xs uppercase tracking-wider text-paper-muted">Finalizados</p>
+          <p id="stat-finalizados" class="mt-1 text-2xl font-black num text-orange-500">-</p>
+          <span class="text-[0.7rem] text-paper-muted">Con resultado</span>
+        </div>
 
-      <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
-        <p class="text-xs uppercase tracking-wider text-paper-muted">Publicados</p>
-        <p id="stat-publicados" class="mt-1 text-2xl font-black num text-gold-400">-</p>
-        <span class="text-[0.7rem] text-paper-muted">En sitio público</span>
+        <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-4">
+          <p class="text-xs uppercase tracking-wider text-paper-muted">Publicados</p>
+          <p id="stat-publicados" class="mt-1 text-2xl font-black num text-gold-400">-</p>
+          <span class="text-[0.7rem] text-paper-muted">En sitio público</span>
+        </div>
       </div>
     </div>
 
-    <!-- Accesos rápidos a tareas clave del Checkpoint 4 -->
+    <!-- Módulos de administración -->
     <h2 class="text-xs font-bold uppercase tracking-wider text-paper-muted">
-      Operaciones de la liga
+      Módulos del panel
     </h2>
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <!-- Tarjeta 1: Fixture oficial -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Módulo 1: Fixture -->
       <a
         href="/admin/fixture"
-        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-6 transition-all hover:border-orange-500 hover:bg-navy-850"
+        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-5 transition-all hover:border-orange-500 hover:bg-navy-850"
       >
         <div>
           <div class="flex items-center justify-between">
@@ -81,31 +171,28 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
               Agenda oficial
             </span>
             <span class="text-orange-500 group-hover:translate-x-1 transition-transform">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </span>
           </div>
-          <h3 class="mt-3 text-lg font-bold text-paper group-hover:text-orange-500 transition-colors">
-            Gestión del Fixture y Resultados
+          <h3 class="mt-3 text-base font-bold text-paper group-hover:text-orange-500 transition-colors">
+            Fixture y Resultados
           </h3>
-          <p class="mt-1 text-sm text-paper-muted">
-            Consulte los partidos por fecha, cargue marcadores, configure walkovers o suspensiones y publique los resultados para que impacten en la tabla.
+          <p class="mt-1 text-xs text-paper-muted">
+            Marcadores, cuartos, walkovers y publicación que alimenta la tabla del sitio público.
           </p>
         </div>
-        <div class="mt-4 flex items-center gap-2 text-xs font-bold text-orange-500">
-          <span>Abrir fixture</span>
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+        <div class="mt-3 text-xs font-bold text-orange-500">
+          Abrir fixture →
         </div>
       </a>
 
-      <!-- Tarjeta 2: Pegado masivo -->
+      <!-- Módulo 2: Pegar Excel -->
       <a
         href="/admin/fixture/importar"
-        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-6 transition-all hover:border-orange-500 hover:bg-navy-850"
+        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-5 transition-all hover:border-orange-500 hover:bg-navy-850"
       >
         <div>
           <div class="flex items-center justify-between">
@@ -113,47 +200,139 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
               Carga rápida
             </span>
             <span class="text-orange-500 group-hover:translate-x-1 transition-transform">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </span>
           </div>
-          <h3 class="mt-3 text-lg font-bold text-paper group-hover:text-orange-500 transition-colors">
-            Pegar Fixture desde Excel
+          <h3 class="mt-3 text-base font-bold text-paper group-hover:text-orange-500 transition-colors">
+            Importar desde Excel
           </h3>
-          <p class="mt-1 text-sm text-paper-muted">
-            Copie una fecha entera o varias jornadas desde una planilla de cálculo, verifique los equipos detectados con el previsualizador y guárdelas en un solo paso.
+          <p class="mt-1 text-xs text-paper-muted">
+            Pegado masivo de partidos con previsualizador interactivo y detección de nombres.
           </p>
         </div>
-        <div class="mt-4 flex items-center gap-2 text-xs font-bold text-orange-500">
-          <span>Pegar datos de Excel</span>
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+        <div class="mt-3 text-xs font-bold text-orange-500">
+          Pegar fixture →
         </div>
       </a>
-    </div>
 
-    <!-- Guía del Checkpoint 4 para Juan / Secretaría -->
-    <div class="rounded-[14px] border border-navy-700 bg-navy-900/60 p-5">
-      <div class="flex items-start gap-3">
-        <div class="rounded-lg bg-orange-500/10 p-2 text-orange-500">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-        </div>
+      <!-- Módulo 3: Fichas -->
+      <a
+        href="/admin/fichas"
+        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-5 transition-all hover:border-orange-500 hover:bg-navy-850"
+      >
         <div>
-          <h4 class="text-sm font-bold text-paper">Flujo del fin de semana (Checkpoint 4)</h4>
-          <ol class="mt-2 list-decimal list-inside space-y-1 text-xs text-paper-muted">
-            <li><strong>Cargar fecha</strong>: Pegue la fecha 3 desde Excel en <a href="/admin/fixture/importar" class="text-orange-500 underline">Pegar Excel</a>.</li>
-            <li><strong>Cargar resultado</strong>: Al disputarse el partido, cargue el marcador final en <a href="/admin/fixture" class="text-orange-500 underline">Fixture</a>.</li>
-            <li><strong>Publicar</strong>: Presione "Publicar partido" para sellar la auditoría y actualizar la tabla en vivo.</li>
-          </ol>
+          <div class="flex items-center justify-between">
+            <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              Rosters y pases
+            </span>
+            <span class="text-orange-500 group-hover:translate-x-1 transition-transform">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </span>
+          </div>
+          <h3 class="mt-3 text-base font-bold text-paper group-hover:text-orange-500 transition-colors">
+            Gestión de Fichas
+          </h3>
+          <p class="mt-1 text-xs text-paper-muted">
+            Bandeja de confirmación, asignación de dorsales y control de bajas por torneo.
+          </p>
         </div>
-      </div>
+        <div class="mt-3 text-xs font-bold text-orange-500">
+          Gestionar fichas →
+        </div>
+      </a>
+
+      <!-- Módulo 4: Padrón de Jugadores -->
+      <a
+        href="/admin/jugadores"
+        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-5 transition-all hover:border-orange-500 hover:bg-navy-850"
+      >
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              Padrón oficial
+            </span>
+            <span class="text-orange-500 group-hover:translate-x-1 transition-transform">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </span>
+          </div>
+          <h3 class="mt-3 text-base font-bold text-paper group-hover:text-orange-500 transition-colors">
+            Jugadores
+          </h3>
+          <p class="mt-1 text-xs text-paper-muted">
+            Padrón federado con detector automático de duplicados por nombre y fecha de nacimiento.
+          </p>
+        </div>
+        <div class="mt-3 text-xs font-bold text-orange-500">
+          Ver padrón →
+        </div>
+      </a>
+
+      <!-- Módulo 5: Clubes y Equipos -->
+      <a
+        href="/admin/clubes"
+        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-5 transition-all hover:border-orange-500 hover:bg-navy-850"
+      >
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              Instituciones
+            </span>
+            <span class="text-orange-500 group-hover:translate-x-1 transition-transform">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </span>
+          </div>
+          <h3 class="mt-3 text-base font-bold text-paper group-hover:text-orange-500 transition-colors">
+            Clubes y Equipos
+          </h3>
+          <p class="mt-1 text-xs text-paper-muted">
+            Colores oficiales, escudo, gimnasio sede y categorías asignadas a cada club.
+          </p>
+        </div>
+        <div class="mt-3 text-xs font-bold text-orange-500">
+          Administrar clubes →
+        </div>
+      </a>
+
+      <!-- Módulo 6: Torneos y Categorías -->
+      <a
+        href="/admin/torneos"
+        class="group flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-5 transition-all hover:border-orange-500 hover:bg-navy-850"
+      >
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              Competencias
+            </span>
+            <span class="text-orange-500 group-hover:translate-x-1 transition-transform">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </span>
+          </div>
+          <h3 class="mt-3 text-base font-bold text-paper group-hover:text-orange-500 transition-colors">
+            Torneos
+          </h3>
+          <p class="mt-1 text-xs text-paper-muted">
+            Temporadas, formatos de campeonato y sistema de puntuación FIBA o personalizado.
+          </p>
+        </div>
+        <div class="mt-3 text-xs font-bold text-orange-500">
+          Configurar torneos →
+        </div>
+      </a>
     </div>
   </div>
 </AdminLayout>
@@ -161,17 +340,21 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 <script>
   import { supabaseBrowser } from '../../lib/supabase-browser';
 
-  window.addEventListener('admin-auth-ok', async () => {
+  async function cargarResumen() {
     try {
+      // 1. Métricas de partidos
       const { data: partidos } = await supabaseBrowser
         .from('partidos')
-        .select('id, estado, publicado');
+        .select('id, estado, publicado, sede');
 
       if (partidos) {
         const total = partidos.length;
         const programados = partidos.filter((p) => p.estado === 'programado').length;
         const finalizados = partidos.filter((p) => p.estado === 'finalizado' || p.estado === 'walkover').length;
         const publicados = partidos.filter((p) => p.publicado).length;
+
+        const sinPublicar = partidos.filter((p) => (p.estado === 'finalizado' || p.estado === 'walkover') && !p.publicado).length;
+        const sinSede = partidos.filter((p) => p.estado === 'programado' && (!p.sede || p.sede.trim() === '')).length;
 
         const elTotal = document.getElementById('stat-total');
         const elProg = document.getElementById('stat-programados');
@@ -182,9 +365,70 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         if (elProg) elProg.textContent = String(programados);
         if (elFin) elFin.textContent = String(finalizados);
         if (elPub) elPub.textContent = String(publicados);
+
+        const elSinPub = document.getElementById('inbox-sin-publicar');
+        const indPub = document.getElementById('indicador-publicar');
+        if (elSinPub) elSinPub.textContent = String(sinPublicar);
+        if (indPub) {
+          indPub.className = sinPublicar > 0 ? 'h-2 w-2 rounded-full bg-amber-400 animate-pulse' : 'h-2 w-2 rounded-full bg-emerald-500';
+        }
+
+        const elSinSede = document.getElementById('inbox-sin-sede');
+        const indSede = document.getElementById('indicador-sede');
+        if (elSinSede) elSinSede.textContent = String(sinSede);
+        if (indSede) {
+          indSede.className = sinSede > 0 ? 'h-2 w-2 rounded-full bg-amber-400 animate-pulse' : 'h-2 w-2 rounded-full bg-emerald-500';
+        }
+      }
+
+      // 2. Fichas solicitadas
+      const { data: fichas } = await supabaseBrowser
+        .from('fichas')
+        .select('id, estado');
+
+      let totalFichasSolicitadas = 0;
+      if (fichas) {
+        totalFichasSolicitadas = fichas.filter((f) => f.estado === 'solicitada').length;
+        const elFichasSol = document.getElementById('inbox-fichas-solicitadas');
+        const indFichas = document.getElementById('indicador-fichas');
+        if (elFichasSol) elFichasSol.textContent = String(totalFichasSolicitadas);
+        if (indFichas) {
+          indFichas.className = totalFichasSolicitadas > 0 ? 'h-2 w-2 rounded-full bg-amber-400 animate-pulse' : 'h-2 w-2 rounded-full bg-emerald-500';
+        }
+      }
+
+      // 3. Planillas en disputa
+      const { data: planillas } = await supabaseBrowser
+        .from('planillas')
+        .select('id, estado');
+
+      let totalDisputas = 0;
+      if (planillas) {
+        totalDisputas = planillas.filter((p) => p.estado === 'disputada').length;
+        const elDisputas = document.getElementById('inbox-disputas');
+        const indDisputas = document.getElementById('indicador-disputas');
+        if (elDisputas) elDisputas.textContent = String(totalDisputas);
+        if (indDisputas) {
+          indDisputas.className = totalDisputas > 0 ? 'h-2 w-2 rounded-full bg-amber-400 animate-pulse' : 'h-2 w-2 rounded-full bg-emerald-500';
+        }
+      }
+
+      // Total de pendientes
+      const totalPendientes = totalFichasSolicitadas + totalDisputas;
+      const badgePendientes = document.getElementById('badge-total-pendientes');
+      if (badgePendientes) {
+        if (totalPendientes > 0) {
+          badgePendientes.textContent = `${totalPendientes} pendientes`;
+          badgePendientes.classList.remove('hidden');
+        } else {
+          badgePendientes.classList.add('hidden');
+        }
       }
     } catch (e) {
       console.error('Error cargando estadísticas resumen:', e);
     }
-  });
+  }
+
+  window.addEventListener('admin-auth-ok', cargarResumen);
+  cargarResumen();
 </script>

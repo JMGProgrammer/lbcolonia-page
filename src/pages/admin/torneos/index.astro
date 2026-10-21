@@ -1,0 +1,449 @@
+---
+// Gestión de Torneos oficiales (/admin/torneos)
+// Docs/05 §1A: Crear/editar torneo, categoría, temporada, formato, reglas_json, estadísticas detalladas
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Torneos" seccionActiva="torneos">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Competencias
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Torneos y Categorías
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Defina campeonatos, formatos, sistema de puntuación y nivel de estadísticas
+        </p>
+      </div>
+
+      <button
+        id="btn-nuevo-torneo"
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98] self-start sm:self-auto"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nuevo torneo
+      </button>
+    </div>
+
+    <!-- Filtro de temporada -->
+    <div class="flex items-center justify-between gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <div class="flex items-center gap-2">
+        <label for="filtro-temporada" class="text-xs font-bold uppercase tracking-wider text-paper-muted shrink-0">
+          Temporada:
+        </label>
+        <select
+          id="filtro-temporada"
+          class="rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="todas">Todas las temporadas</option>
+          <option value="2026" selected>2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+
+      <p id="contador-torneos" class="text-xs text-paper-muted">
+        Cargando torneos...
+      </p>
+    </div>
+
+    <!-- Lista de torneos -->
+    <div id="cargando-torneos" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <div id="lista-torneos-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No se encontraron torneos registrados.</p>
+    </div>
+
+    <div id="contenedor-torneos" class="hidden grid grid-cols-1 gap-4 md:grid-cols-2">
+      <!-- Rellenado dinámicamente -->
+    </div>
+  </div>
+
+  <!-- Modal Alta / Edición de Torneo -->
+  <dialog
+    id="modal-torneo"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-lg w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-torneo-titulo" class="text-base font-bold text-paper">
+        Nuevo Torneo
+      </h3>
+      <button id="modal-torneo-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-torneo" class="mt-4 space-y-4">
+      <input type="hidden" id="torneo-id" />
+
+      <div>
+        <label for="torneo-nombre" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Nombre del torneo
+        </label>
+        <input
+          id="torneo-nombre"
+          type="text"
+          required
+          placeholder="Ej: Torneo Apertura 2026"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="torneo-categoria" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Categoría
+          </label>
+          <select id="torneo-categoria" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 p-2 text-xs text-paper">
+            <option value="">Seleccionar categoría...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="torneo-temporada" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Temporada (Año)
+          </label>
+          <input
+            id="torneo-temporada"
+            type="number"
+            min="2020"
+            max="2035"
+            required
+            value="2026"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="torneo-formato" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Formato
+          </label>
+          <select id="torneo-formato" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 p-2 text-xs text-paper">
+            <option value="liga">Liga regular (todos contra todos)</option>
+            <option value="liga_playoffs">Liga + Playoffs</option>
+            <option value="torneo">Torneo corto / Eliminación</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="torneo-estado" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Estado
+          </label>
+          <select id="torneo-estado" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 p-2 text-xs text-paper">
+            <option value="en_curso">En curso</option>
+            <option value="proximo">Próximo</option>
+            <option value="finalizado">Finalizado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Flag de Estadísticas detalladas -->
+      <div class="rounded-lg border border-navy-800 bg-navy-950 p-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input id="torneo-stats-detalladas" type="checkbox" class="rounded border-navy-700 text-orange-500 focus:ring-0" />
+          <span class="text-xs font-semibold text-paper">Estadísticas detalladas activas</span>
+        </label>
+        <p class="mt-1 pl-6 text-[0.7rem] text-paper-muted">
+          Habilita la carga de rebotes, asistencias, robos y tapas por jugador en las planillas (recomendado para Primera División).
+        </p>
+      </div>
+
+      <!-- Configuración de puntos FIBA (Docs/02 §2) -->
+      <div class="rounded-lg border border-navy-800 bg-navy-950 p-3 space-y-2">
+        <span class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Sistema de Puntos (Reglas FIBA)
+        </span>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <div>
+            <label for="regla-victoria" class="block text-[0.65rem] text-paper-muted uppercase">Victoria</label>
+            <input id="regla-victoria" type="number" value="2" required class="mt-0.5 w-full rounded border border-navy-700 bg-navy-900 p-1.5 text-center text-xs text-paper" />
+          </div>
+          <div>
+            <label for="regla-derrota" class="block text-[0.65rem] text-paper-muted uppercase">Derrota</label>
+            <input id="regla-derrota" type="number" value="1" required class="mt-0.5 w-full rounded border border-navy-700 bg-navy-900 p-1.5 text-center text-xs text-paper" />
+          </div>
+          <div>
+            <label for="regla-walkover" class="block text-[0.65rem] text-paper-muted uppercase">Derrota W.O.</label>
+            <input id="regla-walkover" type="number" value="0" required class="mt-0.5 w-full rounded border border-navy-700 bg-navy-900 p-1.5 text-center text-xs text-paper" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-torneo-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink hover:bg-orange-700"
+        >
+          Guardar torneo
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: EstadoAdmin | null = null;
+  let torneosMemoria: any[] = [];
+  let categoriasMemoria: any[] = [];
+
+  const modalTorneo = document.getElementById('modal-torneo') as HTMLDialogElement;
+  const formTorneo = document.getElementById('form-torneo') as HTMLFormElement;
+
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarCategorias();
+    await cargarTorneos();
+  });
+
+  async function cargarCategorias() {
+    const { data: categorias } = await supabaseBrowser
+      .from('categorias')
+      .select('id, nombre, acronimo')
+      .order('orden', { ascending: true });
+
+    categoriasMemoria = categorias ?? [];
+    const select = document.getElementById('torneo-categoria') as HTMLSelectElement;
+    if (select && categorias) {
+      select.innerHTML = '<option value="">Seleccionar categoría...</option>' +
+        categorias.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    }
+  }
+
+  async function cargarTorneos() {
+    const cargando = document.getElementById('cargando-torneos');
+    const contenedor = document.getElementById('contenedor-torneos');
+    const vacio = document.getElementById('lista-torneos-vacia');
+    const contador = document.getElementById('contador-torneos');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+    vacio?.classList.add('hidden');
+
+    const { data: torneos, error } = await supabaseBrowser
+      .from('torneos')
+      .select('id, nombre, temporada, formato, estado, estadisticas_detalladas, reglas_json, categoria_id, categorias(nombre)')
+      .order('temporada', { ascending: false });
+
+    cargando?.classList.add('hidden');
+
+    if (error || !torneos || torneos.length === 0) {
+      vacio?.classList.remove('hidden');
+      if (contador) contador.textContent = '0 torneos';
+      torneosMemoria = [];
+      return;
+    }
+
+    torneosMemoria = torneos;
+    renderizarTorneos();
+  }
+
+  function renderizarTorneos() {
+    const contenedor = document.getElementById('contenedor-torneos');
+    const vacio = document.getElementById('lista-torneos-vacia');
+    const contador = document.getElementById('contador-torneos');
+    const filtroTemp = (document.getElementById('filtro-temporada') as HTMLSelectElement).value;
+
+    const filtrados = torneosMemoria.filter((t) => {
+      if (filtroTemp === 'todas') return true;
+      return String(t.temporada) === filtroTemp;
+    });
+
+    if (contador) contador.textContent = `${filtrados.length} torneo(s) encontrado(s)`;
+
+    if (filtrados.length === 0) {
+      contenedor?.classList.add('hidden');
+      vacio?.classList.remove('hidden');
+      return;
+    }
+
+    vacio?.classList.add('hidden');
+    contenedor?.classList.remove('hidden');
+
+    if (contenedor) {
+      contenedor.innerHTML = filtrados
+        .map((t) => {
+          let badgeEstado = '';
+          if (t.estado === 'en_curso') {
+            badgeEstado = `<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-400 border border-emerald-500/30">EN CURSO</span>`;
+          } else if (t.estado === 'proximo') {
+            badgeEstado = `<span class="rounded bg-gold-400/20 px-2 py-0.5 text-[0.65rem] font-bold text-gold-400 border border-gold-400/30">PRÓXIMO</span>`;
+          } else {
+            badgeEstado = `<span class="rounded bg-navy-800 px-2 py-0.5 text-[0.65rem] font-bold text-paper-muted border border-navy-700">FINALIZADO</span>`;
+          }
+
+          const catNombre = t.categorias?.nombre ?? 'General';
+          const statsDetalle = t.estadisticas_detalladas
+            ? '<span class="text-orange-500 font-bold">Detalladas</span>'
+            : '<span class="text-paper-muted">Estándar</span>';
+
+          return `
+            <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="rounded bg-navy-950 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400 border border-navy-800">
+                      ${catNombre} · ${t.temporada}
+                    </span>
+                    ${badgeEstado}
+                  </div>
+                  <h3 class="mt-2 text-base font-bold text-paper">${t.nombre}</h3>
+                </div>
+
+                <button
+                  type="button"
+                  data-id="${t.id}"
+                  class="btn-editar-torneo rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+                >
+                  Editar
+                </button>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 border-t border-navy-800 pt-2 text-xs">
+                <div>
+                  <span class="text-paper-muted">Formato:</span>
+                  <p class="font-bold uppercase text-paper mt-0.5">${t.formato.replace('_', ' ')}</p>
+                </div>
+                <div>
+                  <span class="text-paper-muted">Estadísticas:</span>
+                  <p class="mt-0.5">${statsDetalle}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      contenedor.querySelectorAll('.btn-editar-torneo').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const t = torneosMemoria.find((x) => x.id === id);
+          if (t) abrirModalEditar(t);
+        });
+      });
+    }
+  }
+
+  document.getElementById('filtro-temporada')?.addEventListener('change', renderizarTorneos);
+
+  // Modal Crear / Editar
+  document.getElementById('btn-nuevo-torneo')?.addEventListener('click', () => {
+    formTorneo.reset();
+    (document.getElementById('torneo-id') as HTMLInputElement).value = '';
+    (document.getElementById('modal-torneo-titulo') as HTMLElement).textContent = 'Nuevo Torneo';
+    (document.getElementById('torneo-temporada') as HTMLInputElement).value = '2026';
+    (document.getElementById('regla-victoria') as HTMLInputElement).value = '2';
+    (document.getElementById('regla-derrota') as HTMLInputElement).value = '1';
+    (document.getElementById('regla-walkover') as HTMLInputElement).value = '0';
+    modalTorneo.showModal();
+  });
+
+  function abrirModalEditar(t: any) {
+    (document.getElementById('torneo-id') as HTMLInputElement).value = t.id;
+    (document.getElementById('modal-torneo-titulo') as HTMLElement).textContent = 'Editar Torneo';
+    (document.getElementById('torneo-nombre') as HTMLInputElement).value = t.nombre;
+    (document.getElementById('torneo-categoria') as HTMLSelectElement).value = t.categoria_id;
+    (document.getElementById('torneo-temporada') as HTMLInputElement).value = String(t.temporada);
+    (document.getElementById('torneo-formato') as HTMLSelectElement).value = t.formato;
+    (document.getElementById('torneo-estado') as HTMLSelectElement).value = t.estado;
+    (document.getElementById('torneo-stats-detalladas') as HTMLInputElement).checked = Boolean(t.estadisticas_detalladas);
+
+    const reglas = t.reglas_json || {};
+    (document.getElementById('regla-victoria') as HTMLInputElement).value = String(reglas.puntos_victoria ?? 2);
+    (document.getElementById('regla-derrota') as HTMLInputElement).value = String(reglas.puntos_derrota ?? 1);
+    (document.getElementById('regla-walkover') as HTMLInputElement).value = String(reglas.puntos_derrota_walkover ?? 0);
+
+    modalTorneo.showModal();
+  }
+
+  document.getElementById('modal-torneo-cerrar')?.addEventListener('click', () => modalTorneo.close());
+  document.getElementById('modal-torneo-cancelar')?.addEventListener('click', () => modalTorneo.close());
+
+  formTorneo.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const id = (document.getElementById('torneo-id') as HTMLInputElement).value;
+    const nombre = (document.getElementById('torneo-nombre') as HTMLInputElement).value.trim();
+    const categoriaId = (document.getElementById('torneo-categoria') as HTMLSelectElement).value;
+    const temporada = parseInt((document.getElementById('torneo-temporada') as HTMLInputElement).value);
+    const formato = (document.getElementById('torneo-formato') as HTMLSelectElement).value as any;
+    const estado = (document.getElementById('torneo-estado') as HTMLSelectElement).value as any;
+    const statsDetalladas = (document.getElementById('torneo-stats-detalladas') as HTMLInputElement).checked;
+
+    const ptsVic = parseInt((document.getElementById('regla-victoria') as HTMLInputElement).value) || 2;
+    const ptsDer = parseInt((document.getElementById('regla-derrota') as HTMLInputElement).value) || 1;
+    const ptsWo = parseInt((document.getElementById('regla-walkover') as HTMLInputElement).value) || 0;
+
+    const reglasJson = {
+      puntos_victoria: ptsVic,
+      puntos_derrota: ptsDer,
+      puntos_victoria_walkover: 1,
+      puntos_derrota_walkover: ptsWo,
+      score_walkover: '20-0',
+      tiebreakers: ['matchup_individual', 'dif_puntos', 'puntos_favor'],
+    };
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      nombre,
+      categoria_id: categoriaId,
+      temporada,
+      formato,
+      estado,
+      estadisticas_detalladas: statsDetalladas,
+      reglas_json: reglasJson,
+    };
+
+    if (id) {
+      const { error } = await supabaseBrowser
+        .from('torneos')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al actualizar el torneo: ' + error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabaseBrowser
+        .from('torneos')
+        .insert(payload);
+
+      if (error) {
+        alert('Error al crear el torneo: ' + error.message);
+        return;
+      }
+    }
+
+    modalTorneo.close();
+    await cargarTorneos();
+  });
+</script>

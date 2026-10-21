@@ -1,0 +1,579 @@
+---
+// Gestión de Clubes y Equipos oficiales (/admin/clubes)
+// Docs/05 §1A: ABM de clubes (escudo, colores, gimnasio, redes) y equipos por categoría
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Clubes" seccionActiva="clubes">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Instituciones
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Clubes y Equipos
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Administre datos institucionales, sedes, escudos y ramas por categoría
+        </p>
+      </div>
+
+      <button
+        id="btn-nuevo-club"
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98] self-start sm:self-auto"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nuevo club
+      </button>
+    </div>
+
+    <!-- Lista de Clubes -->
+    <div id="cargando-clubes" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <div id="contenedor-clubes" class="hidden grid grid-cols-1 gap-4 md:grid-cols-2">
+      <!-- Rellenado dinámicamente -->
+    </div>
+  </div>
+
+  <!-- Modal Alta / Edición de Club -->
+  <dialog
+    id="modal-club"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-lg w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-club-titulo" class="text-base font-bold text-paper">
+        Nuevo Club
+      </h3>
+      <button id="modal-club-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-club" class="mt-4 space-y-4">
+      <input type="hidden" id="club-id" />
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label for="club-nombre" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Nombre oficial
+          </label>
+          <input
+            id="club-nombre"
+            type="text"
+            required
+            placeholder="Ej: Plaza Colonia"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+          />
+        </div>
+
+        <div>
+          <label for="club-slug" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Slug público (URL)
+          </label>
+          <input
+            id="club-slug"
+            type="text"
+            required
+            placeholder="plaza-colonia"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label for="club-gimnasio" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Gimnasio / Sede
+        </label>
+        <input
+          id="club-gimnasio"
+          type="text"
+          placeholder="Ej: Gimnasio de Plaza Colonia"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="club-color1" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Color primario
+          </label>
+          <div class="mt-1 flex items-center gap-2">
+            <input
+              id="club-color1"
+              type="color"
+              value="#1c2b56"
+              class="h-8 w-10 cursor-pointer rounded border border-navy-700 bg-navy-950 p-0.5"
+            />
+            <input
+              id="club-color1-hex"
+              type="text"
+              value="#1c2b56"
+              class="w-full rounded border border-navy-700 bg-navy-950 px-2 py-1 text-xs text-paper"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="club-color2" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Color secundario
+          </label>
+          <div class="mt-1 flex items-center gap-2">
+            <input
+              id="club-color2"
+              type="color"
+              value="#ffffff"
+              class="h-8 w-10 cursor-pointer rounded border border-navy-700 bg-navy-950 p-0.5"
+            />
+            <input
+              id="club-color2-hex"
+              type="text"
+              value="#ffffff"
+              class="w-full rounded border border-navy-700 bg-navy-950 px-2 py-1 text-xs text-paper"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label for="club-escudo-url" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          URL del Escudo oficial
+        </label>
+        <input
+          id="club-escudo-url"
+          type="url"
+          placeholder="https://... o ruta en bucket"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <!-- Redes sociales -->
+      <div class="rounded-lg border border-navy-800 bg-navy-950 p-3 space-y-2">
+        <span class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Contacto y Redes
+        </span>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label for="club-red-ig" class="block text-[0.65rem] text-paper-muted uppercase">Instagram</label>
+            <input id="club-red-ig" type="text" placeholder="@usuario" class="mt-0.5 w-full rounded border border-navy-700 bg-navy-900 p-1.5 text-xs text-paper" />
+          </div>
+          <div>
+            <label for="club-red-wa" class="block text-[0.65rem] text-paper-muted uppercase">WhatsApp</label>
+            <input id="club-red-wa" type="text" placeholder="099..." class="mt-0.5 w-full rounded border border-navy-700 bg-navy-900 p-1.5 text-xs text-paper" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-club-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink hover:bg-orange-700"
+        >
+          Guardar club
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modal Equipos del Club -->
+  <dialog
+    id="modal-equipos"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <div>
+        <h3 id="modal-equipos-titulo" class="text-base font-bold text-paper">
+          Equipos por categoría
+        </h3>
+        <p id="modal-equipos-subtitulo" class="text-xs text-paper-muted">Club</p>
+      </div>
+      <button id="modal-equipos-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mt-4 space-y-4">
+      <div id="lista-equipos-club" class="space-y-2">
+        <!-- Rellenado dinámicamente -->
+      </div>
+
+      <div class="border-t border-navy-800 pt-3">
+        <label for="select-agregar-categoria" class="block text-xs font-bold uppercase tracking-wider text-paper-muted mb-1">
+          Inscribir en otra categoría
+        </label>
+        <div class="flex gap-2">
+          <select id="select-agregar-categoria" class="flex-1 rounded-lg border border-navy-700 bg-navy-950 p-2 text-xs text-paper">
+            <option value="">Seleccionar categoría...</option>
+          </select>
+          <button
+            id="btn-agregar-equipo"
+            type="button"
+            class="rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold uppercase text-ink hover:bg-orange-700"
+          >
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: EstadoAdmin | null = null;
+  let clubesMemoria: any[] = [];
+  let categoriasMemoria: any[] = [];
+  let clubActivoEquipos: any = null;
+
+  const modalClub = document.getElementById('modal-club') as HTMLDialogElement;
+  const modalEquipos = document.getElementById('modal-equipos') as HTMLDialogElement;
+  const formClub = document.getElementById('form-club') as HTMLFormElement;
+
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarCategorias();
+    await cargarClubes();
+  });
+
+  async function cargarCategorias() {
+    const { data } = await supabaseBrowser
+      .from('categorias')
+      .select('id, nombre, orden')
+      .order('orden', { ascending: true });
+    categoriasMemoria = data ?? [];
+  }
+
+  async function cargarClubes() {
+    const cargando = document.getElementById('cargando-clubes');
+    const contenedor = document.getElementById('contenedor-clubes');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+
+    const { data: clubes, error } = await supabaseBrowser
+      .from('clubes')
+      .select(`
+        id, nombre, slug, escudo_url, color1, color2, gimnasio, redes_json, activo,
+        equipos (id, categoria_id, nombre_mostrar, activo, categorias(nombre, acronimo))
+      `)
+      .order('nombre', { ascending: true });
+
+    cargando?.classList.add('hidden');
+
+    if (error || !clubes) {
+      clubesMemoria = [];
+      return;
+    }
+
+    clubesMemoria = clubes;
+    renderizarClubes();
+  }
+
+  function renderizarClubes() {
+    const contenedor = document.getElementById('contenedor-clubes');
+    if (!contenedor) return;
+
+    contenedor.classList.remove('hidden');
+
+    contenedor.innerHTML = clubesMemoria
+      .map((c) => {
+        const c1 = c.color1 || '#1c2b56';
+        const c2 = c.color2 || '#ffffff';
+        const iniciales = c.nombre.slice(0, 2).toUpperCase();
+
+        const badgeEscudo = c.escudo_url
+          ? `<img src="${c.escudo_url}" alt="${c.nombre}" class="h-10 w-10 object-contain rounded-full" />`
+          : `<div class="h-10 w-10 rounded-full flex items-center justify-center font-black text-xs border" style="background-color: ${c1}; color: ${c2}; border-color: ${c2}40;">${iniciales}</div>`;
+
+        const equiposBadges = (c.equipos || [])
+          .map((eq: any) => {
+            const cat = eq.categorias?.acronimo || eq.categorias?.nombre || 'Cat';
+            return `<span class="rounded bg-navy-950 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted border border-navy-800">${cat}</span>`;
+          })
+          .join('');
+
+        return `
+          <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3">
+                ${badgeEscudo}
+                <div>
+                  <h3 class="text-base font-bold text-paper">${c.nombre}</h3>
+                  <p class="text-xs text-paper-muted">${c.gimnasio || 'Sede no asignada'}</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  data-id="${c.id}"
+                  class="btn-editar-club rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  data-id="${c.id}"
+                  class="btn-gestionar-equipos rounded-lg bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-ink transition-colors"
+                >
+                  Equipos
+                </button>
+              </div>
+            </div>
+
+            <div class="border-t border-navy-800 pt-3">
+              <span class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1.5">
+                Ramas activas (${c.equipos?.length || 0}):
+              </span>
+              <div class="flex flex-wrap gap-1.5">
+                ${equiposBadges || '<span class="text-xs text-paper-muted italic">Sin equipos creados</span>'}
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    contenedor.querySelectorAll('.btn-editar-club').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const club = clubesMemoria.find((x) => x.id === id);
+        if (club) abrirModalEditarClub(club);
+      });
+    });
+
+    contenedor.querySelectorAll('.btn-gestionar-equipos').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const club = clubesMemoria.find((x) => x.id === id);
+        if (club) abrirModalEquipos(club);
+      });
+    });
+  }
+
+  // Modal Alta / Edición Club
+  document.getElementById('btn-nuevo-club')?.addEventListener('click', () => {
+    formClub.reset();
+    (document.getElementById('club-id') as HTMLInputElement).value = '';
+    (document.getElementById('modal-club-titulo') as HTMLElement).textContent = 'Nuevo Club';
+    (document.getElementById('club-color1') as HTMLInputElement).value = '#1c2b56';
+    (document.getElementById('club-color1-hex') as HTMLInputElement).value = '#1c2b56';
+    (document.getElementById('club-color2') as HTMLInputElement).value = '#ffffff';
+    (document.getElementById('club-color2-hex') as HTMLInputElement).value = '#ffffff';
+    modalClub.showModal();
+  });
+
+  function abrirModalEditarClub(c: any) {
+    (document.getElementById('club-id') as HTMLInputElement).value = c.id;
+    (document.getElementById('modal-club-titulo') as HTMLElement).textContent = 'Editar Club';
+    (document.getElementById('club-nombre') as HTMLInputElement).value = c.nombre;
+    (document.getElementById('club-slug') as HTMLInputElement).value = c.slug;
+    (document.getElementById('club-gimnasio') as HTMLInputElement).value = c.gimnasio || '';
+    (document.getElementById('club-escudo-url') as HTMLInputElement).value = c.escudo_url || '';
+
+    const c1 = c.color1 || '#1c2b56';
+    const c2 = c.color2 || '#ffffff';
+    (document.getElementById('club-color1') as HTMLInputElement).value = c1;
+    (document.getElementById('club-color1-hex') as HTMLInputElement).value = c1;
+    (document.getElementById('club-color2') as HTMLInputElement).value = c2;
+    (document.getElementById('club-color2-hex') as HTMLInputElement).value = c2;
+
+    const redes = c.redes_json || {};
+    (document.getElementById('club-red-ig') as HTMLInputElement).value = redes.instagram || '';
+    (document.getElementById('club-red-wa') as HTMLInputElement).value = redes.whatsapp || '';
+
+    modalClub.showModal();
+  }
+
+  // Sincronizar inputs de colores
+  document.getElementById('club-color1')?.addEventListener('input', (e) => {
+    (document.getElementById('club-color1-hex') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+  });
+  document.getElementById('club-color1-hex')?.addEventListener('input', (e) => {
+    (document.getElementById('club-color1') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+  });
+  document.getElementById('club-color2')?.addEventListener('input', (e) => {
+    (document.getElementById('club-color2-hex') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+  });
+  document.getElementById('club-color2-hex')?.addEventListener('input', (e) => {
+    (document.getElementById('club-color2') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+  });
+
+  // Autogenerar slug
+  document.getElementById('club-nombre')?.addEventListener('input', (e) => {
+    const inputSlug = document.getElementById('club-slug') as HTMLInputElement;
+    const id = (document.getElementById('club-id') as HTMLInputElement).value;
+    if (!id) {
+      inputSlug.value = (e.target as HTMLInputElement).value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+  });
+
+  document.getElementById('modal-club-cerrar')?.addEventListener('click', () => modalClub.close());
+  document.getElementById('modal-club-cancelar')?.addEventListener('click', () => modalClub.close());
+
+  formClub.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const id = (document.getElementById('club-id') as HTMLInputElement).value;
+    const nombre = (document.getElementById('club-nombre') as HTMLInputElement).value.trim();
+    const slug = (document.getElementById('club-slug') as HTMLInputElement).value.trim();
+    const gimnasio = (document.getElementById('club-gimnasio') as HTMLInputElement).value.trim() || null;
+    const escudoUrl = (document.getElementById('club-escudo-url') as HTMLInputElement).value.trim() || null;
+    const color1 = (document.getElementById('club-color1-hex') as HTMLInputElement).value.trim();
+    const color2 = (document.getElementById('club-color2-hex') as HTMLInputElement).value.trim();
+
+    const ig = (document.getElementById('club-red-ig') as HTMLInputElement).value.trim();
+    const wa = (document.getElementById('club-red-wa') as HTMLInputElement).value.trim();
+    const redesJson: any = {};
+    if (ig) redesJson.instagram = ig;
+    if (wa) redesJson.whatsapp = wa;
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      nombre,
+      slug,
+      gimnasio,
+      escudo_url: escudoUrl,
+      color1,
+      color2,
+      redes_json: Object.keys(redesJson).length > 0 ? redesJson : null,
+    };
+
+    if (id) {
+      const { error } = await supabaseBrowser
+        .from('clubes')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al actualizar club: ' + error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabaseBrowser
+        .from('clubes')
+        .insert(payload);
+
+      if (error) {
+        alert('Error al crear club: ' + error.message);
+        return;
+      }
+    }
+
+    modalClub.close();
+    await cargarClubes();
+  });
+
+  // Modal Equipos
+  function abrirModalEquipos(c: any) {
+    clubActivoEquipos = c;
+    const sub = document.getElementById('modal-equipos-subtitulo');
+    if (sub) sub.textContent = c.nombre;
+
+    renderizarEquiposModal();
+    modalEquipos.showModal();
+  }
+
+  function renderizarEquiposModal() {
+    const lista = document.getElementById('lista-equipos-club');
+    const selectCat = document.getElementById('select-agregar-categoria') as HTMLSelectElement;
+    if (!lista || !clubActivoEquipos) return;
+
+    const equiposExistentes = clubActivoEquipos.equipos || [];
+    const catIdsUsadas = new Set(equiposExistentes.map((eq: any) => eq.categoria_id));
+
+    lista.innerHTML = equiposExistentes
+      .map((eq: any) => {
+        const catNombre = eq.categorias?.nombre || 'Categoría';
+        return `
+          <div class="flex items-center justify-between rounded-lg bg-navy-950 p-2.5 border border-navy-800 text-xs">
+            <div>
+              <span class="font-bold text-paper">${catNombre}</span>
+              <p class="text-[0.65rem] text-paper-muted">${eq.nombre_mostrar}</p>
+            </div>
+            <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-400">ACTIVO</span>
+          </div>
+        `;
+      })
+      .join('');
+
+    // Categorías disponibles para agregar
+    if (selectCat) {
+      const disponibles = categoriasMemoria.filter((c) => !catIdsUsadas.has(c.id));
+      if (disponibles.length === 0) {
+        selectCat.innerHTML = '<option value="">Ya tiene equipos en todas las categorías</option>';
+        selectCat.disabled = true;
+      } else {
+        selectCat.disabled = false;
+        selectCat.innerHTML = '<option value="">Seleccionar categoría...</option>' +
+          disponibles.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join('');
+      }
+    }
+  }
+
+  document.getElementById('btn-agregar-equipo')?.addEventListener('click', async () => {
+    const selectCat = document.getElementById('select-agregar-categoria') as HTMLSelectElement;
+    const catId = selectCat.value;
+    if (!catId || !clubActivoEquipos || !estadoAdmin?.orgId) return;
+
+    const cat = categoriasMemoria.find((c) => c.id === catId);
+    const catAcronimo = cat?.acronimo || cat?.nombre || 'Cat';
+    const nombreMostrar = `${clubActivoEquipos.nombre} - ${catAcronimo}`;
+
+    const { data, error } = await supabaseBrowser
+      .from('equipos')
+      .insert({
+        org_id: estadoAdmin.orgId,
+        club_id: clubActivoEquipos.id,
+        categoria_id: catId,
+        nombre_mostrar: nombreMostrar,
+        activo: true,
+      })
+      .select('id, categoria_id, nombre_mostrar, activo, categorias(nombre, acronimo)')
+      .single();
+
+    if (error) {
+      alert('Error al agregar equipo: ' + error.message);
+      return;
+    }
+
+    if (!clubActivoEquipos.equipos) clubActivoEquipos.equipos = [];
+    clubActivoEquipos.equipos.push(data);
+    renderizarEquiposModal();
+    renderizarClubes();
+  });
+
+  document.getElementById('modal-equipos-cerrar')?.addEventListener('click', () => modalEquipos.close());
+</script>

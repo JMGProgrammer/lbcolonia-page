@@ -119,6 +119,17 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - **Checkpoint 4 verificado en vivo por Juan**: login secretaría, pegado masivo de fecha 3 desde Excel con fuzzy match, revisión previa, importación, carga manual de resultado simulado, publicación oficial y reflejo inmediato en el sitio público.
 - Modelos usados: Gemini 3.8 Flash (thinking alto) para redacción del plan e implementación tras aprobación.
 
+**Estado de la sesión 2 (2026-10-21)**:
+- ABMs institucionales del panel de la secretaría (`/admin`):
+  - **Torneos y Categorías** (`/admin/torneos`): creación y edición de torneos con selector de temporada, formato (`liga`, `liga_playoffs`, `torneo`), estadísticas detalladas on/off y modal para reglas de puntuación FIBA o personalizadas (`puntos_victoria`, `puntos_derrota`, etc.).
+  - **Clubes y Equipos** (`/admin/clubes`): administración de clubes con paleta de colores y selector hexadecimal sincronizado en vivo, gimnasio sede, logo/escudo y modal de categorías/equipos asignados al club.
+  - **Padrón de Jugadores** (`/admin/jugadores`): registro y edición de basquetbolistas con cálculo automático de edad y detector en tiempo real de duplicados por coincidencia de `nombre_completo` y `fecha_nacimiento` (`Docs/02 §2`).
+  - **Bandeja de Fichas** (`/admin/fichas`): bandeja de entrada tipo inbox filtrada por estado (`solicitada`, `confirmada`, `baja`), torneo y club; confirmación de solicitudes de delegados, asignación/modificación de dorsal (#) y baja de fichas oficiales con confirmación nativa.
+  - **Inbox del Panel** (`/admin`): hub con contadores en vivo de tareas pendientes (fichas solicitadas, resultados sin publicar, partidos programados sin sede y disputas) con accesos directos de 1 clic y grilla completa de módulos.
+- Permisos & Migración: `0004_fichas_liga_permisos.sql` aplicada en Supabase para permitir gestión integral de fichas a organizadores (`es_organizador(org_id)`).
+- Verificación: `npm run check` 0 errores / 0 warnings; `npm run build` verde; 48/48 pruebas RLS pasando; barrido responsive 320–1300 px (91 revisiones en 7 rutas del panel) con 0 fallas de overflow.
+- Modelos usados: Gemini 3.8 Flash (thinking alto).
+
 ## IT5 — Delegados y planillas (2-3 sesiones)
 
 - Cara delegado: mis partidos, **planilla en 3 bloques**, foto de papel obligatoria (Storage privado), disputas, roster propio con fichas `solicitada`.

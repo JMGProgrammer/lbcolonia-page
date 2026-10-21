@@ -1,0 +1,404 @@
+---
+// Padrón de Jugadores con control de duplicados (/admin/jugadores)
+// Docs/02 §2 & Docs/05 §1A: Control anti-duplicado por (nombre_completo, fecha_nacimiento)
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Jugadores" seccionActiva="jugadores">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Padrón Oficial
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Jugadores de la Liga
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Padrón de basquetbolistas federados con control automático de duplicados
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <a
+          href="/admin/fichas"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Ver fichas activas
+        </a>
+        <button
+          id="btn-nuevo-jugador"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo jugador
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda y conteo -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <div class="relative flex-1 max-w-md">
+        <input
+          id="input-buscar-jugador"
+          type="search"
+          placeholder="Buscar por nombre o apellido..."
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 pl-9 pr-3 py-1.5 text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"
+        />
+        <svg class="absolute left-2.5 top-2 h-4 w-4 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+
+      <p id="contador-jugadores" class="text-xs text-paper-muted">
+        Cargando padrón...
+      </p>
+    </div>
+
+    <!-- Lista de jugadores -->
+    <div id="cargando-jugadores" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <div id="contenedor-jugadores" class="hidden overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
+            <th class="py-3 px-4">Jugador</th>
+            <th class="py-3 px-4">Fecha de Nacimiento</th>
+            <th class="py-3 px-4">Edad</th>
+            <th class="py-3 px-4">Fichas en curso</th>
+            <th class="py-3 px-4 text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-jugadores" class="divide-y divide-navy-800">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Nuevo / Editar Jugador -->
+  <dialog
+    id="modal-jugador"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-jugador-titulo" class="text-base font-bold text-paper">
+        Alta de Jugador
+      </h3>
+      <button id="modal-jugador-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-jugador" class="mt-4 space-y-4">
+      <input type="hidden" id="jugador-id" />
+
+      <div>
+        <label for="jugador-nombre" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Nombre completo
+        </label>
+        <input
+          id="jugador-nombre"
+          type="text"
+          required
+          placeholder="Ej: Rodrigo Méndez"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div>
+        <label for="jugador-nacimiento" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Fecha de nacimiento
+        </label>
+        <input
+          id="jugador-nacimiento"
+          type="date"
+          required
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <!-- Alerta de control anti-duplicados (Docs/02 §2) -->
+      <div id="alerta-duplicado" class="hidden rounded-lg border border-gold-400/30 bg-gold-400/10 p-3 text-xs text-gold-400">
+        <div class="flex items-start gap-2">
+          <svg class="h-4 w-4 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <div>
+            <span class="font-bold uppercase tracking-wider">Aviso de duplicado</span>
+            <p id="alerta-duplicado-texto" class="mt-0.5 text-paper">
+              Ya existe un jugador con datos coincidentes en el padrón.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label for="jugador-foto" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          URL de Foto (opcional)
+        </label>
+        <input
+          id="jugador-foto"
+          type="url"
+          placeholder="https://..."
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div>
+        <label for="jugador-notas" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Notas internas
+        </label>
+        <input
+          id="jugador-notas"
+          type="text"
+          placeholder="Documentación federativa, pase de origen..."
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-jugador-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink hover:bg-orange-700"
+        >
+          Guardar jugador
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: EstadoAdmin | null = null;
+  let jugadoresMemoria: any[] = [];
+
+  const modalJugador = document.getElementById('modal-jugador') as HTMLDialogElement;
+  const formJugador = document.getElementById('form-jugador') as HTMLFormElement;
+
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarJugadores();
+  });
+
+  async function cargarJugadores() {
+    const cargando = document.getElementById('cargando-jugadores');
+    const contenedor = document.getElementById('contenedor-jugadores');
+    const contador = document.getElementById('contador-jugadores');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+
+    const { data: jugadores, error } = await supabaseBrowser
+      .from('jugadores')
+      .select(`
+        id, nombre_completo, fecha_nacimiento, foto_url, notas,
+        fichas (id, estado, equipo_id, equipos:equipo_id(nombre_mostrar))
+      `)
+      .order('nombre_completo', { ascending: true });
+
+    cargando?.classList.add('hidden');
+
+    if (error || !jugadores) {
+      if (contador) contador.textContent = '0 jugadores';
+      jugadoresMemoria = [];
+      return;
+    }
+
+    jugadoresMemoria = jugadores;
+    renderizarJugadores();
+  }
+
+  function calcularEdad(fechaIso: string): number {
+    const hoy = new Date();
+    const nac = new Date(fechaIso);
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) {
+      edad--;
+    }
+    return edad;
+  }
+
+  function renderizarJugadores() {
+    const contenedor = document.getElementById('contenedor-jugadores');
+    const tbody = document.getElementById('tbody-jugadores');
+    const contador = document.getElementById('contador-jugadores');
+    const busqueda = (document.getElementById('input-buscar-jugador') as HTMLInputElement).value.toLowerCase().trim();
+
+    if (!tbody || !contenedor) return;
+
+    const filtrados = jugadoresMemoria.filter((j) => {
+      if (!busqueda) return true;
+      return j.nombre_completo.toLowerCase().includes(busqueda);
+    });
+
+    if (contador) contador.textContent = `${filtrados.length} jugador(es) en el padrón`;
+
+    contenedor.classList.remove('hidden');
+
+    tbody.innerHTML = filtrados
+      .map((j) => {
+        const edad = calcularEdad(j.fecha_nacimiento);
+        const fichasActivas = (j.fichas || []).filter((f: any) => f.estado !== 'baja');
+        const fichasTxt = fichasActivas.length > 0
+          ? fichasActivas.map((f: any) => `<span class="rounded bg-navy-950 px-2 py-0.5 text-[0.65rem] font-bold text-paper-muted border border-navy-800">${f.equipos?.nombre_mostrar || 'Equipo'}</span>`).join(' ')
+          : '<span class="text-paper-muted italic">Sin ficha activa</span>';
+
+        return `
+          <tr class="hover:bg-navy-850/50">
+            <td class="py-3 px-4 font-bold text-paper">${j.nombre_completo}</td>
+            <td class="py-3 px-4 text-paper-muted num">${j.fecha_nacimiento}</td>
+            <td class="py-3 px-4 text-paper num">${edad} años</td>
+            <td class="py-3 px-4">${fichasTxt}</td>
+            <td class="py-3 px-4 text-right">
+              <button
+                type="button"
+                data-id="${j.id}"
+                class="btn-editar-jugador text-orange-500 hover:text-orange-400 font-bold"
+              >
+                Editar
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    tbody.querySelectorAll('.btn-editar-jugador').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const j = jugadoresMemoria.find((x) => x.id === id);
+        if (j) abrirModalEditarJugador(j);
+      });
+    });
+  }
+
+  document.getElementById('input-buscar-jugador')?.addEventListener('input', renderizarJugadores);
+
+  // Control anti-duplicados en tiempo real (Docs/02 §2)
+  function verificarDuplicado() {
+    const inputNombre = (document.getElementById('jugador-nombre') as HTMLInputElement).value.trim().toLowerCase();
+    const inputFecha = (document.getElementById('jugador-nacimiento') as HTMLInputElement).value;
+    const jugadorIdActual = (document.getElementById('jugador-id') as HTMLInputElement).value;
+    const alerta = document.getElementById('alerta-duplicado');
+    const alertaTexto = document.getElementById('alerta-duplicado-texto');
+
+    if (!inputNombre || !inputFecha) {
+      alerta?.classList.add('hidden');
+      return;
+    }
+
+    const duplicado = jugadoresMemoria.find((j) => {
+      if (jugadorIdActual && j.id === jugadorIdActual) return false;
+      const mismoNombre = j.nombre_completo.toLowerCase() === inputNombre;
+      const mismaFecha = j.fecha_nacimiento === inputFecha;
+      return mismoNombre || (mismaFecha && inputNombre.length > 5 && j.nombre_completo.toLowerCase().includes(inputNombre.slice(0, 4)));
+    });
+
+    if (duplicado) {
+      if (alerta && alertaTexto) {
+        alertaTexto.textContent = `Atención: Ya existe '${duplicado.nombre_completo}' nacido el ${duplicado.fecha_nacimiento} en la base de datos.`;
+        alerta.classList.remove('hidden');
+      }
+    } else {
+      alerta?.classList.add('hidden');
+    }
+  }
+
+  document.getElementById('jugador-nombre')?.addEventListener('input', verificarDuplicado);
+  document.getElementById('jugador-nacimiento')?.addEventListener('change', verificarDuplicado);
+
+  // Modal Alta / Edición
+  document.getElementById('btn-nuevo-jugador')?.addEventListener('click', () => {
+    formJugador.reset();
+    (document.getElementById('jugador-id') as HTMLInputElement).value = '';
+    (document.getElementById('modal-jugador-titulo') as HTMLElement).textContent = 'Alta de Jugador';
+    document.getElementById('alerta-duplicado')?.classList.add('hidden');
+    modalJugador.showModal();
+  });
+
+  function abrirModalEditarJugador(j: any) {
+    (document.getElementById('jugador-id') as HTMLInputElement).value = j.id;
+    (document.getElementById('modal-jugador-titulo') as HTMLElement).textContent = 'Editar Jugador';
+    (document.getElementById('jugador-nombre') as HTMLInputElement).value = j.nombre_completo;
+    (document.getElementById('jugador-nacimiento') as HTMLInputElement).value = j.fecha_nacimiento;
+    (document.getElementById('jugador-foto') as HTMLInputElement).value = j.foto_url || '';
+    (document.getElementById('jugador-notas') as HTMLInputElement).value = j.notas || '';
+    document.getElementById('alerta-duplicado')?.classList.add('hidden');
+    modalJugador.showModal();
+  }
+
+  document.getElementById('modal-jugador-cerrar')?.addEventListener('click', () => modalJugador.close());
+  document.getElementById('modal-jugador-cancelar')?.addEventListener('click', () => modalJugador.close());
+
+  formJugador.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const id = (document.getElementById('jugador-id') as HTMLInputElement).value;
+    const nombreCompleto = (document.getElementById('jugador-nombre') as HTMLInputElement).value.trim();
+    const fechaNacimiento = (document.getElementById('jugador-nacimiento') as HTMLInputElement).value;
+    const fotoUrl = (document.getElementById('jugador-foto') as HTMLInputElement).value.trim() || null;
+    const notas = (document.getElementById('jugador-notas') as HTMLInputElement).value.trim() || null;
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      nombre_completo: nombreCompleto,
+      fecha_nacimiento: fechaNacimiento,
+      foto_url: fotoUrl,
+      notas,
+    };
+
+    if (id) {
+      const { error } = await supabaseBrowser
+        .from('jugadores')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al actualizar jugador: ' + error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabaseBrowser
+        .from('jugadores')
+        .insert(payload);
+
+      if (error) {
+        alert('Error al registrar jugador: ' + error.message);
+        return;
+      }
+    }
+
+    modalJugador.close();
+    await cargarJugadores();
+  });
+</script>

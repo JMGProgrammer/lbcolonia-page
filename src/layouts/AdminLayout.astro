@@ -5,7 +5,7 @@ import '../styles/global.css';
 
 interface Props {
   title?: string;
-  seccionActiva?: 'resumen' | 'fixture' | 'importar';
+  seccionActiva?: 'resumen' | 'fixture' | 'importar' | 'torneos' | 'clubes' | 'jugadores' | 'fichas';
 }
 
 const { title = 'Panel de Control', seccionActiva = 'resumen' } = Astro.props;
@@ -41,11 +41,11 @@ const tituloFinal = `${title} · Panel LBC`;
         </div>
 
         <!-- Navegación desktop -->
-        <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <nav class="hidden lg:flex items-center gap-1 text-xs font-semibold">
           <a
             href="/admin"
             class:list={[
-              'rounded-lg px-3 py-1.5 transition-colors',
+              'rounded-lg px-2.5 py-1.5 transition-colors',
               seccionActiva === 'resumen'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
@@ -56,8 +56,8 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/fixture"
             class:list={[
-              'rounded-lg px-3 py-1.5 transition-colors',
-              seccionActiva === 'fixture'
+              'rounded-lg px-2.5 py-1.5 transition-colors',
+              seccionActiva === 'fixture' || seccionActiva === 'importar'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
             ]}
@@ -65,15 +65,48 @@ const tituloFinal = `${title} · Panel LBC`;
             Fixture
           </a>
           <a
-            href="/admin/fixture/importar"
+            href="/admin/torneos"
             class:list={[
-              'rounded-lg px-3 py-1.5 transition-colors',
-              seccionActiva === 'importar'
+              'rounded-lg px-2.5 py-1.5 transition-colors',
+              seccionActiva === 'torneos'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
             ]}
           >
-            Pegar Excel
+            Torneos
+          </a>
+          <a
+            href="/admin/clubes"
+            class:list={[
+              'rounded-lg px-2.5 py-1.5 transition-colors',
+              seccionActiva === 'clubes'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Clubes
+          </a>
+          <a
+            href="/admin/jugadores"
+            class:list={[
+              'rounded-lg px-2.5 py-1.5 transition-colors',
+              seccionActiva === 'jugadores'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Jugadores
+          </a>
+          <a
+            href="/admin/fichas"
+            class:list={[
+              'rounded-lg px-2.5 py-1.5 transition-colors',
+              seccionActiva === 'fichas'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Fichas
           </a>
         </nav>
 
@@ -116,70 +149,114 @@ const tituloFinal = `${title} · Panel LBC`;
       <slot />
     </main>
 
-    <!-- Cinta de navegación móvil inferior (Docs/05 §5 y Docs/10 §3: ítems >= 4.25rem = 68px de alto) -->
+    <!-- Cinta de navegación móvil inferior con scroll horizontal (Docs/05 §5 y Docs/10 §3: ítems >= 4.25rem = 68px de alto) -->
     <nav
       id="nav-cinta-movil"
-      class="fixed bottom-0 left-0 right-0 z-40 flex h-[68px] items-stretch border-t border-navy-700 bg-navy-900/95 backdrop-blur md:hidden"
+      class="fixed bottom-0 left-0 right-0 z-40 flex h-[68px] items-stretch overflow-x-auto border-t border-navy-700 bg-navy-900/95 backdrop-blur lg:hidden scrollbar-none"
     >
       <a
         href="/admin"
         class:list={[
-          'flex flex-1 flex-col items-center justify-center gap-1 text-center transition-colors',
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
           seccionActiva === 'resumen' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
         ]}
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect width="7" height="9" x="3" y="3" rx="1"></rect>
           <rect width="7" height="5" x="14" y="3" rx="1"></rect>
           <rect width="7" height="9" x="14" y="12" rx="1"></rect>
           <rect width="7" height="5" x="3" y="16" rx="1"></rect>
         </svg>
-        <span class="text-[0.7rem] uppercase tracking-wider">Resumen</span>
+        <span class="text-[0.65rem] uppercase tracking-wider">Resumen</span>
       </a>
 
       <a
         href="/admin/fixture"
         class:list={[
-          'flex flex-1 flex-col items-center justify-center gap-1 text-center transition-colors',
-          seccionActiva === 'fixture' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'fixture' || seccionActiva === 'importar' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
         ]}
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
-        <span class="text-[0.7rem] uppercase tracking-wider">Fixture</span>
+        <span class="text-[0.65rem] uppercase tracking-wider">Fixture</span>
       </a>
 
       <a
-        href="/admin/fixture/importar"
+        href="/admin/torneos"
         class:list={[
-          'flex flex-1 flex-col items-center justify-center gap-1 text-center transition-colors',
-          seccionActiva === 'importar' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'torneos' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
         ]}
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="12" y1="18" x2="12" y2="12"></line>
-          <line x1="9" y1="15" x2="15" y2="15"></line>
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+          <path d="M4 22h16"></path>
+          <path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34"></path>
+          <path d="M6 4h12v7a6 6 0 0 1-12 0V4Z"></path>
         </svg>
-        <span class="text-[0.7rem] uppercase tracking-wider">Importar</span>
+        <span class="text-[0.65rem] uppercase tracking-wider">Torneos</span>
+      </a>
+
+      <a
+        href="/admin/clubes"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'clubes' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Clubes</span>
+      </a>
+
+      <a
+        href="/admin/jugadores"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'jugadores' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Jugadores</span>
+      </a>
+
+      <a
+        href="/admin/fichas"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'fichas' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+          <path d="m9 12 2 2 4-4"></path>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Fichas</span>
       </a>
 
       <button
         id="btn-movil-sitio"
         type="button"
-        class="flex flex-1 flex-col items-center justify-center gap-1 text-center text-paper-muted hover:text-paper transition-colors"
+        class="flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 text-paper-muted hover:text-paper transition-colors"
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
           <polyline points="15 3 21 3 21 9"></polyline>
           <line x1="10" y1="14" x2="21" y2="3"></line>
         </svg>
-        <span class="text-[0.7rem] uppercase tracking-wider">Público</span>
+        <span class="text-[0.65rem] uppercase tracking-wider">Público</span>
       </button>
     </nav>
 

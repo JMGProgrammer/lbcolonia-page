@@ -41,6 +41,7 @@ Serie numerada, se lee en orden:
 | 08 | `08-negocio.md` | Modelo de venta, pricing, pitch, benchmark (Gesdeportiva) |
 | 09 | `09-fases.md` | Roadmap de construcción con definición de hecho (DoD) |
 | 10 | `10-qa-performance.md` | QA, accesibilidad, rendimiento, datos de prueba |
+| 11 | `11-diseno.md` | Dirección visual: paleta, tipografía, home, componentes, decisión de modo oscuro |
 
 ## Convenciones de documentación (igual que lgrestoreuy)
 

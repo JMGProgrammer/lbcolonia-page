@@ -4,11 +4,13 @@
 
 Mobile-first: el 95% de la audiencia entra desde el celular, la mayoría de noche del sábado. Regla táctil: texto base ≥ 15px, botones ≥ 44px de toque, sin zoom horizontal a 320px.
 
+**Modo de color: solo oscuro** (decisión de Juan, 2026-10-21): la web vive en azul marino como los afiches, sin modo claro ni toggle. La dirección visual completa (paleta, tipografía Archivo, componentes, estilo de ResultCard y tabla) vive en `Docs/11-diseno.md` y manda sobre cualquier criterio estético en código.
+
 ## 1. Mapa de rutas
 
 | Ruta | Contenido | Origen de datos |
 |---|---|---|
-| `/` | Hero con logo de la liga + `próximos partidos del fin de semana` + `últimos resultados` + tabla compacta de primera + noticia destacada + auspiciantes | views + queries `destacado` |
+| `/` | Hero con el **marcador del fin de semana** (resultados de la última fecha + banner de próxima fecha + CTA al fixture — composición en `Docs/11 §4`) + noticias + tabla compacta de primera + próximos partidos paginados + auspiciantes | views + queries `destacado` |
 | `/fixture/{torneo}` | Agenda completa del torneo, residente por jornada/ronda con filtro por club (island alpine) | `partidos` |
 | `/tabla/{torneo}` | Tabla de posiciones completa | `v_tabla` |
 | `/estadisticas/{torneo}` | Goleadores / rebotes / asistencias, paginados | `v_lideres` |

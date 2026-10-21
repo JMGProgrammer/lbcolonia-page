@@ -13,6 +13,8 @@ Modelo elegido (con Juan, 2026-10-21): **vender a las ligas** con licencia por t
 | Excel de un voluntario | Muere cuando esa persona se cansa; sin goleadores |
 | **Gesdeportiva** (usada por la FUBB) | Genérica, extranjera, cara para una liga local, sin soporte cercano ni identidad de cada liga |
 
+| **AMR Software** (local, Uruguay) | Proveedor local que ya vende esta categoría: desarrolló la web de la Federación Departamental de Fútbol de Colonia (federacioncolonia.com.uy, 2026) — fixture con doble filtro, campeonatos por torneo, biblioteca documental | Nuestro referente directo: confirma que el modelo "licencia a federaciones/ligas del interior" es mercado real. Diferenciar con: foco 100% básquet (goleadores, sanciones con cumple, formativas), carga por delegados (la federación depende del upload del proveedor) y soporte cercano |
+
 Ventaja vs Gesdeportiva: precio local de interior, soporte humano en la calle, identidad visual de la liga, y el flujo delegado→secretaria es el mismo que ellas ya conocen.
 
 ## 2. Propuesta de piloto con la Liga de Colonia

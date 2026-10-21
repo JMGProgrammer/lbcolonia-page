@@ -14,7 +14,7 @@ Path:
 
 `/home/Juan/Documentos/Github/lbc-web`
 
-Remote: pendiente (crear en GitHub como `JMGProgrammer/lbc-web`)
+Remote: `https://github.com/JMGProgrammer/lbcolonia-page.git` (rama `main`)
 
 ## Stack
 

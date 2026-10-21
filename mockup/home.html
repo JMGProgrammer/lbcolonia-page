@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LBC · Liga de Básquetbol de Colonia</title>
+  <meta name="description" content="Fixture, tabla de posiciones, resultados y noticias de la Liga de Básquetbol de Colonia.">
+  <link rel="icon" type="image/png" href="../assets/images/logo-lbc-bgr.png">
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <link rel="stylesheet" href="assets/css/mockup.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Ir al contenido</a>
+
+  <div class="aviso-demo" role="note">
+    Mockup IT1 — los <strong>resultados</strong> de la Fecha 1 son <strong>demo</strong>: aún sin datos oficiales de la liga
+  </div>
+
+  <!-- switcher de competencias -->
+  <div class="switcher">
+    <nav class="switcher-inner" aria-label="Competencias">
+      <a class="chip chip-activa" href="#" aria-current="true">Primera</a>
+      <a class="chip" href="#">Formativas</a>
+      <a class="chip" href="#">Amateur</a>
+      <span class="switcher-nota">Temporada #LBC2026</span>
+    </nav>
+  </div>
+
+  <!-- nav -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="marca" href="#">
+        <img src="../assets/images/logo-lbc-bgr.png" alt="Escudo de la Liga de Básquetbol de Colonia" width="40" height="47">
+        <span class="marca-b">
+          <strong>LBC</strong><span>Liga de Básquetbol de Colonia</span>
+        </span>
+      </a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+      <label class="burger" for="nav-toggle">MENÚ</label>
+      <nav class="nav" aria-label="Principal">
+        <a href="#">Fixture</a>
+        <a href="#">Tabla</a>
+        <a href="#">Estadísticas</a>
+        <a href="#">Clubes</a>
+        <a href="#">Sanciones</a>
+        <a href="#">Noticias</a>
+        <a href="#">La Liga</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <!-- hero: marcador del fin de semana -->
+    <section class="hero contenedor" aria-labelledby="rotulo-hero">
+      <p class="rotulo" id="rotulo-hero">Primera División · Fecha 1 · Sáb 17/10 · Anfitrión: Estudiantes El Colla (Rosario)</p>
+      <div class="hero-grid">
+        <!-- resultados de la fecha -->
+        <div>
+          <article class="result-card">
+            <div class="equipos">
+              <div class="equipo"><span class="escudo escudo-local">PC</span><span>Plaza Colonia</span></div>
+              <div class="equipo"><span class="escudo escudo-visit">JUV</span><span>Juventud</span></div>
+            </div>
+            <div class="marcador-cola" aria-label="Resultado final, Plaza Colonia 78, Juventud 70">
+              <span class="vs-label">VS</span>
+              <span class="marcador">78–70</span>
+              <span class="vs-label demo-label">demo</span>
+            </div>
+            <div></div>
+          </article>
+          <article class="result-card">
+            <div class="equipos">
+              <div class="equipo"><span class="escudo escudo-local">EEC</span><span>Estudiantes El Colla</span></div>
+              <div class="equipo"><span class="escudo escudo-visit">ROW</span><span>Colonia Rowing</span></div>
+            </div>
+            <div class="marcador-cola" aria-label="Resultado final, Estudiantes El Colla 82, Colonia Rowing 75">
+              <span class="vs-label">VS</span>
+              <span class="marcador">82–75</span>
+              <span class="vs-label demo-label">demo</span>
+            </div>
+            <div></div>
+          </article>
+        </div>
+
+        <!-- próxima fecha -->
+        <aside class="panel" aria-labelledby="prox-titulo">
+          <div class="panel-cuerpo franja-prox">
+            <p class="rotulo2" aria-hidden="true">Próxima fecha</p>
+            <h2 id="prox-titulo" class="h4">Fecha 2 · Sáb 24/10</h2>
+            <p class="detalle">Gimnasio de Juventud · Colonia<br>19:00 — Plaza Colonia vs Colonia Rowing<br>21:00 — Juventud vs Estudiantes El Colla</p>
+            <a class="btn" href="#">Ver fixture completo</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- noticias -->
+    <section class="seccion contenedor" aria-labelledby="t-noticias">
+      <div class="seccion-cabecera">
+        <h2 id="t-noticias">Últimas noticias</h2>
+        <a class="link-mas" href="#">Ver todas →</a>
+      </div>
+      <div class="noticias-grid">
+        <a class="noticia" href="#">
+          <div class="noticia-foto">Foto del partido (demo)</div>
+          <div class="noticia-cuerpo">
+            <time datetime="2026-10-17">17/10/2026</time>
+            <h3>Arrancó la Primera División: la Fecha 1 dejó primeras señales (demo)</h3>
+          </div>
+        </a>
+        <a class="noticia" href="#">
+          <div class="noticia-foto">Afiche de temporada</div>
+          <div class="noticia-cuerpo">
+            <time datetime="2026-10-14">14/10/2026</time>
+            <h3>El calendario completo: 6 fechas de doble jornada los sábados</h3>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- tabla compacta -->
+    <section class="seccion contenedor" aria-labelledby="t-tabla">
+      <div class="seccion-cabecera">
+        <h2 id="t-tabla">Tabla de posiciones</h2>
+        <a class="link-mas" href="#">Ver tabla completa →</a>
+      </div>
+      <div class="tabla-marco panel--rojo">
+        <div class="tabla-scroll">
+          <table>
+            <caption class="rotulo" style="padding: .6rem .75rem; margin: 0;">Posiciones tras la Fecha 1 (demo)</caption>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Equipo</th>
+                <th scope="col" class="num-h">PJ</th>
+                <th scope="col" class="num-h">PG</th>
+                <th scope="col" class="num-h">PP</th>
+                <th scope="col" class="num-h">GF</th>
+                <th scope="col" class="num-h">GC</th>
+                <th scope="col" class="num-h">DIF</th>
+                <th scope="col" class="num-h">PTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="pos-1">1</td><td>Plaza Colonia</td><td class="num-h">1</td><td class="num-h">1</td><td class="num-h">0</td><td class="num-h">78</td><td class="num-h">70</td><td class="num-h dif-pos">+8</td><td class="num-h">2</td></tr>
+              <tr><td>2</td><td>Estudiantes El Colla</td><td class="num-h">1</td><td class="num-h">1</td><td class="num-h">0</td><td class="num-h">82</td><td class="num-h">75</td><td class="num-h dif-pos">+7</td><td class="num-h">2</td></tr>
+              <tr><td>3</td><td>Colonia Rowing</td><td class="num-h">1</td><td class="num-h">0</td><td class="num-h">1</td><td class="num-h">75</td><td class="num-h">82</td><td class="num-h dif-neg">−7</td><td class="num-h">1</td></tr>
+              <tr><td>4</td><td>Juventud</td><td class="num-h">1</td><td class="num-h">0</td><td class="num-h">1</td><td class="num-h">70</td><td class="num-h">78</td><td class="num-h dif-neg">−8</td><td class="num-h">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- próximos partidos -->
+    <section class="seccion contenedor" aria-labelledby="t-fixture">
+      <div class="seccion-cabecera">
+        <h2 id="t-fixture">Próximos partidos</h2>
+        <span class="link-mas" style="color: var(--paper-muted);">Fechas 2 y 3 de 6</span>
+      </div>
+      <div class="chips-fecha" role="tablist" aria-label="Filtrar por fecha">
+        <a class="chip chip-activa" href="#" aria-selected="true">Fecha 2 · 24/10</a>
+        <a class="chip" href="#">Fecha 3 · 31/10</a>
+      </div>
+      <div class="partidos">
+        <article class="partido-fila">
+          <div class="partido-fecha"><strong>Sáb 24/10</strong><span class="hora">19:00</span></div>
+          <div class="partido-vs">
+            <div class="equipo"><span class="escudo escudo-local">PC</span><span>Plaza Colonia</span></div>
+            <span class="tick">vs</span>
+            <div class="equipo"><span class="escudo escudo-visit">ROW</span><span>Colonia Rowing</span></div>
+          </div>
+          <div class="partido-sede">Gimnasio de Juventud</div>
+        </article>
+        <article class="partido-fila">
+          <div class="partido-fecha"><strong>Sáb 24/10</strong><span class="hora">21:00</span></div>
+          <div class="partido-vs">
+            <div class="equipo"><span class="escudo escudo-local">JUV</span><span>Juventud</span></div>
+            <span class="tick">vs</span>
+            <div class="equipo"><span class="escudo escudo-visit">EEC</span><span>Estudiantes El Colla</span></div>
+          </div>
+          <div class="partido-sede">Gimnasio de Juventud</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- institucional -->
+    <section class="seccion contenedor" aria-labelledby="t-institucional">
+      <div class="seccion-cabecera">
+        <h2 id="t-institucional">Institucional</h2>
+      </div>
+      <div class="docs-grid">
+        <a class="doc-card" href="#">
+          <h3>Reglamento de competencias</h3>
+          <p>Formato del torneo, sistema de puntos y reglas de disciplina.</p>
+        </a>
+        <a class="doc-card" href="#">
+          <h3>Contacto de la liga</h3>
+          <p>Oficina, teléfono y redes oficiales de la LBC.</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- auspiciantes -->
+    <section class="seccion contenedor" aria-labelledby="t-auspicios">
+      <div class="seccion-cabecera">
+        <h2 id="t-auspicios">Auspician la LBC</h2>
+      </div>
+      <div class="auspicios">
+        <div class="auspicio">Auspiciante oro 1 (demo)</div>
+        <div class="auspicio">Auspiciante oro 2 (demo)</div>
+        <div class="auspicio">Auspiciante plata 1 (demo)</div>
+        <div class="auspicio">Auspiciante plata 2 (demo)</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="contenedor">
+      <div class="footer-grid">
+        <div>
+          <h4>Liga de Básquetbol de Colonia</h4>
+          <p>Órgano organizador del básquetbol federado del departamento. Temporada 2026.</p>
+        </div>
+        <div>
+          <h4>Contacto</h4>
+          <ul>
+            <li>Oficina: a completar por la liga</li>
+            <li><a href="#">Teléfono (dem).</a></li>
+            <li><a href="#">Instagram oficial (dem)</a></li>
+            <li><a href="#">Facebook oficial (dem)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Competencias</h4>
+          <ul>
+            <li><a href="#">Primera División</a></li>
+            <li><a href="#">Formativas</a></li>
+            <li><a href="#">Amateur</a></li>
+            <li><a href="#">Reglamento</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="credito">
+        <span>© 2026 Liga de Básquetbol de Colonia · <strong>#LBC2026</strong></span>
+        <span>Desarrollado para la LBC</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

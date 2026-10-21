@@ -11,7 +11,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | Iteración | Estado |
 |---|---|
 | IT0 — Definición + diseño | ✅ hecha (Docs 00–11, decisiones registradas) |
-| **IT1 — Mockup del home** | ⏳ **esperando el OK de Juan para arrancar** |
+| IT1 — Mockup del home | 🟡 terminada — esperando OK de Juan (checkpoint 1) |
 | IT2 — Base técnica | pendiente |
 | IT3 — Sitio público completo | pendiente |
 | IT4 — Panel de la liga | pendiente |
@@ -22,6 +22,8 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT9 — Comercial | pendiente (condicionada) |
 
 ## IT1 — Mockup del home (1 sesión)
+
+**Estado final**: entregada. `mockup/home.html` + `mockup/assets/` (Archivo variable self-hosted, tokens y componentes de `Docs/11`); barrido verificado en 320 / 414 / 768 / 1024 / 1300 con Chrome headless. Resultados de la Fecha 1 marcados como demo hasta que la liga confirme. Flag de aceptación: el OK de Juan para arrancar IT2.
 
 **Objetivo**: ver el diseño antes de amarrar nada. HTML + Tailwind estático, sin base de datos, con los datos reales del afiche incrustados (fecha 1 del 17/10 que ya se jugó + próxima fecha 24/10).
 

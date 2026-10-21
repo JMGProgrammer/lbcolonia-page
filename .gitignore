@@ -1,0 +1,19 @@
+# dependencias
+node_modules/
+
+# build
+dist/
+.astro/
+.vercel/
+
+# entorno
+.env
+.env.*
+!.env.example
+
+# sistema
+.DS_Store
+*.swp
+
+# datos locales
+supabase/.temp

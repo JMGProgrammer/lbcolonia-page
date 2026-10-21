@@ -12,8 +12,8 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 |---|---|
 | IT0 — Definición + diseño | ✅ hecha (Docs 00–11, decisiones registradas) |
 | IT1 — Mockup del home | ✅ aprobada por Juan ("comenzá IT2") — commit `98b047c` pushed |
-| IT2 — Base técnica | 🟡 en curso · **sesiones 1-2 hechas** (`de87cf2`, `7b1e751`): esquema aplicado en Supabase con RLS 6/6 en verde y types generados · esperando el OK de Juan en Studio (checkpoint 2) |
-| IT3 — Sitio público completo | pendiente |
+| IT2 — Base técnica | ✅ aprobada por Juan ("comenzá IT3") — commit `7b1e751` + tag `v0.1` (`92e23fe`) |
+| IT3 — Sitio público completo | 🟡 código completo (`ffb0cd5` + tag `v0.2`) · esperando checkpoint 3 (navegación desde el celu de Juan + gente de la liga) |
 | IT4 — Panel de la liga | pendiente |
 | IT5 — Delegados y planillas | pendiente |
 | IT6 — Complejidad del torneo | pendiente |
@@ -83,6 +83,21 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - QA: Lighthouse móvil targets, barrido responsive 320-1300, negativas de RLS del público.
 
 **Checkpoint 3**: Juan + gente de la liga navega desde el celu. OK cuando "cualquiera encuentra la de hoy en 2 toques".
+
+**Estado de la sesión 3 (2026-10-21, commit `ffb0cd5` + tag `v0.2`)**:
+- Rendering cambia a `output: 'server'` con `@astrojs/vercel@8.0.0` (única compatible con Astro 5; la 11.x pide astro ^7). Cache de CDN vía `src/middleware.ts`: páginas `s-maxage=60, stale-while-revalidate=300` (la ola del domingo se refresca a ~1 min), feeds canónicos con TTL 1h/1d, assets (`/_astro/`, `/fonts/`, imágenes) sin tocar. Referrer-Policy + nosniff incluidos.
+- Migración `0002_v_detalle_publico.sql` aplicada: vista definer con stats por jugador de partidos publicados para la ficha (`Docs/02 §views`); `db-types.ts` regenerado.
+- Home conectada: hero con últimos resultados (ResultCard, enlaza a la ficha), próxima fecha, tabla compacta, clubes, noticias (desaparece la sección si no hay) y auspiciantes.
+- Fixture con **filtros server-side por query params** (`?torneo=&ronda=&club=`): 0 JS, sin islands; el switcher de torneos conserva el resto de filtros. Mismo patrón en `/tabla` (solo torneo).
+- Ficha de partido `/partidos/[id]`: todo lo visible por RLS tiene ficha (agenda incl.); stats por jugador solo si `publicado` (vía `v_detalle_publico`); JSON-LD `SportsEvent` + parciales + walkover con ganador. Los fixtures/cards solo enlazan resultados publicados.
+- Clubes: directorio + ficha `/clubes/[slug]` (equipos por categoría con roster visible por RLS — bajas ocultas — y calendario propio por torneo).
+- Sanciones (`v_sanciones_activas`), noticias + noticia individual (JSON-LD `NewsArticle`, mini-markdown servidor sin dependencias), páginas de la liga vía `/[slug]` (contacto, reglamento), legales estáticas (privacidad/terminos/créditos), **404 útil con datos reales** (últimos resultados + próxima fecha + accesos).
+- Feeds: `sitemap.xml` dinámico (fijas + clubes + noticias + páginas), `robots.txt`, `rss.xml` (RSS 2.0). Metadata/OG completos + JSON-LD de liga en todas las páginas desde `Base.astro`.
+- Nav móvil **CSS-only** (checkbox + `:has()`, cero JS); decisión técnica vigente: los componentes .astro **no admiten JSX en el frontmatter** — los condicionales de elementos van en el template.
+- Helpers de `src/lib/data.ts` reescritos con tipado correcto: `filas<T>`/`fila<T>` sobre `RespuestaSupa<T[]>` (los primeros `lista/primera` inferían mal y tipeaban `T[][]`), select embeds `alias local/visitante + id` y embed de torneos con `id` (el back-link de la ficha lo usa).
+- QA del cierre: `astro check` 0 errores / 22 hints; `npm run build` verde con adaptador Vercel (`engines.node: 20.x` en package.json para anclar runtime del deploy — el local es 24); smoke HTTP de 19 rutas (todas 200; `/pagina-inexistente` y `/partidos/<uuid falso>` 404); `?torneo=zzz-invalido` cae al torneo por defecto; **negativas del público por REST**: `planillas` anon `[]`, `v_detalle_publico` solo filas del publicado, POST anon a noticias → 42501; **barrido responsive 320–1300 sobre 15 rutas × 13 anchos = 195 revisiones, 0 overflows** (harness puppeteer-core + Chrome del sistema en `/tmp/opencode/qa`).
+- Fixes de responsive durante el barrido: sub-línea del brand del TopBar `hidden min-[480px]:flex` (el label "Menú" fijaba el mínimo del documento en 366px); `min-w-0` + caps `max-w-[230px]` en sede/nota de `PartidoFila`, `min-w-0` en card/col/truncates de `ResultCard` y `sm:max-w-[420px]` en su nota (las filas empujaban 704–785px a partir de 640).
+- Bugs reales cazados en el check: destructuring de `URLSearchParams` (torneo/ronda/club salían `undefined` en runtime) → reemplazado por `.get()`; `---` fantasma al inicio de `supabase.ts`; props perdidas del destructure de `Base.astro` (ogImage/jsonLd/aviso).
 
 ## IT4 — Panel de la liga (2-3 sesiones)
 

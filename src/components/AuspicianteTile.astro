@@ -1,0 +1,48 @@
+---
+// Tile de auspiciante (mockup IT1): logo con transform del CDN si hay; si no, nombre.
+// OJO: los elementos se crean en el template, nunca en el frontmatter.
+import type { AuspiciantePublico } from '../lib/data';
+
+interface Props {
+  a: AuspiciantePublico;
+}
+const { a } = Astro.props;
+
+let logo = a.logo_url;
+if (logo && logo.includes('/storage/v1/object/') && !logo.includes('?')) {
+  logo = `${logo}?width=512&quality=80&format=webp`;
+}
+
+const clase =
+  'grid aspect-[3/1] place-items-center rounded-xl border border-dashed border-navy-700 p-4 text-center text-[0.7rem] uppercase tracking-[0.12em] text-paper-muted';
+---
+
+{
+  a.link ? (
+    <a
+      href={a.link}
+      rel="noopener noreferrer"
+      target="_blank"
+      class={`${clase} no-underline hover:border-orange-500 hover:text-paper`}
+      aria-label={`Web de ${a.nombre}`}
+    >
+      {
+        logo ? (
+          <img src={logo} alt={`Auspician: ${a.nombre}`} class="max-h-full w-auto object-contain" loading="lazy" />
+        ) : (
+          a.nombre
+        )
+      }
+    </a>
+  ) : (
+    <div class={clase} title={`Nivel ${a.nivel}`}>
+      {
+        logo ? (
+          <img src={logo} alt={`Auspician: ${a.nombre}`} class="max-h-full w-auto object-contain" loading="lazy" />
+        ) : (
+          a.nombre
+        )
+      }
+    </div>
+  )
+}

@@ -1,0 +1,36 @@
+---
+// Directorio de clubes activos de la org (Docs/04 §1).
+import Base from '../../layouts/Base.astro';
+import Rotulo from '../../components/Rotulo.astro';
+import Escudo from '../../components/Escudo.astro';
+import { listarClubes } from '../../lib/data';
+
+const clubes = await listarClubes();
+---
+
+<Base title="Clubes" description="Los clubes de la Liga de Básquetbol de Colonia: equipos, gimnasios y fichas por competencia.">
+  <section class="py-8">
+    <h1 class="text-2xl font-black lg:text-3xl">Clubes</h1>
+    <p class="mt-1 text-sm text-paper-muted">Los clubes que forman la liga esta temporada.</p>
+    {
+      clubes.length === 0 ? (
+        <p class="mt-8 rounded-panel border border-navy-700 bg-navy-800 p-8 text-center text-paper-muted">
+          Información de clubes a publicarse pronto.
+        </p>
+      ) : (
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {clubes.map((c) => (
+            <a
+              href={`/clubes/${c.slug}`}
+              class="flex flex-col items-center rounded-panel border border-navy-700 bg-navy-800 p-6 text-center no-underline transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-panel"
+            >
+              <Escudo club={c} tam="lg" />
+              <h2 class="mt-3 text-[1.05rem] font-extrabold">{c.nombre}</h2>
+              {c.gimnasio && <p class="mt-1.5 line-clamp-2 text-[0.8rem] text-paper-muted">{c.gimnasio}</p>}
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Base>

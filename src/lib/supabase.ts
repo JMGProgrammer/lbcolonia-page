@@ -1,4 +1,3 @@
----
 // Cliente público (anon). La app NUNCA usa service_role (Docs/03).
 // La sesión de delegados/liga se agrega en el panel (IT4+); por ahora solo lectura pública.
 import { createClient } from '@supabase/supabase-js';

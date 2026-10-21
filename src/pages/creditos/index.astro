@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import Rotulo from '../../components/Rotulo.astro';
+---
+
+<Base
+  title="Créditos"
+  description="Quién hizo este sitio y con qué fuentes."
+>
+  <article class="py-8 lg:max-w-[820px]">
+    <Rotulo>LBC · sitio oficial</Rotulo>
+    <h1 class="text-2xl font-black lg:text-4xl">Créditos</h1>
+    <p class="mt-6">Sitio oficial de la Liga de Básquetbol de Colonia para la temporada 2026, hecho a medida para la liga.</p>
+    <h2 class="mt-8 text-lg font-extrabold">Fuentes de datos</h2>
+    <ul class="mt-3 list-disc space-y-1.5 pl-6">
+      <li>Fixture oficial de Primera División 2026 del afiche de la liga.</li>
+      <li>Planillas de partidos digitales cargadas por los delegados de cada club y verificadas por la liga.</li>
+      <li>Fichas de clubes y jugadores cargadas por los propios clubes.</li>
+    </ul>
+    <h2 class="mt-8 text-lg font-extrabold">Tipografía y diseño</h2>
+    <p class="mt-3">
+      Tipografía <strong>Archivo</strong> (variable, archivo self-hosted: no se pide a servicios externos). Dirección visual basada en los afiches
+      oficiales del torneo: azul marino, naranja de acción y franjas doradas.
+    </p>
+    <h2 class="mt-8 text-lg font-extrabold">Tecnología</h2>
+    <p class="mt-3">Astro + Tailwind CSS + Supabase, desplegado en Vercel. Todo el site corre sin cookies y sin rastreo de terceros.</p>
+  </article>
+</Base>

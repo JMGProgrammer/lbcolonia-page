@@ -1,0 +1,63 @@
+---
+// Footer del sitio público (mockup IT1): org, secciones, legales y crédito.
+const secciones = [
+  { href: '/fixture', texto: 'Fixture' },
+  { href: '/tabla', texto: 'Tabla' },
+  { href: '/clubes', texto: 'Clubes' },
+  { href: '/sanciones', texto: 'Sanciones' },
+  { href: '/noticias', texto: 'Noticias' },
+];
+const info = [
+  { href: '/contacto', texto: 'Contacto' },
+  { href: '/reglamento', texto: 'Reglamento' },
+  { href: '/privacidad', texto: 'Privacidad' },
+  { href: '/terminos', texto: 'Términos' },
+  { href: '/creditos', texto: 'Créditos' },
+];
+const anio = new Date().getFullYear();
+---
+
+<footer class="mt-16 border-t-4 border-red-500 bg-navy-900 py-8 pb-12">
+  <div class="mx-auto max-w-[1200px] px-4">
+    <div class="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr] md:gap-6">
+      <div>
+        <h4 class="mb-2.5 text-[0.75rem] uppercase tracking-[0.18em] text-gold-400">Liga de Básquetbol de Colonia</h4>
+        <p class="text-[0.9rem] text-paper-muted">Órgano organizador del básquetbol federado del departamento. Temporada {anio}.</p>
+      </div>
+      <nav aria-label="Secciones del sitio">
+        <h4 class="mb-2.5 text-[0.75rem] uppercase tracking-[0.18em] text-gold-400">Secciones</h4>
+        <ul class="grid list-none gap-1.5 p-0">
+          {
+            secciones.map((s) => (
+              <li>
+                <a href={s.href} class="text-[0.9rem] text-paper-muted no-underline transition-colors hover:text-paper">
+                  {s.texto}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <nav aria-label="Información y legales">
+        <h4 class="mb-2.5 text-[0.75rem] uppercase tracking-[0.18em] text-gold-400">Liga</h4>
+        <ul class="grid list-none gap-1.5 p-0">
+          {
+            info.map((s) => (
+              <li>
+                <a href={s.href} class="text-[0.9rem] text-paper-muted no-underline transition-colors hover:text-paper">
+                  {s.texto}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+    <div class="mt-8 flex flex-wrap justify-between gap-4 border-t border-navy-700 pt-4 text-[0.8rem] text-paper-muted">
+      <span>
+        © {anio} Liga de Básquetbol de Colonia · <strong class="tracking-[0.1em] text-gold-400">#LBC{anio}</strong>
+      </span>
+      <span>Desarrollado para la LBC</span>
+    </div>
+  </div>
+</footer>

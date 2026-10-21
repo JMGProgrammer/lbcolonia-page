@@ -1,0 +1,139 @@
+---
+// Fixture por torneo con filtros server-side (?torneo= (id), ?ronda=, ?club=slug).
+// Sin island: los filtros son links con query params (0 JS, URL compartible).
+import Base from '../../layouts/Base.astro';
+import SwitcherTorneos from '../../components/SwitcherTorneos.astro';
+import PartidoFila from '../../components/PartidoFila.astro';
+import { listarTorneos, listarPartidosDeTorneo, torneoPorId, agruparPorRonda } from '../../lib/data';
+import type { PartidoVista, ClubPublico } from '../../lib/data';
+import { fechaCorta, rondaLabel } from '../../lib/fmt';
+
+const sp = Astro.url.searchParams;
+const torneoParam = sp.get('torneo') ?? undefined;
+const rondaParam = sp.get('ronda') ?? undefined;
+const clubParam = sp.get('club') ?? undefined;
+
+const torneos = await listarTorneos();
+const torneo = torneoPorId(torneos, torneoParam);
+const partidos = torneo ? await listarPartidosDeTorneo(torneo.id) : [];
+
+/* clubes presentes en el torneo (un map por slug para el filtro) */
+const clubesMap = new Map<string, ClubPublico>();
+for (const p of partidos) {
+  const cl = p.local?.clubes;
+  if (cl) clubesMap.set(cl.slug, cl);
+  const cv = p.visitante?.clubes;
+  if (cv) clubesMap.set(cv.slug, cv);
+}
+const clubes = [...clubesMap.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+/* filtros */
+const club = clubParam && clubes.some((c) => c.slug === clubParam) ? clubParam : null;
+const rondas = [...new Set(partidos.map((p) => p.ronda))];
+const ronda = rondaParam && rondas.includes(rondaParam) ? rondaParam : null;
+
+const partidosFiltrados = partidos.filter(
+  (p) => (!ronda || p.ronda === ronda) && (!club || p.local?.clubes.slug === club || p.visitante?.clubes.slug === club)
+);
+const grupos = agruparPorRonda(partidosFiltrados);
+const chipClase = (activa: boolean) =>
+  `rounded-full border px-4 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.09em] no-underline transition-colors ${
+    activa ? 'border-orange-500 bg-orange-500 text-ink' : 'border-navy-700 text-paper-muted hover:border-orange-500 hover:text-paper'
+  }`;
+const link = (over: Record<string, string | null>): string => {
+  const usp = new URLSearchParams();
+  if (torneo && torneos.length > 0) usp.set('torneo', torneo.id);
+  for (const [k, v] of Object.entries(over)) {
+    if (v) usp.set(k, v);
+  }
+  return `/fixture${usp.toString() ? `?${usp}` : ''}`;
+};
+const enlaceRonda = (r: string): string => `#fecha-${r.replace(/\W+/g, '-')}`;
+const jsonLd = partidos
+  .filter((p) => p.local && p.visitante && p.sede)
+  .slice(0, 6)
+  .map((p) => ({
+    '@context': 'https://schema.org',
+    '@type': 'SportsEvent',
+    name: `${p.local!.clubes.nombre} vs ${p.visitante!.clubes.nombre}`,
+    startDate: p.fecha_hora,
+    sport: 'basketball',
+    location: { '@type': 'Place', name: p.sede! },
+  }));
+---
+
+<Base
+  title={torneo ? `Fixture — ${torneo.nombre}` : 'Fixture'}
+  description={torneo ? `Fixture completo de ${torneo.nombre}: fechas, horarios, sedes y resultados de la Liga de Básquetbol de Colonia.` : 'Fixture de la Liga de Básquetbol de Colonia.'}
+  jsonLd={jsonLd}
+>
+  <SwitcherTorneos torneos={torneos} activoId={torneo?.id} rutaBase="/fixture" filtroExtra={club ? `club=${club}` : ''} />
+
+  <section class="py-8">
+    <h1 class="text-2xl font-black lg:text-3xl">{torneo?.nombre ?? 'Fixture'}</h1>
+    {torneo && <p class="text-sm text-paper-muted">Fechas, horarios y sedes del torneo. Los resultados aparecen cuando la liga los publica.</p>}
+
+    <div class="mt-6">
+      <p class="mb-2.5 text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">Filtrar por club</p>
+      <div class="flex flex-wrap gap-2">
+        <a href={link({ ronda: ronda, club: null } as Record<string, string | null>)} class={chipClase(!club)} aria-current={!club ? 'true' : undefined}>
+          Todos
+        </a>
+        {clubes.map((c) => (
+          <a href={link({ ronda: ronda, club: c.slug })} class={chipClase(club === c.slug)} aria-current={club === c.slug ? 'true' : undefined}>
+            {c.nombre}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <p class="mb-2.5 text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">Fechas</p>
+      <div class="flex flex-wrap gap-2">
+        <a href={link({ ronda: null, club: club })} class={chipClase(!ronda)} aria-current={!ronda ? 'true' : undefined}>
+          Todas
+        </a>
+        {rondas.map((r) => (
+          <a href={link({ ronda: r, club: club })} class={chipClase(ronda === r)} aria-current={ronda === r ? 'true' : undefined}>
+            {rondaLabel(r)}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    {
+      partidos.length === 0 ? (
+        <p class="rounded-panel border border-navy-700 bg-navy-800 p-8 text-center text-paper-muted">
+          No hay partidos cargados de este torneo todavía.
+        </p>
+      ) : partidosFiltrados.length === 0 ? (
+        <p class="rounded-panel border border-navy-700 bg-navy-800 p-8 text-center text-paper-muted">
+          No hay partidos con esos filtros.
+          <a href={link({ ronda: null, club: null })} class="ml-2 text-orange-500 underline">
+            Quitar filtros
+          </a>
+        </p>
+      ) : (
+        [...grupos.entries()].map(([rondaKey, filas]: [string, PartidoVista[]]) => {
+          const primerPartido = filas[0];
+          const subtitle = `· ${fechaCorta(primerPartido.fecha_hora)}`;
+          return (
+            <div id={`fecha-${rondaKey.replace(/\W+/g, '-')}`} class="mb-10">
+              <div class="mb-3 flex flex-wrap items-baseline gap-2">
+                <h2 class="text-lg font-extrabold">{rondaLabel(rondaKey)}</h2>
+                <span class="text-sm text-paper-muted num">{subtitle}</span>
+              </div>
+              <div class="grid gap-3">
+                {filas.map((p) => (
+                  <PartidoFila partido={p} />
+                ))}
+              </div>
+            </div>
+          );
+        })
+      )
+    }
+  </section>
+</Base>

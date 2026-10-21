@@ -1,47 +1,264 @@
 ---
+// Home: marcador del fin de semana + próxima fecha + noticias + tabla + próximos + auspiciantes.
+// RLS: solo partidos/torneos visible para anon; los resultados aparecen solo si están publicados.
 import Base from '../layouts/Base.astro';
 import Rotulo from '../components/Rotulo.astro';
 import Panel from '../components/Panel.astro';
 import Btn from '../components/Btn.astro';
+import Escudo from '../components/Escudo.astro';
+import ResultCard from '../components/ResultCard.astro';
+import PartidoFila from '../components/PartidoFila.astro';
+import TablaPosiciones from '../components/TablaPosiciones.astro';
+import NoticiaCard from '../components/NoticiaCard.astro';
+import AuspicianteTile from '../components/AuspicianteTile.astro';
+import {
+  listarTorneos,
+  listarPartidosDeTorneo,
+  tablaDeTorneo,
+  listarNoticias,
+  listarAuspiciantes,
+  listarPaginas,
+  torneoPorDefecto,
+} from '../lib/data';
+import type { PartidoVista } from '../lib/data';
+import { etiquetaEstado, fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
+
+const [torneos, noticias, auspiciantes, paginas] = await Promise.all([
+  listarTorneos(),
+  listarNoticias(3),
+  listarAuspiciantes(),
+  listarPaginas(),
+]);
+
+const primera = torneoPorDefecto(torneos);
+const partidos = primera ? await listarPartidosDeTorneo(primera.id) : [];
+const tabla = primera ? await tablaDeTorneo(primera.id) : [];
+
+const publicados = partidos.filter((p) => p.publicado && (p.estado === 'finalizado' || p.estado === 'walkover'));
+publicados.sort((a, b) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime());
+const rondaPublicada = publicados[0]?.ronda ?? null;
+const fechaPublicada = partidos
+  .filter((p) => p.ronda === rondaPublicada)
+  .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
+
+const vivos = partidos.filter((p) => p.estado === 'programado' || p.estado === 'postergado' || p.estado === 'suspendido' || p.estado === 'en_juego');
+const vivosFuturos = vivos.filter((p) => new Date(p.fecha_hora).getTime() >= Date.now() - 2 * 60 * 60 * 1000);
+const programados = vivosFuturos.length > 0 ? vivosFuturos : vivos;
+programados.sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
+
+const rondaProxima = programados[0]?.ronda ?? null;
+const fechaProxima = partidos.filter((p) => p.ronda === rondaProxima).sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
+
+const rondasListadas = [...new Set(programados.map((p) => p.ronda))].slice(0, 2);
+const proximosListado = programados.filter((p) => rondasListadas.includes(p.ronda));
+
+/* JSON-LD: SportsEvent por partido con sede y equipos (Docs/04 §3) */
+const eventosLd = [...publicados, ...fechaProxima]
+  .filter((p) => p.local && p.visitante)
+  .slice(0, 6)
+  .map((p: PartidoVista) => ({
+    '@context': 'https://schema.org',
+    '@type': 'SportsEvent',
+    name: `${p.local!.clubes.nombre} vs ${p.visitante!.clubes.nombre}`,
+    startDate: p.fecha_hora,
+    sport: 'basketball',
+    location: { '@type': 'Place', name: p.sede ?? 'Sede a confirmar' },
+    competitor: [
+      { '@type': 'SportsTeam', name: p.local!.clubes.nombre },
+      { '@type': 'SportsTeam', name: p.visitante!.clubes.nombre },
+    ],
+  }));
+
+const cabeceraNoticias = 'flex flex-wrap items-baseline justify-between gap-4 mb-4';
+const h2seccion = 'm-0 text-[1.35rem] font-black tracking-[0.01em]';
+const linkmas = 'text-[0.8rem] font-bold tracking-[0.05em] text-orange-500 no-underline hover:underline';
 ---
 
 <Base>
-  <div class="bg-red-500 py-2.5 text-center text-xs font-semibold tracking-[0.08em] text-paper uppercase">
-    IT2 · base técnica — andamio con tokens de diseño (pantalla de prueba del build, no es la home)
-  </div>
-
-  <header class="border-b border-navy-700 bg-navy-900">
-    <div class="mx-auto flex max-w-[1200px] items-center gap-3 px-4 py-3">
-      <img src="/logo-lbc-bgr.png" alt="Escudo de la LBC" width="40" height="47" />
-      <div class="flex flex-col leading-tight">
-        <strong class="font-black">LBC</strong>
-        <span class="text-[0.68rem] tracking-[0.14em] text-paper-muted uppercase">Liga de Básquetbol de Colonia</span>
+  <section class="py-9" aria-labelledby="rotulo-hero">
+    <Rotulo id="rotulo-hero">
+      {
+        primera
+          ? `${primera.nombre} · ${rondaPublicada ? `${rondaLabel(rondaPublicada)} · ${fechaCorta(fechaPublicada[0].fecha_hora)}` : 'sin resultados aún'}`
+          : 'Liga de Básquetbol de Colonia'
+      }
+    </Rotulo>
+    <div class="grid gap-4 md:grid-cols-[2fr_1fr] md:items-stretch">
+      <div>
+        <div class="grid gap-3">
+          {
+            fechaPublicada.length === 0 && (
+              <Panel>
+                <p class="text-center text-sm text-paper-muted">Aún no hay resultados publicados de esta competencia.</p>
+              </Panel>
+            )
+          }
+          {fechaPublicada.map((p) => <ResultCard partido={p} />)}
+        </div>
       </div>
+      {
+        rondaProxima && (
+          <Panel variante="dorado">
+            <p class="text-center text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">Próxima fecha</p>
+            <h2 class="mt-1 text-center text-lg font-extrabold">
+              {rondaLabel(rondaProxima)} · {fechaCorta(fechaProxima[0].fecha_hora)}
+            </h2>
+            <div class="mt-3 grid gap-2">
+              {
+                fechaProxima.map((p) => (
+                  <p class="num flex items-center justify-center gap-2 text-center text-sm font-bold">
+                    <span>{horaCorta(p.fecha_hora)}</span>
+                    <span class="num text-paper-muted">·</span>
+                    <span>
+                      {p.local?.clubes.nombre} vs {p.visitante?.clubes.nombre}
+                    </span>
+                  </p>
+                ))
+              }
+              <p class="text-center text-[0.8rem] text-paper-muted">{fechaProxima[0].sede ?? 'Sede a confirmar'}</p>
+            </div>
+            <div class="mt-4 text-center">
+              <Btn href={`/fixture?torneo=${primera?.id ?? ''}&ronda=${rondaProxima}`}>Ver fixture completo</Btn>
+            </div>
+          </Panel>
+        )
+      }
     </div>
-  </header>
+  </section>
 
-  <main id="contenido" class="mx-auto max-w-[1200px] px-4 py-10">
-    <Rotulo>Primera División · Fecha 1 · Sáb 17/10</Rotulo>
-    <div class="grid gap-4 sm:grid-cols-2">
-      <Panel>
-        <div class="flex items-center justify-center gap-6">
-          <span class="font-bold">Plaza Colonia</span>
-          <span class="num rounded bg-navy-900 px-4 py-1 text-2xl font-black text-orange-500" aria-label="Resultado demo 78 a 70">78–70</span>
-          <span class="font-bold">Juventud</span>
+  {
+    noticias.length > 0 && (
+      <section class="pb-10 pt-0" aria-labelledby="t-noticias">
+        <div class={cabeceraNoticias}>
+          <h2 id="t-noticias" class={h2seccion}>
+            Últimas noticias
+          </h2>
+          <a href="/noticias" class={linkmas}>
+            Ver todas →
+          </a>
         </div>
-        <p class="mt-3 text-center text-xs tracking-[0.3em] text-paper-muted uppercase">demo · marcador pendiente de la liga</p>
-      </Panel>
-      <Panel variante="dorado">
-        <div class="text-center">
-          <p class="text-xs font-extrabold tracking-[0.18em] text-gold-400 uppercase">Próxima fecha</p>
-          <h2 class="mt-1 text-xl font-extrabold">Sáb 24/10 · Gimnasio de Juventud</h2>
-          <p class="mt-1 text-sm text-paper-muted num">19:00 Plaza Colonia vs Colonia Rowing<br />21:00 Juventud vs Estudiantes El Colla</p>
-          <div class="mt-4"><Btn href="#">Ver fixture completo</Btn></div>
+        <div class="grid gap-4 md:grid-cols-2">
+          {noticias.slice(0, 2).map((n) => (
+            <NoticiaCard noticia={n} />
+          ))}
         </div>
-      </Panel>
+      </section>
+    )
+  }
+
+  <section class="pb-10" aria-labelledby="t-tabla">
+    <div class={cabeceraNoticias}>
+      <h2 id="t-tabla" class={h2seccion}>
+        Tabla de posiciones
+      </h2>
+      <a href={primera ? `/tabla?torneo=${primera.id}` : '/tabla'} class={linkmas}>
+        Ver tabla completa →
+      </a>
     </div>
-    <p class="mt-8 text-sm text-paper-muted">
-      Esta página solo comprueba que el build consumes los tokens (Archivo, paleta, panel con franja). La home real llega en IT3.
-    </p>
-  </main>
+    <TablaPosiciones filas={tabla} caption={`Posiciones de ${primera?.nombre ?? 'la competencia'}`} />
+  </section>
+
+  {
+    rondasListadas.length > 0 && (
+      <section class="pb-10" aria-labelledby="t-fixture">
+        <div class={cabeceraNoticias}>
+          <h2 id="t-fixture" class={h2seccion}>
+            Próximos partidos
+          </h2>
+          <a href={primera ? `/fixture?torneo=${primera.id}` : '/fixture'} class={linkmas}>
+            Fixture completo →
+          </a>
+        </div>
+        <div class="flex flex-wrap gap-2.5 pb-4">
+          {
+            rondasListadas.map((r) => (
+              <a
+                href={`/fixture?torneo=${primera?.id ?? ''}&ronda=${r}`}
+                class="rounded-full border border-navy-700 px-4 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.09em] text-paper-muted no-underline transition-colors hover:border-orange-500 hover:text-paper"
+              >
+                {rondaLabel(r)}
+              </a>
+            ))
+          }
+        </div>
+        <div class="grid gap-3">
+          {proximosListado.map((p) => (
+            <PartidoFila partido={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="pb-10" aria-labelledby="t-competencias">
+    <div class={cabeceraNoticias}>
+      <h2 id="t-competencias" class={h2seccion}>
+        Competencias
+      </h2>
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        torneos.map((t) => (
+          <Panel>
+            <p class="text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">{t.categorias?.nombre}</p>
+            <h3 class="mt-1 font-extrabold leading-tight">{t.nombre}</h3>
+            <p class="mt-2 text-sm text-paper-muted">{t.estado === 'en_curso' ? 'En curso' : t.estado === 'proximo' ? 'Próximo' : 'Finalizado'}</p>
+            <div class="mt-3 flex gap-2">
+              <a href={`/fixture?torneo=${t.id}`} class="rounded-full bg-navy-700 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.08em] no-underline transition-colors hover:bg-navy-900 hover:text-paper">
+                Fixture
+              </a>
+              <a href={`/tabla?torneo=${t.id}`} class="rounded-full bg-navy-700 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.08em] no-underline transition-colors hover:bg-navy-900 hover:text-paper">
+                Tabla
+              </a>
+            </div>
+          </Panel>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    paginas.length > 0 && (
+      <section class="pb-10" aria-labelledby="t-institucional">
+        <div class={cabeceraNoticias}>
+          <h2 id="t-institucional" class={h2seccion}>
+            Institucional
+          </h2>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          {
+            paginas.map((p) => (
+              <a href={`/${p.slug}`} class="rounded-panel border border-navy-700 bg-navy-800 p-5 no-underline transition-transform duration-200 hover:-translate-y-0.5">
+                <h3 class="m-0 mb-1 text-base font-extrabold">{p.titulo}</h3>
+                <p class="m-0 text-[0.85rem] text-paper-muted">{p.slug === 'reglamento' ? 'Formato del torneo, sistema de puntos y disciplina.' : 'Oficina, horarios y redes de la liga.'}</p>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    )
+  }
+
+  {
+    auspiciantes.length > 0 && (
+      <section class="pb-4" aria-labelledby="t-auspicios">
+        <div class={cabeceraNoticias}>
+          <h2 id="t-auspicios" class={h2seccion}>
+            Auspician la LBC
+          </h2>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {auspiciantes.map((a) => (
+            <AuspicianteTile a={a} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    eventosLd.length > 0 && (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(eventosLd)} />
+    )
+  }
 </Base>

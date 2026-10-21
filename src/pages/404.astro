@@ -1,0 +1,87 @@
+---
+// 404 útil (Docs/04 §3): últimos resultados + próxima fecha + accesos directos.
+// SSR con datos (sin prerender); si la base falla, muestra la versión simple.
+import Base from '../layouts/Base.astro';
+import ResultCard from '../components/ResultCard.astro';
+import { listarTorneos, listarPartidosDeTorneo, torneoPorDefecto } from '../lib/data';
+import type { PartidoVista } from '../lib/data';
+import { fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
+
+let ultimos: PartidoVista[] = [];
+let proximos: PartidoVista[] = [];
+let torneoNombre = '';
+try {
+  const torneos = await listarTorneos();
+  const primera = torneoPorDefecto(torneos);
+  if (primera) {
+    torneoNombre = primera.nombre;
+    const ps = await listarPartidosDeTorneo(primera.id);
+    ultimos = ps
+      .filter((p) => p.publicado && (p.estado === 'finalizado' || p.estado === 'walkover'))
+      .sort((a, b) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())
+      .slice(0, 2);
+    const programados = ps
+      .filter((p) => p.estado === 'programado')
+      .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
+    proximos = programados.slice(0, 3);
+  }
+} catch {
+  /* los datos son un extra: el 404 funciona igual */
+}
+
+const accesos = [
+  { href: '/fixture', texto: 'Fixture' },
+  { href: '/tabla', texto: 'Tabla' },
+  { href: '/clubes', texto: 'Clubes' },
+  { href: '/sanciones', texto: 'Sanciones' },
+  { href: '/noticias', texto: 'Noticias' },
+  { href: '/contacto', texto: 'Contacto' },
+];
+---
+
+<Base title="No encontramos la página" description="Esta página no existe en el sitio de la LBC. Ir al fixture o a la tabla de posiciones.">
+  <section class="py-14 text-center">
+    <p class="num text-[5rem] font-black leading-none text-orange-500 lg:text-[6.5rem]">404</p>
+    <h1 class="mt-3 text-2xl font-extrabold lg:text-3xl">No encontramos esta página</h1>
+    <p class="mt-2 text-paper-muted">Quizá el link quedó viejo. Lo que buscás casi seguro está acá:</p>
+    <div class="mt-7 flex flex-wrap justify-center gap-2.5">
+      {
+        accesos.map((a) => (
+          <a href={a.href} class="rounded-full border border-navy-700 px-4 py-2 text-[0.88rem] font-bold uppercase tracking-[0.08em] text-paper no-underline transition-colors hover:border-orange-500 hover:bg-orange-500 hover:text-ink">
+            {a.texto}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    ultimos.length > 0 && (
+      <section class="pb-12">
+        <p class="mb-3 text-center text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">Últimos resultados · {torneoNombre}</p>
+        <div class="mx-auto grid max-w-[820px] gap-3">
+          {ultimos.map((p) => (
+            <ResultCard partido={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    proximos.length > 0 && (
+      <section class="pb-16">
+        <p class="mb-3 text-center text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">Próxima fecha</p>
+        <div class="mx-auto grid max-w-[820px] gap-3">
+          {proximos.slice(0, 2).map((p) => (
+            <div class="rounded-panel border border-navy-700 bg-navy-800 p-4 text-center">
+              <span class="num text-[1.05rem] font-extrabold">
+                {rondaLabel(p.ronda)} · {fechaCorta(p.fecha_hora)} {horaCorta(p.fecha_hora)} · {p.local?.clubes.nombre ?? ''} vs {p.visitante?.clubes.nombre ?? ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</Base>

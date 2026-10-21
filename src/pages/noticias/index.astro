@@ -1,0 +1,25 @@
+---
+// Listado de noticias publicadas (limit 30: suficiente para una temporada chica).
+import Base from '../../layouts/Base.astro';
+import NoticiaCard from '../../components/NoticiaCard.astro';
+import { listarNoticias } from '../../lib/data';
+
+const noticias = await listarNoticias(30);
+---
+
+<Base title="Noticias" description="Noticias del básquetbol de la Liga de Básquetbol de Colonia.">
+  <section class="py-8">
+    <h1 class="text-2xl font-black lg:text-3xl">Noticias de la liga</h1>
+    {
+      noticias.length === 0 ? (
+        <p class="mt-8 rounded-panel border border-navy-700 bg-navy-800 p-8 text-center text-paper-muted">Todavía no publicamos noticias.</p>
+      ) : (
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {noticias.map((n) => (
+            <NoticiaCard noticia={n} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Base>

@@ -1,9 +1,12 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import vercel from '@astrojs/vercel/serverless';
 
 export default defineConfig({
-  // Tokens de diseño y páginas: ver Docs/11. El público va estático on-demand.
+  // Público SSR on-demand con cache de CDN (middleware: s-maxage=60). Docs/01 §3.
+  output: 'server',
+  adapter: vercel(),
   vite: {
     plugins: [tailwindcss()],
   },

@@ -1,0 +1,121 @@
+---
+// Ficha del club: datos, equipos por categoría con roster y calendario propio.
+// Todo llega por anon + RLS; el roster usa las fichas visibles (bajas ocultas).
+import Base from '../../layouts/Base.astro';
+import Rotulo from '../../components/Rotulo.astro';
+import Escudo from '../../components/Escudo.astro';
+import PartidoFila from '../../components/PartidoFila.astro';
+import {
+  clubPorSlug,
+  listarTorneos,
+  listarPartidosDeTorneo,
+  listarEquiposDeClube,
+  rosterDeEquipos,
+} from '../../lib/data';
+import type { FichaRoster } from '../../lib/data';
+
+const { slug } = Astro.params;
+const club = slug ? await clubPorSlug(slug) : null;
+if (!club) Astro.response.status = 404;
+
+const torneos = await listarTorneos();
+const equipos = club ? await listarEquiposDeClube(club.id) : [];
+equipos.sort((a, b) => (a.categorias?.orden ?? 9) - (b.categorias?.orden ?? 9));
+
+const teamIds = new Set(equipos.map((e) => e.id));
+const roster = teamIds.size > 0 ? await rosterDeEquipos([...teamIds]) : [];
+const rosterPorEquipo = new Map<string, FichaRoster[]>();
+for (const f of roster) {
+  if (f.estado === 'baja') continue;
+  const lista = rosterPorEquipo.get(f.equipo_id) ?? [];
+  lista.push(f);
+  rosterPorEquipo.set(f.equipo_id, lista);
+}
+
+/* calendario del club: partidos de cada torneo donde participe alguno de sus equipos */
+const porTorneo = (
+  await Promise.all(
+    torneos.map(async (t) => ({
+      torneo: t,
+      partidos: (await listarPartidosDeTorneo(t.id)).filter(
+        (p) => teamIds.has(p.local?.id ?? '') || teamIds.has(p.visitante?.id ?? '')
+      ),
+    }))
+  )
+).filter((x) => x.partidos.length > 0);
+---
+
+<Base
+  title={club ? club.nombre : 'Club'}
+  description={club ? `${club.nombre} en la Liga de Básquetbol de Colonia: equipos, plantel y calendario del club${club.gimnasio ? `. Localía: ${club.gimnasio}` : ''}.` : 'Club de la LBC.'}
+>
+  {
+    !club ? (
+      <section class="py-20 text-center">
+        <h1 class="text-2xl font-extrabold">Club no encontrado</h1>
+        <p class="mt-2 text-paper-muted">No publicamos esa ficha de club (¿el slug cambió?).</p>
+        <a href="/clubes" class="mt-6 inline-block rounded-full bg-orange-500 px-6 py-2.5 text-[0.9rem] font-extrabold text-ink no-underline hover:bg-orange-700">
+          Ver todos los clubes
+        </a>
+      </section>
+    ) : (
+      <section class="py-8">
+        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <Escudo club={club} tam="lg" />
+          <div>
+            <h1 class="text-2xl font-black lg:text-3xl">{club.nombre}</h1>
+            {club.gimnasio && <p class="mt-1 text-sm text-paper-muted">{club.gimnasio}</p>}
+          </div>
+        </div>
+
+        {
+          equipos.length === 0 && (
+            <p class="mt-8 rounded-panel border border-navy-700 bg-navy-800 p-6 text-center text-paper-muted">
+              Equipos y plantel a cargar por el club.
+            </p>
+          )
+        }
+
+        {
+          equipos.map((eq) => (
+            <div class="mt-10">
+              <Rotulo>{eq.categorias?.nombre ?? 'Equipo'}</Rotulo>
+              <div class="flex flex-wrap gap-2">
+                {(rosterPorEquipo.get(eq.id) ?? [])
+                  .sort((a, b) => (a.dorsal ?? 99) - (b.dorsal ?? 99))
+                  .map((f) => (
+                    <span class="flex items-center gap-2 rounded-full border border-navy-700 bg-navy-800 px-3 py-1.5 text-[0.85rem]">
+                      {f.dorsal != null && (
+                        <span class="num text-[0.78rem] font-black text-orange-500">{String(f.dorsal).padStart(2, '0')}</span>
+                      )}
+                      {f.jugadores?.nombre_completo ?? '—'}
+                    </span>
+                  ))}
+                {(rosterPorEquipo.get(eq.id) ?? []).length === 0 && (
+                  <p class="text-sm text-paper-muted">Plantel a confirmar.</p>
+                )}
+              </div>
+            </div>
+          ))
+        }
+
+        {
+          porTorneo.length > 0 &&
+            porTorneo.map(({ torneo, partidos }) => (
+              <div class="mt-10">
+                <a href={`/fixture?torneo=${torneo.id}`} class="text-[0.8rem] font-bold text-orange-500 no-underline hover:underline">
+                  Ver torneo completo →
+                </a>
+                <h2 class="mb-3 mt-1 text-lg font-extrabold">{torneo.nombre}</h2>
+                <div class="grid gap-3">
+                  {partidos.map((p) => (
+                    <PartidoFila partido={p} />
+                  ))}
+                </div>
+              </div>
+            ))
+        }
+      </section>
+    )
+  }
+</Base>

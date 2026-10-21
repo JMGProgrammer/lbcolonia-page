@@ -1,16 +1,43 @@
 ---
-// Layout base del sitio público. El nav completo llega en IT3 (Docs/11 §4).
+// Layout del sitio público: topbar + footer + SEO base (Docs/04 §3).
+// Cada página aporta título, descripción y (opcional) JSON-LD extra.
+import TopBar from '../components/TopBar.astro';
+import Footer from '../components/Footer.astro';
 import '../styles/global.css';
 
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  jsonLd?: unknown[];
+  /**
+   * Nota superior opcional (ej: aviso de demo o mantenimiento). Texto plano.
+   */
+  aviso?: string;
 }
 
 const {
-  title = 'LBC · Liga de Básquetbol de Colonia',
+  title,
   description = 'Fixture, tabla de posiciones, resultados y estadísticas de la Liga de Básquetbol de Colonia (Uruguay).',
+  ogImage = '/logo-lbc-bgr.png',
+  jsonLd = [],
+  aviso,
 } = Astro.props;
+const tituloFinal = Astro.props.title ? `${title} · LBC` : 'LBC · Liga de Básquetbol de Colonia';
+const url = Astro.url.origin + Astro.url.pathname;
+
+/* JSON-LD de liga en todas las páginas (base); las páginas suman el suyo vía props */
+const ligaLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SportsLeague',
+  name: 'Liga de Básquetbol de Colonia',
+  alternateName: 'LBC',
+  sport: 'basketball',
+  logo: new URL(ogImage, Astro.url.origin).toString(),
+  url: Astro.url.origin,
+  areaServed: 'Colonia, Uruguay',
+};
+const ldFinal = [ligaLd, ...jsonLd];
 ---
 
 <!DOCTYPE html>
@@ -18,17 +45,45 @@ const {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <title>{tituloFinal}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={url} />
     <link rel="icon" type="image/png" href="/logo-lbc-bgr.png" />
+    <link rel="alternate" type="application/rss+xml" title="Noticias de la LBC" href="/rss.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Liga de Básquetbol de Colonia" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, Astro.url.origin).toString()} />
+    <meta property="og:url" content={url} />
+    <meta property="og:locale" content="es_UY" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(ogImage, Astro.url.origin).toString()} />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(ldFinal)} />
   </head>
-  <body class="min-h-dvh">
+  <body class="flex min-h-dvh flex-col">
     <a
       href="#contenido"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-orange-500 focus:px-4 focus:py-2.5 focus:font-bold focus:text-ink"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-orange-500 focus:px-4 focus:py-2.5 focus:font-bold focus:text-ink"
     >
       Ir al contenido
     </a>
-    <slot />
+    {
+      aviso && (
+        <p role="note" class="bg-red-500 px-4 py-2.5 text-center text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-paper">
+          {aviso}
+        </p>
+      )
+    }
+    <TopBar />
+    <main id="contenido" class="mx-auto w-full max-w-[1200px] flex-1 px-4">
+      <slot />
+    </main>
+    <Footer />
   </body>
 </html>

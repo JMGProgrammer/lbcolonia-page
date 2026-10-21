@@ -1,0 +1,54 @@
+---
+// Escudo de club: imagen con transform del CDN de Storage si hay URL;
+// placeholder con iniciales y colores del club si no (Docs/04 §4).
+interface Props {
+  club?: { nombre: string; slug: string; escudo_url: string | null; color1: string | null; color2: string | null };
+  tam?: 'xs' | 'md' | 'lg';
+}
+const { club, tam = 'md' } = Astro.props;
+
+const medidas: Record<string, string> = {
+  xs: 'h-7 w-7 text-[0.55rem]',
+  md: 'h-9 w-9 text-[0.7rem]',
+  lg: 'h-16 w-16 text-lg',
+};
+const clase = medidas[tam] ?? medidas.md;
+
+const iniciales =
+  (club?.nombre ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => p[0]!.toUpperCase())
+    .join('')
+    .slice(0, 3) || '·';
+
+const fundido = club?.color1 ?? '#2e4484';
+const texto = club?.color2 ?? '#f4f1ea';
+
+let url = club?.escudo_url ?? null;
+if (url && url.includes('/storage/v1/object/') && !url.includes('?')) {
+  url = `${url}?width=256&quality=80&format=webp`; // transform del CDN (Docs/04 §4)
+}
+---
+
+{
+  url ? (
+    <img
+      src={url}
+      alt={`Escudo de ${club?.nombre ?? 'club'}`}
+      width="80"
+      height="80"
+      loading="lazy"
+      class={`rounded-full object-cover ${clase}`}
+    />
+  ) : (
+    <span
+      class={`flex shrink-0 place-items-center rounded-full font-extrabold ${clase}`}
+      style={`background:${fundido};color:${texto}`}
+      aria-label={`Escudo provisional de ${club?.nombre ?? 'club'}`}
+    >
+      {iniciales}
+    </span>
+  )
+}

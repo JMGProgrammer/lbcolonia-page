@@ -1,0 +1,28 @@
+---
+// Tabla de posiciones completa del torneo (v_tabla: solo lo publicado).
+import Base from '../../layouts/Base.astro';
+import SwitcherTorneos from '../../components/SwitcherTorneos.astro';
+import TablaPosiciones from '../../components/TablaPosiciones.astro';
+import { listarTorneos, tablaDeTorneo, torneoPorId } from '../../lib/data';
+
+const torneoParam = Astro.url.searchParams.get('torneo') ?? undefined;
+const torneos = await listarTorneos();
+const torneo = torneoPorId(torneos, torneoParam);
+const filas = torneo ? await tablaDeTorneo(torneo.id) : [];
+---
+
+<Base
+  title={torneo ? `Tabla de posiciones — ${torneo.nombre}` : 'Tabla de posiciones'}
+  description={torneo ? `Tabla de posiciones de ${torneo.nombre}: puntos, diferencias de gol y rendimiento de los equipos.` : 'Tabla de posiciones de la Liga de Básquetbol de Colonia.'}
+>
+  <SwitcherTorneos torneos={torneos} activoId={torneo?.id} rutaBase="/tabla" />
+  <section class="py-8">
+    <h1 class="text-2xl font-black lg:text-3xl">{torneo?.nombre ?? 'Tabla de posiciones'}</h1>
+    <p class="text-sm text-paper-muted">
+      Posiciones por los resultados publicados: victoria 2 puntos, derrota 1, walkover 1. Desempates: diferencia, goles a favor.
+    </p>
+    <div class="mt-6">
+      <TablaPosiciones filas={filas} caption={`Posiciones · ${torneo?.nombre ?? 'competencia'}`} />
+    </div>
+  </section>
+</Base>

@@ -446,6 +446,12 @@ isOneToOne: true
       referencedRelation: "partidos"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "planillas_partido_id_fkey"
+      columns: ["partido_id"]
+isOneToOne: true
+      referencedRelation: "v_detalle_publico"
+      referencedColumns: ["partido_id"]
+    },{
       foreignKeyName: "planillas_verificada_por_fkey"
       columns: ["verificada_por"]
 isOneToOne: false
@@ -534,7 +540,63 @@ isOneToOne: false
                 }
           }
           Views: {
-            "v_lideres": {
+            "v_detalle_publico": {
+                  Row: {
+                    "asistencias": number | null,"dorsal": number | null,"equipo_id": string | null,"faltas": number | null,"ficha_id": string | null,"jugador_id": string | null,"minutos": number | null,"nombre_completo": string | null,"org_id": string | null,"partido_id": string | null,"puntos": number | null,"rebotes": number | null,"robos": number | null,"stat_id": string | null,"tapas": number | null,"torneo_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "equipos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "v_lideres"
+      referencedColumns: ["equipo_id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "v_tabla"
+      referencedColumns: ["equipo_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "jugadores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partidos_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "torneos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "v_tabla"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "planilla_stats_ficha_id_fkey"
+      columns: ["ficha_id"]
+isOneToOne: false
+      referencedRelation: "fichas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_lideres": {
                   Row: {
                     "asistencias": number | null,"equipo": string | null,"equipo_id": string | null,"faltas": number | null,"jugador_id": string | null,"nombre_completo": string | null,"org_id": string | null,"pj": number | null,"puntos": number | null,"rebotes": number | null,"robos": number | null,"tapas": number | null,"torneo_id": string | null
                   }

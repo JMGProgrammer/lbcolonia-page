@@ -25,6 +25,28 @@ Objetivo del repo: web oficial de la Liga de Básquetbol de Colonia (LBC, Urugua
 | `Docs/11-diseno.md` | Dirección visual + tokens | UI |
 | `Docs/12-plan-iterativo.md` | Plan + estado vivo | Siempre |
 
+## Modelos de IA del plan (Google AI Pro / Antigravity)
+
+Este runbook está escrito para **cualquier agente sin memoria externa ni skills instaladas** (Antigravity, OpenCode u otro): todo el contexto necesario vive en este archivo y en `Docs/`. No asumir sesiones ni historial previo; arrancar siempre por "Estado vivo" y la iteración 🟡 de `Docs/12`.
+
+Elección de modelo por tarea (plan Pro: cuotas medidas; Argon tiene cuota **semanal** aparte):
+
+| Tarea | Modelo | Por qué |
+|---|---|---|
+| Implementación diaria: páginas SSR, filtros, componentes, fixes | **Gemini 3.8 Flash** (thinking alto) | Rápido y suficiente para el trabajo de todos los días |
+| Borrador del plan de una sesión/IT | **Gemini 3.8 Flash** (thinking alto) | Pasos, archivos que toca y verificación esperada |
+| Lógica difícil: RLS, SQL, refactors multi-archivo, bugs espinosos, crítica del plan | **Gemini 4 Argon** | Mejor lógica agéntica; cuota semanal en Pro → reservarlo para lo que de verdad lo necesita |
+| UI design-heavy (mockups, identidad visual de `Docs/11`) | **Claude** (Model Garden) | Flash tiene instintos de diseño flojos; si solo hay Flash, anclar a los tokens de `Docs/11` y barrer igual |
+| Bug duro estancado con Flash | `/boost` (multi-agente de Antigravity) | Más barato que gastar cuota de Argon |
+
+Flujo preferido: **Flash redacta el plan → Argon lo critica y ajusta → Flash implementa → Claude pule la UI si es design-heavy.**
+
+Reglas duras del plan:
+
+- Cuota del modelo grande agotada → avisar a Juan y frenar. Los **créditos AI son pagos: no comprarlos ni gastarlos sin OK explícito**.
+- Si la sesión terminó usando un modelo distinto al previsto por agotarse la cuota, anotarlo en la nota de sesión de `Docs/12` (el trabajo debe quedar reproducible).
+- El modelo elegido **no relaja la verificación mínima** (abajo): build, barrido y negativas los corre quien sea.
+
 ## Decisiones fijas (no re-abrir sin motivo)
 
 - Stack: Astro 5 + Tailwind 4 + Supabase + Vercel (`output: 'server'`, adaptador `@astrojs/vercel@8`). Next.js es opción **futura**, no actual.
@@ -54,13 +76,13 @@ npm run db:sql -- supabase/tests/rls_negativas.sql   # SQL multi-statement en la
 npm run db:push    # aplica supabase/migrations
 ```
 
-- QA responsive: harness en `/tmp/opencode/qa` (`barrido.cjs`, `diag2.cjs`; puppeteer-core + Chrome del sistema, 320–1300). Requiere dev server arriba. No va al repo.
-- Archivo temporal del agente: usar `/tmp/opencode/` (pre-aprobado).
+- QA responsive: barrido 320–1300 con harness (`barrido.cjs`, `diag2.cjs`; puppeteer-core + Chrome del sistema). Requiere dev server arriba. No va al repo: en el entorno OpenCode de Juan vive en `/tmp/opencode/qa`; si no existe (máquina nueva o `/tmp` limpio), recrearlo según la spec de `Docs/10 §3`.
+- Archivo temporal del agente: cada agente usa su carpeta temporal propia (en OpenCode de Juan: `/tmp/opencode/`, pre-aprobado). Nada de temporales se commitea.
 
 ## Credenciales (reglas duras)
 
 - Nada sensible impreso a la vista, ni commiteado, ni en docs. `.env` está en `.gitignore` (solo `.env.example` viaja).
-- Credenciales de sesión en `/tmp/opencode/sb-env.sh` (exports `PUBLIC_SUPABASE_*`); la CLI opera la base con `--db-url` desde `.env` (sin access token de cuenta).
+- Credenciales de sesión: en el entorno OpenCode de Juan viven en `/tmp/opencode/sb-env.sh` (exports `PUBLIC_SUPABASE_*`); en cualquier otro entorno, la CLI opera la base con `--db-url` desde `.env` (sin access token de cuenta). Ese es el camino portable.
 - Supabase Studio es la vista de la base para Juan y la secretaría; el agente no pide abrir tableros nuevos.
 
 ## Qué NO hacer sin pedido explícito
@@ -83,4 +105,4 @@ npm run db:push    # aplica supabase/migrations
 - Commits en español, estilo conventional: `feat:`, `fix:`, `docs:`, `chore:` (tags `v0.x` al cierre de cada IT entregable; esquema completo en `Docs/09-fases.md`).
 - Documentación en `Docs/` con la serie numerada; doc nuevo → índice del README.
 - Ideas y pendientes van a `FEATURES.md`, no a los specs.
-- Al cierre de un trabajo significativo: sincronizar memoria Obsidian (`02-Projects/lbc-web`) con lo durable (decisiones, estado), no transcripciones.
+- Al cierre de un trabajo significativo: el estado durable se registra **en el repo** (nota de sesión en `Docs/12`, entregables en `Changelog.md`, trampas nuevas acá arriba). Agentes con vault Obsidian (entorno OpenCode de Juan): sincronizar además `02-Projects/lbc-web` con lo durable, no transcripciones.

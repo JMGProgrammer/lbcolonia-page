@@ -23,6 +23,10 @@
 - Rutas mínimas a barrer: home, fixture, tabla, ficha de partido, club, noticia, panel (inbox + planilla).
 - Anchos probados: 320 / 360 / 414 / 768 / 1024 / 1300. Sin scroll horizontal documental en ninguna.
 - Nav del panel en celu: cinta deslizable, ítems tocables ≥ 4.25rem.
+- Spec del harness (recreable por cualquier agente sin memoria local; no va al repo): script Node con `puppeteer-core` + Chrome del sistema (`executablePath: '/usr/bin/google-chrome'`, headless, `--no-sandbox`), contra el dev server (`127.0.0.1:4321`). Dos scripts:
+  - `barrido.cjs`: 13 anchos (320–1300) × ~15 rutas del sitio; por cada combinación compara el `scrollWidth` del documento contra el viewport y lista las rutas con overflow.
+  - `diag2.cjs`: para casos puntuales (ancho + ruta), lista los elementos cuyo borde derecho excede el viewport.
+  - Mantener la lista de rutas al día con el seed vigente (los partidos van por UUID: ajustar si cambian los datos).
 
 ## 4. Rendimiento (medido, no estimado)
 

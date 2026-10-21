@@ -1,0 +1,10 @@
+---
+// Rótulo de sección: mayúsculas doradas con tracking ancho (Docs/11 §2).
+interface Props {
+  id?: string;
+}
+---
+
+<p class="mb-4 text-[0.78rem] font-extrabold tracking-[0.22em] text-gold-400 uppercase" id={Astro.props.id}>
+  <slot />
+</p>

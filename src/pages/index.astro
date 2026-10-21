@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import Rotulo from '../components/Rotulo.astro';
+import Panel from '../components/Panel.astro';
+import Btn from '../components/Btn.astro';
+---
+
+<Base>
+  <div class="bg-red-500 py-2.5 text-center text-xs font-semibold tracking-[0.08em] text-paper uppercase">
+    IT2 · base técnica — andamio con tokens de diseño (pantalla de prueba del build, no es la home)
+  </div>
+
+  <header class="border-b border-navy-700 bg-navy-900">
+    <div class="mx-auto flex max-w-[1200px] items-center gap-3 px-4 py-3">
+      <img src="/logo-lbc-bgr.png" alt="Escudo de la LBC" width="40" height="47" />
+      <div class="flex flex-col leading-tight">
+        <strong class="font-black">LBC</strong>
+        <span class="text-[0.68rem] tracking-[0.14em] text-paper-muted uppercase">Liga de Básquetbol de Colonia</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenido" class="mx-auto max-w-[1200px] px-4 py-10">
+    <Rotulo>Primera División · Fecha 1 · Sáb 17/10</Rotulo>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <Panel>
+        <div class="flex items-center justify-center gap-6">
+          <span class="font-bold">Plaza Colonia</span>
+          <span class="num rounded bg-navy-900 px-4 py-1 text-2xl font-black text-orange-500" aria-label="Resultado demo 78 a 70">78–70</span>
+          <span class="font-bold">Juventud</span>
+        </div>
+        <p class="mt-3 text-center text-xs tracking-[0.3em] text-paper-muted uppercase">demo · marcador pendiente de la liga</p>
+      </Panel>
+      <Panel variante="dorado">
+        <div class="text-center">
+          <p class="text-xs font-extrabold tracking-[0.18em] text-gold-400 uppercase">Próxima fecha</p>
+          <h2 class="mt-1 text-xl font-extrabold">Sáb 24/10 · Gimnasio de Juventud</h2>
+          <p class="mt-1 text-sm text-paper-muted num">19:00 Plaza Colonia vs Colonia Rowing<br />21:00 Juventud vs Estudiantes El Colla</p>
+          <div class="mt-4"><Btn href="#">Ver fixture completo</Btn></div>
+        </div>
+      </Panel>
+    </div>
+    <p class="mt-8 text-sm text-paper-muted">
+      Esta página solo comprueba que el build consumes los tokens (Archivo, paleta, panel con franja). La home real llega en IT3.
+    </p>
+  </main>
+</Base>

@@ -1,0 +1,14 @@
+---
+// Botón de acción: naranja con texto tinta (Docs/11: el naranja es EL color de acción).
+interface Props {
+  href: string;
+}
+const { href } = Astro.props;
+---
+
+<a
+  href={href}
+  class="inline-block rounded-full bg-orange-500 px-6 py-2.5 text-[0.9rem] font-extrabold text-ink transition-transform duration-200 hover:bg-orange-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-[.97]"
+>
+  <slot />
+</a>

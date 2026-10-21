@@ -12,11 +12,12 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "db:push": "supabase db push",
+    "db:push": "bash scripts/db-push.sh",
     "db:types": "bash scripts/db-types.sh",
     "db:sql": "bash scripts/db-sql.sh"
   },
   "dependencies": {
+    "@alpinejs/csp": "^3.17.5",
     "@astrojs/vercel": "^11.0.16",
     "@supabase/supabase-js": "^2.0.0"
   },

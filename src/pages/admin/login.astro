@@ -1,0 +1,180 @@
+---
+// Página de inicio de sesión al panel de control (/admin/login)
+import '../../styles/global.css';
+
+const titulo = 'Iniciar sesión · Panel LBC';
+---
+
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-navy-950 text-paper">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{titulo}</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="icon" type="image/png" href="/logo-lbc-bgr.png" />
+  </head>
+  <body class="flex min-h-dvh flex-col items-center justify-center bg-navy-950 p-4 font-display">
+    <div class="w-full max-w-md">
+      <!-- Encabezado con escudo y títulos -->
+      <div class="mb-8 text-center">
+        <a href="/" class="inline-block transition-transform hover:scale-105">
+          <img src="/logo-lbc-bgr.png" alt="LBC" class="mx-auto h-20 w-20 object-contain drop-shadow-md" />
+        </a>
+        <h1 class="mt-4 text-2xl font-black uppercase tracking-wider text-paper">
+          Panel de Control
+        </h1>
+        <p class="mt-1 text-sm text-paper-muted">
+          Liga de Básquetbol de Colonia · Secretaría
+        </p>
+      </div>
+
+      <!-- Tarjeta del formulario de acceso -->
+      <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-2xl sm:p-8">
+        <div id="alerta-error" class="hidden mb-5 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-400">
+          <p id="alerta-error-texto">Credenciales no válidas. Compruebe el correo y la contraseña.</p>
+        </div>
+
+        <form id="form-login" class="flex flex-col gap-5">
+          <div>
+            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+              Correo electrónico
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="secretaria@lbc.uy"
+              class="mt-1.5 w-full rounded-lg border border-navy-700 bg-navy-950 px-3.5 py-2.5 text-sm text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors"
+            />
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between">
+              <label for="password" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+                Contraseña
+              </label>
+            </div>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="mt-1.5 w-full rounded-lg border border-navy-700 bg-navy-950 px-3.5 py-2.5 text-sm text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors"
+            />
+          </div>
+
+          <button
+            id="btn-submit"
+            type="submit"
+            class="mt-2 flex w-full items-center justify-center rounded-lg bg-orange-500 py-3 text-sm font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+          >
+            <span id="btn-submit-texto">Ingresar al panel</span>
+            <div id="btn-submit-spinner" class="hidden h-5 w-5 animate-spin rounded-full border-2 border-ink border-t-transparent"></div>
+          </button>
+        </form>
+
+        <div class="mt-6 border-t border-navy-800 pt-4 text-center">
+          <p class="text-xs text-paper-muted">
+            ¿Problemas de acceso? Solicite asistencia a la secretaría técnica.
+          </p>
+        </div>
+      </div>
+
+      <!-- Enlace para volver al sitio público -->
+      <div class="mt-6 text-center">
+        <a
+          href="/"
+          class="inline-flex items-center gap-1.5 text-xs font-medium text-paper-muted hover:text-orange-500 transition-colors"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Volver al sitio público de la LBC
+        </a>
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+  import { supabaseBrowser, obtenerEstadoAdmin } from '../../lib/supabase-browser';
+
+  const form = document.getElementById('form-login') as HTMLFormElement;
+  const inputEmail = document.getElementById('email') as HTMLInputElement;
+  const inputPassword = document.getElementById('password') as HTMLInputElement;
+  const btnSubmit = document.getElementById('btn-submit') as HTMLButtonElement;
+  const btnTexto = document.getElementById('btn-submit-texto');
+  const btnSpinner = document.getElementById('btn-submit-spinner');
+  const alertaError = document.getElementById('alerta-error');
+  const alertaErrorTexto = document.getElementById('alerta-error-texto');
+
+  // Si ya tiene sesión válida de organizador, redirigir directo
+  async function verificarSesionPrevia() {
+    const estado = await obtenerEstadoAdmin();
+    if (estado.autenticado && estado.esOrganizador) {
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect') ?? '/admin';
+      window.location.href = redirect;
+    }
+  }
+
+  verificarSesionPrevia();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertaError?.classList.add('hidden');
+
+    const email = inputEmail.value.trim();
+    const password = inputPassword.value;
+
+    if (!email || !password) return;
+
+    btnSubmit.disabled = true;
+    btnTexto?.classList.add('hidden');
+    btnSpinner?.classList.remove('hidden');
+
+    try {
+      const { data, error } = await supabaseBrowser.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.session) {
+        const estado = await obtenerEstadoAdmin();
+        if (!estado.esOrganizador) {
+          if (alertaError && alertaErrorTexto) {
+            alertaErrorTexto.textContent = 'Su cuenta no cuenta con permisos de secretaría para este panel.';
+            alertaError.classList.remove('hidden');
+          }
+          await supabaseBrowser.auth.signOut();
+          btnSubmit.disabled = false;
+          btnTexto?.classList.remove('hidden');
+          btnSpinner?.classList.add('hidden');
+          return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect') ?? '/admin';
+        window.location.href = redirect;
+      }
+    } catch (err: any) {
+      if (alertaError && alertaErrorTexto) {
+        alertaErrorTexto.textContent = 'Credenciales no válidas. Compruebe el correo y la contraseña.';
+        alertaError.classList.remove('hidden');
+      }
+      btnSubmit.disabled = false;
+      btnTexto?.classList.remove('hidden');
+      btnSpinner?.classList.add('hidden');
+    }
+  });
+</script>

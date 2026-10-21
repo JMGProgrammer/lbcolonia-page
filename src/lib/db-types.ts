@@ -19,6 +19,26 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"audit_log": {
+                  Row: {
+                    "accion": string,"antes": Json | null,"created_at": string,"despues": Json | null,"fila_id": string,"id": string,"org_id": string,"tabla": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "accion": string,"antes"?: Json | null,"created_at"?: string,"despues"?: Json | null,"fila_id": string,"id"?: string,"org_id": string,"tabla": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "accion"?: string,"antes"?: Json | null,"created_at"?: string,"despues"?: Json | null,"fila_id"?: string,"id"?: string,"org_id"?: string,"tabla"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "audit_log_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"auspiciantes": {
                   Row: {
                     "activo": boolean,"created_at": string,"id": string,"link": string | null,"logo_url": string | null,"nivel": Database["public"]['Enums']["nivel_auspicio"],"nombre": string,"orden": number,"org_id": string,"vigencia_hasta": string | null

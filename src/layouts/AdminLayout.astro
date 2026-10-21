@@ -1,0 +1,369 @@
+---
+// Layout exclusivo del panel de control de la liga (/admin)
+// Directivas: no-store, CSP estricta, español neutro, nav móvil con touch targets >= 4.25rem (68px).
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  seccionActiva?: 'resumen' | 'fixture' | 'importar';
+}
+
+const { title = 'Panel de Control', seccionActiva = 'resumen' } = Astro.props;
+const tituloFinal = `${title} · Panel LBC`;
+---
+
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-navy-950 text-paper">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{tituloFinal}</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="icon" type="image/png" href="/logo-lbc-bgr.png" />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-navy-950 font-display pb-24 md:pb-8">
+    <!-- Header institucional del panel -->
+    <header class="border-b border-navy-700 bg-navy-900/90 backdrop-blur sticky top-0 z-40">
+      <div class="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-3">
+        <div class="flex items-center gap-3">
+          <a href="/admin" class="flex items-center gap-2.5 focus:outline-none">
+            <img src="/logo-lbc-bgr.png" alt="LBC" class="h-9 w-9 object-contain" />
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-extrabold uppercase tracking-wider text-paper">LBC · PANEL</span>
+                <span id="badge-rol" class="rounded bg-navy-800 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400 border border-navy-700">
+                  Verificando...
+                </span>
+              </div>
+              <p class="text-[0.7rem] text-paper-muted">Secretaría de la Liga</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Navegación desktop -->
+        <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+          <a
+            href="/admin"
+            class:list={[
+              'rounded-lg px-3 py-1.5 transition-colors',
+              seccionActiva === 'resumen'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Resumen
+          </a>
+          <a
+            href="/admin/fixture"
+            class:list={[
+              'rounded-lg px-3 py-1.5 transition-colors',
+              seccionActiva === 'fixture'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Fixture
+          </a>
+          <a
+            href="/admin/fixture/importar"
+            class:list={[
+              'rounded-lg px-3 py-1.5 transition-colors',
+              seccionActiva === 'importar'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Pegar Excel
+          </a>
+        </nav>
+
+        <!-- Acciones de sesión -->
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-aviso-sitio-publico"
+            type="button"
+            class="hidden sm:inline-flex items-center gap-1 rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1.5 text-xs text-paper-muted hover:text-paper hover:border-navy-600 transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Sitio público
+          </button>
+
+          <button
+            id="btn-cerrar-sesion"
+            type="button"
+            class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
+          >
+            Salir
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Estado de carga mientras verifica sesión -->
+    <div id="admin-cargando" class="flex flex-1 items-center justify-center p-8">
+      <div class="flex flex-col items-center gap-3 text-center">
+        <div class="h-8 w-8 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+        <p class="text-sm text-paper-muted">Comprobando permisos de secretaría...</p>
+      </div>
+    </div>
+
+    <!-- Contenedor principal (oculto hasta confirmar auth) -->
+    <main id="admin-contenido" class="hidden mx-auto w-full max-w-[1200px] flex-1 px-4 py-6">
+      <slot />
+    </main>
+
+    <!-- Cinta de navegación móvil inferior (Docs/05 §5 y Docs/10 §3: ítems >= 4.25rem = 68px de alto) -->
+    <nav
+      id="nav-cinta-movil"
+      class="fixed bottom-0 left-0 right-0 z-40 flex h-[68px] items-stretch border-t border-navy-700 bg-navy-900/95 backdrop-blur md:hidden"
+    >
+      <a
+        href="/admin"
+        class:list={[
+          'flex flex-1 flex-col items-center justify-center gap-1 text-center transition-colors',
+          seccionActiva === 'resumen' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+          <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+          <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+          <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+        </svg>
+        <span class="text-[0.7rem] uppercase tracking-wider">Resumen</span>
+      </a>
+
+      <a
+        href="/admin/fixture"
+        class:list={[
+          'flex flex-1 flex-col items-center justify-center gap-1 text-center transition-colors',
+          seccionActiva === 'fixture' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span class="text-[0.7rem] uppercase tracking-wider">Fixture</span>
+      </a>
+
+      <a
+        href="/admin/fixture/importar"
+        class:list={[
+          'flex flex-1 flex-col items-center justify-center gap-1 text-center transition-colors',
+          seccionActiva === 'importar' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+        <span class="text-[0.7rem] uppercase tracking-wider">Importar</span>
+      </a>
+
+      <button
+        id="btn-movil-sitio"
+        type="button"
+        class="flex flex-1 flex-col items-center justify-center gap-1 text-center text-paper-muted hover:text-paper transition-colors"
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span class="text-[0.7rem] uppercase tracking-wider">Público</span>
+      </button>
+    </nav>
+
+    <!-- Diálogo modal de confirmación destructiva/sensible (Docs/05 §2: CSP-safe, data-confirm) -->
+    <dialog
+      id="dialogo-confirmacion"
+      class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[90%]"
+    >
+      <div class="flex flex-col gap-4">
+        <div class="flex items-start gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/20 text-orange-500">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-paper">Confirmar acción</h3>
+            <p id="dialogo-confirmacion-texto" class="mt-1 text-sm text-paper-muted">
+              ¿Está seguro de que desea continuar?
+            </p>
+          </div>
+        </div>
+        <div class="mt-2 flex justify-end gap-2">
+          <button
+            id="dialogo-confirmacion-cancelar"
+            type="button"
+            class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-700 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            id="dialogo-confirmacion-aceptar"
+            type="button"
+            class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink hover:bg-orange-700 transition-colors"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Diálogo modal para advertir salida al sitio público -->
+    <dialog
+      id="dialogo-salida-publico"
+      class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[90%]"
+    >
+      <div class="flex flex-col gap-4">
+        <div>
+          <h3 class="text-base font-bold text-paper">Pasar al sitio público</h3>
+          <p class="mt-1 text-sm text-paper-muted">
+            Está a punto de salir del panel de administración para visualizar el sitio como lo ven los hinchas. Podrá regresar en cualquier momento navegando a <code class="text-orange-500">/admin</code>.
+          </p>
+        </div>
+        <div class="mt-2 flex justify-end gap-2">
+          <button
+            id="dialogo-salida-cancelar"
+            type="button"
+            class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-700 transition-colors"
+          >
+            Quedarme en el panel
+          </button>
+          <a
+            href="/"
+            class="inline-flex items-center justify-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink hover:bg-orange-700 transition-colors"
+          >
+            Ir al sitio público
+          </a>
+        </div>
+      </div>
+    </dialog>
+  </body>
+</html>
+
+<script>
+  import { obtenerEstadoAdmin, cerrarSesion } from '../lib/supabase-browser';
+
+  async function inicializarAdmin() {
+    const estado = await obtenerEstadoAdmin();
+
+    const cargando = document.getElementById('admin-cargando');
+    const contenido = document.getElementById('admin-contenido');
+    const badgeRol = document.getElementById('badge-rol');
+
+    if (!estado.autenticado) {
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/admin/login?redirect=${redirect}`;
+      return;
+    }
+
+    if (!estado.esOrganizador) {
+      if (cargando) {
+        cargando.innerHTML = `
+          <div class="max-w-md rounded-xl border border-navy-700 bg-navy-900 p-6 text-center">
+            <h2 class="text-base font-bold text-paper">Acceso restringido</h2>
+            <p class="mt-2 text-sm text-paper-muted">
+              Su cuenta tiene rol <strong>${estado.rol ?? 'invitado'}</strong>. El portal para delegados de clubes se habilitará en la siguiente fase (IT5).
+            </p>
+            <button id="btn-cerrar-restringido" class="mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink">
+              Cerrar sesión
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-cerrar-restringido')?.addEventListener('click', async () => {
+          await cerrarSesion();
+          window.location.href = '/admin/login';
+        });
+      }
+      return;
+    }
+
+    // Usuario autenticado y con rol de secretaría
+    if (badgeRol) {
+      if (estado.isSuperadmin) {
+        badgeRol.textContent = 'SUPERADMIN';
+        badgeRol.className = 'rounded bg-orange-500/20 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-orange-500 border border-orange-500/30';
+      } else if (estado.rol === 'liga_admin') {
+        badgeRol.textContent = 'LIGA ADMIN';
+        badgeRol.className = 'rounded bg-gold-400/20 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400 border border-gold-400/30';
+      } else {
+        badgeRol.textContent = 'AYUDANTE';
+        badgeRol.className = 'rounded bg-navy-800 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted border border-navy-700';
+      }
+    }
+
+    if (cargando) cargando.classList.add('hidden');
+    if (contenido) contenido.classList.remove('hidden');
+
+    // Despachar evento para que los componentes de página sepan que el usuario está listo
+    window.dispatchEvent(new CustomEvent('admin-auth-ok', { detail: estado }));
+  }
+
+  // Event listener para cerrar sesión
+  document.getElementById('btn-cerrar-sesion')?.addEventListener('click', async () => {
+    await cerrarSesion();
+    window.location.href = '/admin/login';
+  });
+
+  // Modal para salir al sitio público
+  const dialogoSalida = document.getElementById('dialogo-salida-publico') as HTMLDialogElement | null;
+  const abrirSalida = () => dialogoSalida?.showModal();
+  document.getElementById('btn-aviso-sitio-publico')?.addEventListener('click', abrirSalida);
+  document.getElementById('btn-movil-sitio')?.addEventListener('click', abrirSalida);
+  document.getElementById('dialogo-salida-cancelar')?.addEventListener('click', () => dialogoSalida?.close());
+
+  // Manejo global y CSP-safe de confirmaciones destructivas con [data-confirm]
+  const dialogoConfirm = document.getElementById('dialogo-confirmacion') as HTMLDialogElement | null;
+  const textoConfirm = document.getElementById('dialogo-confirmacion-texto');
+  const btnAceptarConfirm = document.getElementById('dialogo-confirmacion-aceptar');
+  const btnCancelarConfirm = document.getElementById('dialogo-confirmacion-cancelar');
+
+  btnCancelarConfirm?.addEventListener('click', () => dialogoConfirm?.close());
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest('[data-confirm]') as HTMLElement | null;
+    if (!el) return;
+
+    const mensaje = el.getAttribute('data-confirm');
+    if (!mensaje) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (dialogoConfirm && textoConfirm && btnAceptarConfirm) {
+      textoConfirm.textContent = mensaje;
+      dialogoConfirm.showModal();
+
+      const onConfirm = () => {
+        dialogoConfirm.close();
+        btnAceptarConfirm.removeEventListener('click', onConfirm);
+
+        // Si es un botón submit de formulario, despachar submit
+        const form = el.closest('form');
+        if (el.getAttribute('type') === 'submit' && form) {
+          form.requestSubmit(el);
+        } else {
+          el.dispatchEvent(new CustomEvent('confirmado', { bubbles: true }));
+        }
+      };
+
+      btnAceptarConfirm.addEventListener('click', onConfirm, { once: true });
+    }
+  });
+
+  inicializarAdmin();
+</script>

@@ -4,6 +4,9 @@
 import { defineMiddleware } from 'astro:middleware';
 
 const ttlPorRuta = (pathname: string): string => {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/')) {
+    return 'private, no-store, no-cache, must-revalidate';
+  }
   if (pathname.startsWith('/sitemap.xml') || pathname.startsWith('/robots.txt') || pathname.startsWith('/rss.xml')) {
     return 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
   }
@@ -21,6 +24,28 @@ export const onRequest = defineMiddleware(async (contexto, next) => {
     respuesta.headers.set('Cache-Control', ttlPorRuta(contexto.url.pathname));
     respuesta.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     respuesta.headers.set('X-Content-Type-Options', 'nosniff');
+
+    if (contexto.url.pathname.startsWith('/admin')) {
+      const scriptSrc = import.meta.env.DEV
+        ? "script-src 'self' 'unsafe-inline'"
+        : "script-src 'self'";
+
+      respuesta.headers.set(
+        'Content-Security-Policy',
+        [
+          "default-src 'self'",
+          scriptSrc,
+          "style-src 'self' 'unsafe-inline'",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+          "img-src 'self' data: blob: https://*.supabase.co",
+          "font-src 'self'",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "frame-ancestors 'none'",
+        ].join('; ')
+      );
+    }
   }
   return respuesta;
 });

@@ -61,6 +61,20 @@ update auspiciantes set nombre = 'Prueba ayudante' where activo = false;
 -- esperado: 0 filas (los auspiciantes son solo de liga_admin)
 rollback;
 
+-- ---------- 5b. anon y delegado no ven audit_log
+begin;
+select set_config('role', 'anon', true);
+select 'NEG-5b1 · anon lee audit_log → esperado 0' as prueba, count(*) as filas from audit_log;
+rollback;
+
+begin;
+select set_config('role', 'authenticated', true);
+select set_config('request.jwt.claims',
+  '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000b1"}', true);
+  -- sub = delegado.plaza@demo.lbc.uy
+select 'NEG-5b2 · delegado Plaza lee audit_log → esperado 0' as prueba, count(*) as filas from audit_log;
+rollback;
+
 -- ---------- 6. dominio de otra org: el anon NO ve nada de la org que no es la activa
 begin;
 -- segunda org de prueba (como si fuera otra liga en la plataforma)

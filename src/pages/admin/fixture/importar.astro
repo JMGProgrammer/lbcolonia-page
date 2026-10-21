@@ -1,0 +1,532 @@
+---
+// Carga masiva de Fixture pegando desde Excel o planillas (/admin/fixture/importar)
+// Docs/05 §3: parser tolerante, fuzzy matching, tabla de revisión previa antes de insertar.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Pegar Fixture" seccionActiva="importar">
+  <div class="space-y-6">
+    <!-- Encabezado -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Importación Masiva
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Pegar Fixture desde Excel
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Copie celdas de una planilla o pegue texto delimitado para importar múltiples fechas
+        </p>
+      </div>
+
+      <a
+        href="/admin/fixture"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3.5 py-2 text-xs font-bold text-paper hover:bg-navy-700 transition-colors self-start sm:self-auto"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver al fixture
+      </a>
+    </div>
+
+    <!-- Selección de Torneo de Destino -->
+    <div class="flex items-center gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <label for="import-torneo" class="text-xs font-bold uppercase tracking-wider text-paper-muted shrink-0">
+        Torneo de destino:
+      </label>
+      <select
+        id="import-torneo"
+        class="rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+      >
+        <option value="">Cargando torneos...</option>
+      </select>
+    </div>
+
+    <!-- Guía y formato esperado (Docs/05 §3) -->
+    <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-paper">
+          Formato de pegado esperado
+        </h2>
+        <button
+          id="btn-copiar-ejemplo"
+          type="button"
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-500 hover:text-orange-400 transition-colors"
+        >
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+          </svg>
+          <span id="btn-copiar-texto">Copiar ejemplo al portapapeles</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-paper-muted">
+        Puede copiar directamente celdas de Excel / Google Sheets o pegar texto separado por punto y coma (<code>;</code>) o tabulaciones. El orden de columnas es:
+      </p>
+
+      <div class="rounded-lg bg-navy-950 p-3 font-mono text-xs text-gold-400 overflow-x-auto border border-navy-800">
+        Fecha;Hora;Sede;Local;Visitante;Jornada<br />
+        31/10/2026;19:00;Gimnasio Rowing;Colonia Rowing;Plaza Colonia;3<br />
+        31/10/2026;21:00;Gimnasio Rowing;Estudiantes El Colla;Juventud;3
+      </div>
+    </div>
+
+    <!-- Área de pegado de texto -->
+    <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 space-y-4">
+      <div>
+        <label for="texto-pegado" class="block text-xs font-bold uppercase tracking-wider text-paper-muted mb-2">
+          Pegue aquí las filas de partidos:
+        </label>
+        <textarea
+          id="texto-pegado"
+          rows="7"
+          placeholder="Pegue aquí el contenido copiado de su planilla de cálculo..."
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 p-3 font-mono text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          id="btn-previsualizar"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Procesar y previsualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla interactiva de Revisión Previa (Docs/05 §3) -->
+    <div id="seccion-preview" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-5 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-navy-800 pb-4">
+        <div>
+          <h2 class="text-sm font-bold uppercase tracking-wider text-paper">
+            Vista previa de importación
+          </h2>
+          <p id="preview-resumen" class="mt-0.5 text-xs text-paper-muted">
+            Revise y confirme las coincidencias antes de guardar.
+          </p>
+        </div>
+
+        <button
+          id="btn-confirmar-importacion"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-emerald-400 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Confirmar e importar partidos
+        </button>
+      </div>
+
+      <!-- Tabla de filas parseadas -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
+              <th class="py-2.5 px-3">Estado</th>
+              <th class="py-2.5 px-3">Fecha y Hora</th>
+              <th class="py-2.5 px-3">Sede</th>
+              <th class="py-2.5 px-3">Equipo Local</th>
+              <th class="py-2.5 px-3">Equipo Visitante</th>
+              <th class="py-2.5 px-3">Jornada</th>
+              <th class="py-2.5 px-3 text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-preview" class="divide-y divide-navy-800">
+            <!-- Rellenado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: EstadoAdmin | null = null;
+  let torneoActualId: string = '';
+  let equiposTorneo: any[] = [];
+  let filasParseadas: any[] = [];
+
+  const ejemploTexto = `Fecha;Hora;Sede;Local;Visitante;Jornada
+31/10/2026;19:00;Gimnasio Rowing;Colonia Rowing;Plaza Colonia;3
+31/10/2026;21:00;Gimnasio Rowing;Estudiantes El Colla;Juventud;3`;
+
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarTorneos();
+  });
+
+  async function cargarTorneos() {
+    const { data: torneos } = await supabaseBrowser
+      .from('torneos')
+      .select('id, nombre, temporada')
+      .order('temporada', { ascending: false });
+
+    const select = document.getElementById('import-torneo') as HTMLSelectElement;
+    if (!select || !torneos || torneos.length === 0) return;
+
+    select.innerHTML = torneos
+      .map((t) => `<option value="${t.id}">${t.nombre} (${t.temporada})</option>`)
+      .join('');
+
+    torneoActualId = torneos[0].id;
+    await cargarEquiposDelTorneo();
+
+    select.addEventListener('change', async () => {
+      torneoActualId = select.value;
+      await cargarEquiposDelTorneo();
+      if (filasParseadas.length > 0) {
+        procesarFilas();
+      }
+    });
+  }
+
+  async function cargarEquiposDelTorneo() {
+    const { data: equipos } = await supabaseBrowser
+      .from('equipos')
+      .select('id, nombre_mostrar, club_id, clubes:club_id(nombre, gimnasio)')
+      .eq('activo', true);
+
+    equiposTorneo = equipos ?? [];
+  }
+
+  // Botón Copiar Ejemplo
+  document.getElementById('btn-copiar-ejemplo')?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(ejemploTexto);
+    const btnTexto = document.getElementById('btn-copiar-texto');
+    if (btnTexto) {
+      btnTexto.textContent = '¡Copiado!';
+      setTimeout(() => {
+        btnTexto.textContent = 'Copiar ejemplo al portapapeles';
+      }, 2000);
+    }
+  });
+
+  // Normalizador fuzzy de nombres de club
+  function normalizarTexto(txt: string): string {
+    return txt
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/^(c\.?a\.?|club|atletico|c\.?s\.?y?\.?d\.?)\s+/i, '')
+      .replace(/[^a-z0-9]/g, '')
+      .trim();
+  }
+
+  function buscarEquipoFuzzy(textoBuscado: string) {
+    if (!textoBuscado) return null;
+    const cleanBuscado = normalizarTexto(textoBuscado);
+
+    for (const eq of equiposTorneo) {
+      const nombreClub = normalizarTexto(eq.clubes?.nombre ?? '');
+      const nombreMostrar = normalizarTexto(eq.nombre_mostrar ?? '');
+
+      if (cleanBuscado === nombreClub || cleanBuscado === nombreMostrar) {
+        return { equipo: eq, exacto: true };
+      }
+
+      if (
+        (cleanBuscado.length >= 4 && (nombreClub.includes(cleanBuscado) || cleanBuscado.includes(nombreClub))) ||
+        (cleanBuscado.length >= 4 && (nombreMostrar.includes(cleanBuscado) || cleanBuscado.includes(nombreMostrar)))
+      ) {
+        return { equipo: eq, exacto: false };
+      }
+    }
+
+    return null;
+  }
+
+  // Botón Procesar
+  document.getElementById('btn-previsualizar')?.addEventListener('click', () => {
+    procesarFilas();
+  });
+
+  function procesarFilas() {
+    const textarea = document.getElementById('texto-pegado') as HTMLTextAreaElement;
+    const raw = textarea.value.trim();
+
+    if (!raw) {
+      alert('Por favor pegue texto o filas de Excel antes de previsualizar.');
+      return;
+    }
+
+    const lineas = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const parseadas: any[] = [];
+
+    lineas.forEach((linea, index) => {
+      // Detección automática del separador: tab (\t), punto y coma (;) o coma (,)
+      let cols: string[] = [];
+      if (linea.includes('\t')) {
+        cols = linea.split('\t');
+      } else if (linea.includes(';')) {
+        cols = linea.split(';');
+      } else {
+        cols = linea.split(',');
+      }
+
+      cols = cols.map((c) => c.trim().replace(/^"|"$/g, ''));
+
+      // Ignorar cabecera si contiene palabras clave
+      const cabeceraCheck = cols[0]?.toLowerCase() ?? '';
+      if (index === 0 && (cabeceraCheck.includes('fecha') || cabeceraCheck.includes('date'))) {
+        return;
+      }
+
+      if (cols.length >= 4) {
+        const fechaRaw = cols[0] ?? '';
+        const horaRaw = cols[1] ?? '19:00';
+        const sedeRaw = cols[2] ?? '';
+        const localRaw = cols[3] ?? '';
+        const visitaRaw = cols[4] ?? '';
+        const jornadaRaw = cols[5] ?? '1';
+
+        // Mapeo fuzzy de equipos
+        const matchLoc = buscarEquipoFuzzy(localRaw);
+        const matchVis = buscarEquipoFuzzy(visitaRaw);
+
+        parseadas.push({
+          idTemporal: 'temp_' + Math.random().toString(36).substring(2, 9),
+          fechaRaw,
+          horaRaw,
+          sedeRaw,
+          localRaw,
+          visitaRaw,
+          jornadaRaw,
+          equipoLocalId: matchLoc?.equipo.id ?? '',
+          equipoVisitaId: matchVis?.equipo.id ?? '',
+          matchLocExacto: matchLoc?.exacto ?? false,
+          matchVisExacto: matchVis?.exacto ?? false,
+        });
+      }
+    });
+
+    filasParseadas = parseadas;
+    renderizarPreview();
+  }
+
+  function renderizarPreview() {
+    const seccion = document.getElementById('seccion-preview');
+    const tbody = document.getElementById('tbody-preview');
+    const resumen = document.getElementById('preview-resumen');
+    const btnConfirmar = document.getElementById('btn-confirmar-importacion') as HTMLButtonElement;
+
+    if (!seccion || !tbody || !resumen) return;
+
+    if (filasParseadas.length === 0) {
+      seccion.classList.add('hidden');
+      return;
+    }
+
+    seccion.classList.remove('hidden');
+
+    const selectOptions = (selectedId: string) =>
+      `<option value="">Seleccionar equipo...</option>` +
+      equiposTorneo
+        .map(
+          (eq) =>
+            `<option value="${eq.id}" ${eq.id === selectedId ? 'selected' : ''}>${
+              eq.clubes?.nombre ?? eq.nombre_mostrar
+            }</option>`
+        )
+        .join('');
+
+    let completos = 0;
+
+    tbody.innerHTML = filasParseadas
+      .map((fila, idx) => {
+        const tieneLoc = Boolean(fila.equipoLocalId);
+        const tieneVis = Boolean(fila.equipoVisitaId);
+        const esValido = tieneLoc && tieneVis && fila.equipoLocalId !== fila.equipoVisitaId;
+
+        if (esValido) completos++;
+
+        let badge = '';
+        if (esValido && fila.matchLocExacto && fila.matchVisExacto) {
+          badge = `<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-400 border border-emerald-500/30">OK</span>`;
+        } else if (esValido) {
+          badge = `<span class="rounded bg-gold-400/20 px-2 py-0.5 text-[0.65rem] font-bold text-gold-400 border border-gold-400/30">SUGERIDO</span>`;
+        } else {
+          badge = `<span class="rounded bg-red-500/20 px-2 py-0.5 text-[0.65rem] font-bold text-red-400 border border-red-500/30">PENDIENTE</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-navy-850/50">
+            <td class="py-2.5 px-3 shrink-0">${badge}</td>
+            <td class="py-2.5 px-3">
+              <input type="text" value="${fila.fechaRaw} ${fila.horaRaw}" data-idx="${idx}" data-field="fechahora" class="w-28 rounded border border-navy-700 bg-navy-950 px-2 py-1 text-xs text-paper" />
+            </td>
+            <td class="py-2.5 px-3">
+              <input type="text" value="${fila.sedeRaw}" data-idx="${idx}" data-field="sede" class="w-32 rounded border border-navy-700 bg-navy-950 px-2 py-1 text-xs text-paper" />
+            </td>
+            <td class="py-2.5 px-3">
+              <select data-idx="${idx}" data-field="local" class="w-36 rounded border border-navy-700 bg-navy-950 p-1 text-xs text-paper ${!tieneLoc ? 'border-red-500' : ''}">
+                ${selectOptions(fila.equipoLocalId)}
+              </select>
+              ${!tieneLoc ? `<div class="text-[0.65rem] text-red-400 truncate mt-0.5">"${fila.localRaw}"</div>` : ''}
+            </td>
+            <td class="py-2.5 px-3">
+              <select data-idx="${idx}" data-field="visita" class="w-36 rounded border border-navy-700 bg-navy-950 p-1 text-xs text-paper ${!tieneVis ? 'border-red-500' : ''}">
+                ${selectOptions(fila.equipoVisitaId)}
+              </select>
+              ${!tieneVis ? `<div class="text-[0.65rem] text-red-400 truncate mt-0.5">"${fila.visitaRaw}"</div>` : ''}
+            </td>
+            <td class="py-2.5 px-3">
+              <input type="text" value="${fila.jornadaRaw}" data-idx="${idx}" data-field="jornada" class="w-12 rounded border border-navy-700 bg-navy-950 px-2 py-1 text-center text-xs text-paper" />
+            </td>
+            <td class="py-2.5 px-3 text-right">
+              <button type="button" data-idx="${idx}" class="btn-eliminar-fila text-red-400 hover:text-red-300">
+                <svg class="h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    resumen.textContent = `${filasParseadas.length} partidos detectados (${completos} listos, ${filasParseadas.length - completos} por verificar).`;
+
+    if (completos === filasParseadas.length && filasParseadas.length > 0) {
+      btnConfirmar.disabled = false;
+      btnConfirmar.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+      btnConfirmar.disabled = true;
+      btnConfirmar.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Handlers de cambios manuales en la tabla
+    tbody.querySelectorAll('select[data-field="local"]').forEach((sel) => {
+      sel.addEventListener('change', (e) => {
+        const idx = parseInt(sel.getAttribute('data-idx')!);
+        filasParseadas[idx].equipoLocalId = (e.target as HTMLSelectElement).value;
+        filasParseadas[idx].matchLocExacto = true;
+        renderizarPreview();
+      });
+    });
+
+    tbody.querySelectorAll('select[data-field="visita"]').forEach((sel) => {
+      sel.addEventListener('change', (e) => {
+        const idx = parseInt(sel.getAttribute('data-idx')!);
+        filasParseadas[idx].equipoVisitaId = (e.target as HTMLSelectElement).value;
+        filasParseadas[idx].matchVisExacto = true;
+        renderizarPreview();
+      });
+    });
+
+    tbody.querySelectorAll('input[data-field="sede"]').forEach((inp) => {
+      inp.addEventListener('input', (e) => {
+        const idx = parseInt(inp.getAttribute('data-idx')!);
+        filasParseadas[idx].sedeRaw = (e.target as HTMLInputElement).value;
+      });
+    });
+
+    tbody.querySelectorAll('input[data-field="jornada"]').forEach((inp) => {
+      inp.addEventListener('input', (e) => {
+        const idx = parseInt(inp.getAttribute('data-idx')!);
+        filasParseadas[idx].jornadaRaw = (e.target as HTMLInputElement).value;
+      });
+    });
+
+    tbody.querySelectorAll('.btn-eliminar-fila').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx')!);
+        filasParseadas.splice(idx, 1);
+        renderizarPreview();
+      });
+    });
+  }
+
+  // Confirmar e Importar a Supabase
+  document.getElementById('btn-confirmar-importacion')?.addEventListener('click', async () => {
+    if (!torneoActualId || filasParseadas.length === 0) return;
+
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó la organización activa en la sesión.');
+      return;
+    }
+
+    const orgId = estadoAdmin.orgId;
+
+    const payload = filasParseadas.map((f) => {
+      // Parsear fecha DD/MM/AAAA o AAAA-MM-DD
+      let y = '', m = '', d = '';
+      if (f.fechaRaw.includes('/')) {
+        const parts = f.fechaRaw.split('/');
+        d = parts[0].padStart(2, '0');
+        m = parts[1].padStart(2, '0');
+        y = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+      } else if (f.fechaRaw.includes('-')) {
+        const parts = f.fechaRaw.split('-');
+        y = parts[0];
+        m = parts[1].padStart(2, '0');
+        d = parts[2].padStart(2, '0');
+      } else {
+        const today = new Date();
+        y = String(today.getFullYear());
+        m = String(today.getMonth() + 1).padStart(2, '0');
+        d = String(today.getDate()).padStart(2, '0');
+      }
+
+      const horaIso = f.horaRaw.length === 5 ? `${f.horaRaw}:00` : f.horaRaw;
+      const timestamptz = `${y}-${m}-${d}T${horaIso}-03:00`;
+
+      return {
+        org_id: orgId,
+        torneo_id: torneoActualId,
+        ronda: String(f.jornadaRaw),
+        fecha_hora: timestamptz,
+        sede: f.sedeRaw ? String(f.sedeRaw) : null,
+        equipo_local_id: f.equipoLocalId,
+        equipo_visitante_id: f.equipoVisitaId,
+        estado: 'programado' as const,
+        publicado: false,
+      };
+    });
+
+    try {
+      const { data, error } = await supabaseBrowser
+        .from('partidos')
+        .insert(payload)
+        .select('id');
+
+      if (error) {
+        throw error;
+      }
+
+      // Registro explícito en audit_log de la importación
+      if (estadoAdmin?.orgId && data) {
+        await supabaseBrowser.from('audit_log').insert({
+          org_id: estadoAdmin.orgId,
+          user_id: estadoAdmin.userId,
+          tabla: 'partidos',
+          fila_id: data[0].id,
+          accion: 'importar_fixture',
+          antes: null,
+          despues: { cantidad: payload.length, torneo_id: torneoActualId },
+        });
+      }
+
+      alert(`¡Se importaron ${payload.length} partidos con éxito!`);
+      window.location.href = '/admin/fixture';
+    } catch (err: any) {
+      alert('Error al guardar los partidos: ' + err.message);
+    }
+  });
+</script>

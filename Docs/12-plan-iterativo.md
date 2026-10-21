@@ -107,6 +107,17 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 
 **Checkpoint 4**: Juan juega a ser liga_admin: carga la fecha 3 del fixture desde un Excel pegado, publica un resultado simulado y lo ve vivo en el sitio público. OK = operación de semana posible sin ayuda.
 
+**Estado de la sesión 1 (2026-10-21)**:
+- Andamio del panel `/admin` con cara liga: `AdminLayout.astro` con shell institucional, TopBar en desktop, nav-cinta táctil móvil con touch targets ≥ 4.25rem (68px, `Docs/10 §3`), confirmaciones destructivas CSP-safe (`data-confirm` + `<dialog>` nativo).
+- Auth & Sesión: `/admin/login` con Supabase Auth (`supabase-js` con sesión persistente en browser); `src/middleware.ts` con `Cache-Control: private, no-store, no-cache, must-revalidate` para `/admin/**` y `/api/**`, más CSP estricta (scripts locales solamente, sin CDNs; `@alpinejs/csp` local sin `'unsafe-eval'`). Guard de rol en cliente verifica `liga_admin`, `liga_ayudante` o `is_superadmin`; mensaje amigable para delegados (su acceso corresponde a IT5).
+- Gestión del Fixture oficial (`/admin/fixture`): listado de partidos por torneo con filtro por jornada (chips de ronda), badges de estado (`programado`, `finalizado`, `walkover`, `publicado`), carga individual de partido (modal con timezone `America/Montevideo` y aviso suave de solapes).
+- Pegado masivo de Fixture desde Excel / CSV (`/admin/fixture/importar`): parser tolerante (tabulaciones `\t`, punto y coma `;`, comas, fechas `DD/MM/AAAA` o `AAAA-MM-DD`), normalizador fuzzy matching de clubes/equipos, tabla de revisión previa interactiva antes de insertar en Supabase (marca partidos OK, sugeridos y pendientes de asignación manual).
+- Carga de resultados oficiales y publicación: modal de carga de marcador, parciales por cuarto opcionales, walkover con ganador y notas de suspensión/postergación. Botón "Publicar partido" con guard exclusivo para `liga_admin` (deshabilitado para ayudante) y diálogo de confirmación accesible.
+- Auditoría & Base de datos: migración `0003_audit_log.sql` aplicada en Supabase con tabla `audit_log`, RLS (solo lectura para `liga_admin`) y trigger `partidos_audit_cambios` sobre `partidos`. Script `scripts/db-push.sh` configurado y `src/lib/db-types.ts` regenerado.
+- Revalidación: endpoint `/api/revalidate.ts` para disparar actualización del sitio público al publicar resultados.
+- QA: `astro check` 0 errores / 22 hints; `npm run build` verde (adapter Vercel Node 24); 48/48 pruebas de RLS en verde (incluidas nuevas negativas de `audit_log`); barrido responsive 320–1300 px sin overflow en todas las rutas públicas y del panel.
+- Modelos usados: Gemini 3.8 Flash (thinking alto) para redacción del plan e implementación tras aprobación.
+
 ## IT5 — Delegados y planillas (2-3 sesiones)
 
 - Cara delegado: mis partidos, **planilla en 3 bloques**, foto de papel obligatoria (Storage privado), disputas, roster propio con fichas `solicitada`.

@@ -1,0 +1,849 @@
+---
+// Gestión del Fixture oficial y carga de resultados (/admin/fixture)
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Fixture" seccionActiva="fixture">
+  <div class="space-y-6">
+    <!-- Barra superior de contexto y acciones -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Agenda Oficial
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Fixture y Resultados
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Administre partidos, cargue marcadores y publique resultados oficiales
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          id="btn-abrir-nuevo-partido"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3.5 py-2 text-xs font-bold text-paper hover:bg-navy-700 hover:border-navy-600 transition-colors"
+        >
+          <svg class="h-4 w-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo partido
+        </button>
+
+        <a
+          href="/admin/fixture/importar"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          Pegar Excel
+        </a>
+      </div>
+    </div>
+
+    <!-- Filtros de torneo y jornada -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <div class="flex items-center gap-2">
+        <label for="select-torneo" class="text-xs font-bold uppercase tracking-wider text-paper-muted shrink-0">
+          Torneo:
+        </label>
+        <select
+          id="select-torneo"
+          class="rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        >
+          <option value="">Cargando torneos...</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <span class="text-xs font-bold uppercase tracking-wider text-paper-muted shrink-0">
+          Jornada:
+        </span>
+        <div id="contenedor-chips-ronda" class="flex items-center gap-1.5">
+          <button
+            type="button"
+            data-ronda="todas"
+            class="chip-ronda rounded-full border border-orange-500 bg-orange-500 px-3 py-1 text-xs font-bold text-ink"
+          >
+            Todas
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenedor del listado de partidos -->
+    <div id="cargando-partidos" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <div id="lista-partidos-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No se encontraron partidos para el filtro seleccionado.</p>
+      <a href="/admin/fixture/importar" class="mt-3 inline-block text-xs font-bold text-orange-500 hover:underline">
+        Pegar una fecha desde Excel &rarr;
+      </a>
+    </div>
+
+    <div id="contenedor-partidos" class="hidden space-y-3">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </div>
+
+  <!-- Modal para Cargar / Modificar Resultado -->
+  <dialog
+    id="modal-resultado"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-lg w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-resultado-titulo" class="text-base font-bold text-paper">
+        Cargar resultado oficial
+      </h3>
+      <button id="modal-resultado-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-resultado" class="mt-4 space-y-4">
+      <input type="hidden" id="res-partido-id" />
+
+      <!-- Equipos y Marcador Principal -->
+      <div class="grid grid-cols-2 gap-4 rounded-lg bg-navy-950 p-4 border border-navy-800">
+        <div class="text-center">
+          <p id="res-nombre-local" class="text-xs font-bold uppercase text-paper truncate">Local</p>
+          <input
+            id="res-pts-local"
+            type="number"
+            min="0"
+            max="250"
+            required
+            placeholder="0"
+            class="mt-2 w-20 text-center rounded-lg border border-navy-700 bg-navy-900 py-2 text-xl font-black num text-orange-500 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div class="text-center">
+          <p id="res-nombre-visita" class="text-xs font-bold uppercase text-paper truncate">Visitante</p>
+          <input
+            id="res-pts-visita"
+            type="number"
+            min="0"
+            max="250"
+            required
+            placeholder="0"
+            class="mt-2 w-20 text-center rounded-lg border border-navy-700 bg-navy-900 py-2 text-xl font-black num text-orange-500 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <!-- Parciales por cuarto (opcionales) -->
+      <div>
+        <span class="block text-xs font-bold uppercase tracking-wider text-paper-muted mb-1.5">
+          Parciales por cuarto (opcional)
+        </span>
+        <div class="grid grid-cols-4 gap-2 text-xs">
+          <input id="res-q1-loc" type="number" placeholder="L-Q1" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+          <input id="res-q2-loc" type="number" placeholder="L-Q2" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+          <input id="res-q3-loc" type="number" placeholder="L-Q3" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+          <input id="res-q4-loc" type="number" placeholder="L-Q4" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+        </div>
+        <div class="grid grid-cols-4 gap-2 text-xs mt-1.5">
+          <input id="res-q1-vis" type="number" placeholder="V-Q1" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+          <input id="res-q2-vis" type="number" placeholder="V-Q2" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+          <input id="res-q3-vis" type="number" placeholder="V-Q3" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+          <input id="res-q4-vis" type="number" placeholder="V-Q4" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+        </div>
+      </div>
+
+      <!-- Estado especial / Walkover / Postergado -->
+      <div class="space-y-2 border-t border-navy-800 pt-3">
+        <div class="flex items-center gap-2">
+          <input id="res-check-walkover" type="checkbox" class="rounded border-navy-700 text-orange-500 focus:ring-0" />
+          <label for="res-check-walkover" class="text-xs font-semibold text-paper">Declarar Walkover (W.O.)</label>
+        </div>
+
+        <div id="res-grupo-walkover" class="hidden pl-6">
+          <label for="res-select-wo-ganador" class="block text-[0.7rem] uppercase text-paper-muted">Equipo adjudicado ganador:</label>
+          <select id="res-select-wo-ganador" class="mt-1 w-full rounded border border-navy-700 bg-navy-950 p-1.5 text-xs text-paper">
+            <option value="">Seleccione equipo ganador...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="res-nota-publica" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Nota pública (opcional):
+          </label>
+          <input
+            id="res-nota-publica"
+            type="text"
+            placeholder="Ej: Postergado por humedad en el gimnasio"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500"
+          />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-resultado-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink hover:bg-orange-700"
+        >
+          Guardar resultado
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modal para Crear / Editar Partido Individual -->
+  <dialog
+    id="modal-partido"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-partido-titulo" class="text-base font-bold text-paper">
+        Nuevo partido oficial
+      </h3>
+      <button id="modal-partido-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-partido" class="mt-4 space-y-4">
+      <input type="hidden" id="partido-edit-id" />
+
+      <div>
+        <label for="partido-ronda" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Ronda o Jornada
+        </label>
+        <input
+          id="partido-ronda"
+          type="text"
+          required
+          placeholder="Ej: 3 o Semifinal"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="partido-fecha" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Fecha
+          </label>
+          <input
+            id="partido-fecha"
+            type="date"
+            required
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+          />
+        </div>
+        <div>
+          <label for="partido-hora" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Hora (Uruguay)
+          </label>
+          <input
+            id="partido-hora"
+            type="time"
+            required
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label for="partido-sede" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Sede / Gimnasio
+        </label>
+        <input
+          id="partido-sede"
+          type="text"
+          placeholder="Ej: Gimnasio Juventud"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="partido-local" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Equipo Local
+          </label>
+          <select id="partido-local" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 p-2 text-xs text-paper">
+            <option value="">Seleccionar local...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="partido-visita" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Equipo Visitante
+          </label>
+          <select id="partido-visita" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 p-2 text-xs text-paper">
+            <option value="">Seleccionar visita...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Alerta de solapamiento si juegan el mismo día -->
+      <div id="alerta-solape" class="hidden rounded border border-orange-500/30 bg-orange-500/10 p-2.5 text-xs text-orange-400">
+        Aviso: Uno de los equipos ya tiene un partido programado en la misma fecha.
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-partido-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink hover:bg-orange-700"
+        >
+          Guardar partido
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: EstadoAdmin | null = null;
+  let torneoActualId: string = '';
+  let rondaActiva: string = 'todas';
+  let partidosMemoria: any[] = [];
+  let equiposMemoria: any[] = [];
+
+  // Modales
+  const modalResultado = document.getElementById('modal-resultado') as HTMLDialogElement;
+  const modalPartido = document.getElementById('modal-partido') as HTMLDialogElement;
+
+  // Inicialización al confirmar autenticación
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarTorneos();
+    await cargarEquipos();
+    await cargarPartidos();
+  });
+
+  async function cargarTorneos() {
+    const { data: torneos } = await supabaseBrowser
+      .from('torneos')
+      .select('id, nombre, temporada')
+      .order('temporada', { ascending: false });
+
+    const select = document.getElementById('select-torneo') as HTMLSelectElement;
+    if (!select || !torneos || torneos.length === 0) return;
+
+    select.innerHTML = torneos
+      .map((t) => `<option value="${t.id}">${t.nombre} (${t.temporada})</option>`)
+      .join('');
+
+    torneoActualId = torneos[0].id;
+
+    select.addEventListener('change', async () => {
+      torneoActualId = select.value;
+      await cargarPartidos();
+    });
+  }
+
+  async function cargarEquipos() {
+    const { data: equipos } = await supabaseBrowser
+      .from('equipos')
+      .select('id, nombre_mostrar, club_id, clubes:club_id(nombre, gimnasio)')
+      .eq('activo', true);
+
+    equiposMemoria = equipos ?? [];
+
+    const selectLocal = document.getElementById('partido-local') as HTMLSelectElement;
+    const selectVisita = document.getElementById('partido-visita') as HTMLSelectElement;
+
+    if (selectLocal && selectVisita && equipos) {
+      const options = equipos
+        .map((eq: any) => `<option value="${eq.id}">${eq.clubes?.nombre ?? eq.nombre_mostrar}</option>`)
+        .join('');
+
+      selectLocal.innerHTML = '<option value="">Seleccionar local...</option>' + options;
+      selectVisita.innerHTML = '<option value="">Seleccionar visita...</option>' + options;
+    }
+  }
+
+  async function cargarPartidos() {
+    const cargando = document.getElementById('cargando-partidos');
+    const contenedor = document.getElementById('contenedor-partidos');
+    const vacio = document.getElementById('lista-partidos-vacia');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+    vacio?.classList.add('hidden');
+
+    if (!torneoActualId) return;
+
+    const { data: partidos, error } = await supabaseBrowser
+      .from('partidos')
+      .select(`
+        id, ronda, fecha_hora, sede, estado, puntos_local, puntos_visitante,
+        cuartos_local, cuartos_visitante, publicado, publicado_at, walkover_ganador_id, nota_publica,
+        local:equipo_local_id(id, nombre_mostrar, clubes:club_id(nombre, escudo_url)),
+        visitante:equipo_visitante_id(id, nombre_mostrar, clubes:club_id(nombre, escudo_url))
+      `)
+      .eq('torneo_id', torneoActualId)
+      .order('fecha_hora', { ascending: true });
+
+    cargando?.classList.add('hidden');
+
+    if (error || !partidos || partidos.length === 0) {
+      vacio?.classList.remove('hidden');
+      partidosMemoria = [];
+      renderizarChipsRonda([]);
+      return;
+    }
+
+    partidosMemoria = partidos;
+    renderizarChipsRonda(partidos);
+    renderizarListaPartidos();
+  }
+
+  function renderizarChipsRonda(partidos: any[]) {
+    const rondasUnicas = Array.from(new Set(partidos.map((p) => p.ronda))).sort();
+    const contenedor = document.getElementById('contenedor-chips-ronda');
+    if (!contenedor) return;
+
+    let html = `
+      <button
+        type="button"
+        data-ronda="todas"
+        class="chip-ronda rounded-full border px-3 py-1 text-xs font-bold transition-colors ${
+          rondaActiva === 'todas'
+            ? 'border-orange-500 bg-orange-500 text-ink'
+            : 'border-navy-700 bg-navy-800 text-paper hover:bg-navy-700'
+        }"
+      >
+        Todas
+      </button>
+    `;
+
+    rondasUnicas.forEach((r) => {
+      const activo = rondaActiva === r;
+      html += `
+        <button
+          type="button"
+          data-ronda="${r}"
+          class="chip-ronda rounded-full border px-3 py-1 text-xs font-bold transition-colors ${
+            activo
+              ? 'border-orange-500 bg-orange-500 text-ink'
+              : 'border-navy-700 bg-navy-800 text-paper hover:bg-navy-700'
+          }"
+        >
+          Fecha ${r}
+        </button>
+      `;
+    });
+
+    contenedor.innerHTML = html;
+
+    contenedor.querySelectorAll('.chip-ronda').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        rondaActiva = btn.getAttribute('data-ronda') ?? 'todas';
+        renderizarChipsRonda(partidosMemoria);
+        renderizarListaPartidos();
+      });
+    });
+  }
+
+  function renderizarListaPartidos() {
+    const contenedor = document.getElementById('contenedor-partidos');
+    const vacio = document.getElementById('lista-partidos-vacia');
+    if (!contenedor) return;
+
+    const filtrados = partidosMemoria.filter((p) => {
+      if (rondaActiva === 'todas') return true;
+      return p.ronda === rondaActiva;
+    });
+
+    if (filtrados.length === 0) {
+      contenedor.classList.add('hidden');
+      vacio?.classList.remove('hidden');
+      return;
+    }
+
+    vacio?.classList.add('hidden');
+    contenedor.classList.remove('hidden');
+
+    contenedor.innerHTML = filtrados
+      .map((p) => {
+        const d = new Date(p.fecha_hora);
+        const fechaTxt = d.toLocaleDateString('es-UY', {
+          timeZone: 'America/Montevideo',
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        });
+        const horaTxt = d.toLocaleTimeString('es-UY', {
+          timeZone: 'America/Montevideo',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        const localNombre = p.local?.clubes?.nombre ?? p.local?.nombre_mostrar ?? 'Local';
+        const visitaNombre = p.visitante?.clubes?.nombre ?? p.visitante?.nombre_mostrar ?? 'Visitante';
+
+        let badgeEstado = '';
+        if (p.publicado) {
+          badgeEstado = `<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/30">PUBLICADO</span>`;
+        } else if (p.estado === 'finalizado') {
+          badgeEstado = `<span class="rounded bg-orange-500/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-orange-400 border border-orange-500/30">FINALIZADO (Sin publicar)</span>`;
+        } else if (p.estado === 'walkover') {
+          badgeEstado = `<span class="rounded bg-red-500/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-red-400 border border-red-500/30">WALKOVER</span>`;
+        } else {
+          badgeEstado = `<span class="rounded bg-navy-800 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted border border-navy-700">PROGRAMADO</span>`;
+        }
+
+        const score =
+          p.estado === 'finalizado' || p.estado === 'walkover'
+            ? `<div class="text-xl font-black num text-orange-500">${p.puntos_local ?? 0} - ${p.puntos_visitante ?? 0}</div>`
+            : `<div class="text-xs font-bold text-paper-muted">${horaTxt} hs</div>`;
+
+        // Botón de publicar solo habilitado para liga_admin
+        const puedePublicar = estadoAdmin?.esAdmin ?? false;
+        let btnPublicar = '';
+
+        if (!p.publicado && (p.estado === 'finalizado' || p.estado === 'walkover')) {
+          if (puedePublicar) {
+            btnPublicar = `
+              <button
+                type="button"
+                data-accion="publicar"
+                data-id="${p.id}"
+                data-confirm="¿Publicar este resultado oficialmente? Impactará inmediatamente en la tabla pública."
+                class="rounded bg-emerald-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-ink hover:bg-emerald-400 transition-colors"
+              >
+                Publicar
+              </button>
+            `;
+          } else {
+            btnPublicar = `
+              <button
+                type="button"
+                disabled
+                title="Solo liga_admin puede publicar oficialmente"
+                class="rounded bg-navy-800 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-paper-muted opacity-50 cursor-not-allowed"
+              >
+                Publicar (Solo Admin)
+              </button>
+            `;
+          }
+        } else if (p.publicado && puedePublicar) {
+          btnPublicar = `
+            <button
+              type="button"
+              data-accion="despublicar"
+              data-id="${p.id}"
+              data-confirm="¿Desea despublicar este partido? Ocultará el resultado en el sitio público."
+              class="rounded border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
+            >
+              Despublicar
+            </button>
+          `;
+        }
+
+        return `
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-4 transition-all hover:border-navy-600">
+            <div class="flex items-center gap-3">
+              <span class="rounded bg-navy-950 px-2 py-1 text-xs font-bold uppercase tracking-wider text-gold-400 border border-navy-800 shrink-0">
+                F${p.ronda}
+              </span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold uppercase text-paper-muted">${fechaTxt} · ${p.sede ?? 'Sede a confirmar'}</span>
+                  ${badgeEstado}
+                </div>
+                <div class="mt-1 flex items-center gap-2 text-sm font-extrabold text-paper">
+                  <span>${localNombre}</span>
+                  <span class="text-orange-500 font-bold">vs</span>
+                  <span>${visitaNombre}</span>
+                </div>
+                ${p.nota_publica ? `<p class="mt-0.5 text-[0.7rem] text-red-400 italic">${p.nota_publica}</p>` : ''}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between sm:justify-end gap-3 border-t border-navy-800 pt-3 sm:border-0 sm:pt-0">
+              ${score}
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-accion="resultado"
+                  data-id="${p.id}"
+                  class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-paper hover:bg-navy-700 hover:border-navy-600 transition-colors"
+                >
+                  ${p.estado === 'finalizado' || p.estado === 'walkover' ? 'Editar resultado' : 'Cargar resultado'}
+                </button>
+                ${btnPublicar}
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    // Asignar listeners a los botones de cada partido
+    contenedor.querySelectorAll('[data-accion="resultado"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const partido = partidosMemoria.find((p) => p.id === id);
+        if (partido) abrirModalResultado(partido);
+      });
+    });
+
+    contenedor.querySelectorAll('[data-accion="publicar"]').forEach((btn) => {
+      btn.addEventListener('confirmado', async () => {
+        const id = btn.getAttribute('data-id');
+        if (id) await publicarPartido(id);
+      });
+    });
+
+    contenedor.querySelectorAll('[data-accion="despublicar"]').forEach((btn) => {
+      btn.addEventListener('confirmado', async () => {
+        const id = btn.getAttribute('data-id');
+        if (id) await despublicarPartido(id);
+      });
+    });
+  }
+
+  // --- Modal Resultado ---
+  function abrirModalResultado(p: any) {
+    const inputId = document.getElementById('res-partido-id') as HTMLInputElement;
+    const txtLocal = document.getElementById('res-nombre-local');
+    const txtVisita = document.getElementById('res-nombre-visita');
+    const inputPtsLoc = document.getElementById('res-pts-local') as HTMLInputElement;
+    const inputPtsVis = document.getElementById('res-pts-visita') as HTMLInputElement;
+    const checkWo = document.getElementById('res-check-walkover') as HTMLInputElement;
+    const selectWo = document.getElementById('res-select-wo-ganador') as HTMLSelectElement;
+    const grupoWo = document.getElementById('res-grupo-walkover');
+    const inputNota = document.getElementById('res-nota-publica') as HTMLInputElement;
+
+    const locNombre = p.local?.clubes?.nombre ?? p.local?.nombre_mostrar ?? 'Local';
+    const visNombre = p.visitante?.clubes?.nombre ?? p.visitante?.nombre_mostrar ?? 'Visitante';
+
+    inputId.value = p.id;
+    if (txtLocal) txtLocal.textContent = locNombre;
+    if (txtVisita) txtVisita.textContent = visNombre;
+    inputPtsLoc.value = p.puntos_local ?? '';
+    inputPtsVis.value = p.puntos_visitante ?? '';
+
+    // Cuartos
+    const qL = p.cuartos_local ?? [];
+    const qV = p.cuartos_visitante ?? [];
+    (document.getElementById('res-q1-loc') as HTMLInputElement).value = qL[0] ?? '';
+    (document.getElementById('res-q2-loc') as HTMLInputElement).value = qL[1] ?? '';
+    (document.getElementById('res-q3-loc') as HTMLInputElement).value = qL[2] ?? '';
+    (document.getElementById('res-q4-loc') as HTMLInputElement).value = qL[3] ?? '';
+    (document.getElementById('res-q1-vis') as HTMLInputElement).value = qV[0] ?? '';
+    (document.getElementById('res-q2-vis') as HTMLInputElement).value = qV[1] ?? '';
+    (document.getElementById('res-q3-vis') as HTMLInputElement).value = qV[2] ?? '';
+    (document.getElementById('res-q4-vis') as HTMLInputElement).value = qV[3] ?? '';
+
+    // Walkover
+    const esWo = p.estado === 'walkover';
+    checkWo.checked = esWo;
+    selectWo.innerHTML = `
+      <option value="">Seleccione equipo ganador...</option>
+      <option value="${p.local?.id}" ${p.walkover_ganador_id === p.local?.id ? 'selected' : ''}>${locNombre} (Local)</option>
+      <option value="${p.visitante?.id}" ${p.walkover_ganador_id === p.visitante?.id ? 'selected' : ''}>${visNombre} (Visitante)</option>
+    `;
+
+    if (esWo) grupoWo?.classList.remove('hidden');
+    else grupoWo?.classList.add('hidden');
+
+    inputNota.value = p.nota_publica ?? '';
+
+    modalResultado.showModal();
+  }
+
+  document.getElementById('res-check-walkover')?.addEventListener('change', (e) => {
+    const checked = (e.target as HTMLInputElement).checked;
+    const grupo = document.getElementById('res-grupo-walkover');
+    if (checked) grupo?.classList.remove('hidden');
+    else grupo?.classList.add('hidden');
+  });
+
+  document.getElementById('modal-resultado-cerrar')?.addEventListener('click', () => modalResultado.close());
+  document.getElementById('modal-resultado-cancelar')?.addEventListener('click', () => modalResultado.close());
+
+  document.getElementById('form-resultado')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = (document.getElementById('res-partido-id') as HTMLInputElement).value;
+    const ptsLoc = parseInt((document.getElementById('res-pts-local') as HTMLInputElement).value);
+    const ptsVis = parseInt((document.getElementById('res-pts-visita') as HTMLInputElement).value);
+    const esWo = (document.getElementById('res-check-walkover') as HTMLInputElement).checked;
+    const woGanador = (document.getElementById('res-select-wo-ganador') as HTMLSelectElement).value || null;
+    const nota = (document.getElementById('res-nota-publica') as HTMLInputElement).value.trim() || null;
+
+    if (esWo && !woGanador) {
+      alert('Debe seleccionar el equipo ganador del Walkover.');
+      return;
+    }
+
+    const qLoc = [
+      parseInt((document.getElementById('res-q1-loc') as HTMLInputElement).value) || 0,
+      parseInt((document.getElementById('res-q2-loc') as HTMLInputElement).value) || 0,
+      parseInt((document.getElementById('res-q3-loc') as HTMLInputElement).value) || 0,
+      parseInt((document.getElementById('res-q4-loc') as HTMLInputElement).value) || 0,
+    ];
+    const qVis = [
+      parseInt((document.getElementById('res-q1-vis') as HTMLInputElement).value) || 0,
+      parseInt((document.getElementById('res-q2-vis') as HTMLInputElement).value) || 0,
+      parseInt((document.getElementById('res-q3-vis') as HTMLInputElement).value) || 0,
+      parseInt((document.getElementById('res-q4-vis') as HTMLInputElement).value) || 0,
+    ];
+
+    const tieneCuartos = qLoc.some((q) => q > 0) || qVis.some((q) => q > 0);
+
+    const updatePayload: any = {
+      puntos_local: ptsLoc,
+      puntos_visitante: ptsVis,
+      estado: esWo ? 'walkover' : 'finalizado',
+      walkover_ganador_id: esWo ? woGanador : null,
+      nota_publica: nota,
+      cuartos_local: tieneCuartos ? qLoc : null,
+      cuartos_visitante: tieneCuartos ? qVis : null,
+    };
+
+    const { error } = await supabaseBrowser
+      .from('partidos')
+      .update(updatePayload)
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al guardar el resultado: ' + error.message);
+      return;
+    }
+
+    modalResultado.close();
+    await cargarPartidos();
+  });
+
+  // --- Publicación oficial ---
+  async function publicarPartido(id: string) {
+    const { error } = await supabaseBrowser
+      .from('partidos')
+      .update({ publicado: true })
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al publicar: ' + error.message);
+      return;
+    }
+
+    // Disparar revalidación del sitio público
+    try {
+      await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partido_id: id }),
+      });
+    } catch (e) {
+      console.warn('Aviso de revalidación:', e);
+    }
+
+    await cargarPartidos();
+  }
+
+  async function despublicarPartido(id: string) {
+    const { error } = await supabaseBrowser
+      .from('partidos')
+      .update({ publicado: false, publicado_at: null })
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al despublicar: ' + error.message);
+      return;
+    }
+
+    await cargarPartidos();
+  }
+
+  // --- Modal Nuevo Partido ---
+  document.getElementById('btn-abrir-nuevo-partido')?.addEventListener('click', () => {
+    (document.getElementById('form-partido') as HTMLFormElement).reset();
+    (document.getElementById('partido-edit-id') as HTMLInputElement).value = '';
+    document.getElementById('alerta-solape')?.classList.add('hidden');
+    modalPartido.showModal();
+  });
+
+  document.getElementById('modal-partido-cerrar')?.addEventListener('click', () => modalPartido.close());
+  document.getElementById('modal-partido-cancelar')?.addEventListener('click', () => modalPartido.close());
+
+  // Sugerir gimnasio al elegir local
+  document.getElementById('partido-local')?.addEventListener('change', (e) => {
+    const localId = (e.target as HTMLSelectElement).value;
+    const eq = equiposMemoria.find((x) => x.id === localId);
+    const inputSede = document.getElementById('partido-sede') as HTMLInputElement;
+    if (eq?.clubes?.gimnasio && !inputSede.value) {
+      inputSede.value = eq.clubes.gimnasio;
+    }
+  });
+
+  document.getElementById('form-partido')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const ronda = (document.getElementById('partido-ronda') as HTMLInputElement).value.trim();
+    const fecha = (document.getElementById('partido-fecha') as HTMLInputElement).value;
+    const hora = (document.getElementById('partido-hora') as HTMLInputElement).value;
+    const sede = (document.getElementById('partido-sede') as HTMLInputElement).value.trim() || null;
+    const localId = (document.getElementById('partido-local') as HTMLSelectElement).value;
+    const visitaId = (document.getElementById('partido-visita') as HTMLSelectElement).value;
+
+    if (localId === visitaId) {
+      alert('El equipo local y el visitante no pueden ser el mismo.');
+      return;
+    }
+
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó la organización activa en la sesión.');
+      return;
+    }
+
+    // Armar timestamptz con zona horaria de Montevideo (-03:00)
+    const fechaHoraIso = `${fecha}T${hora}:00-03:00`;
+
+    const { error } = await supabaseBrowser
+      .from('partidos')
+      .insert({
+        org_id: estadoAdmin.orgId,
+        torneo_id: torneoActualId,
+        ronda,
+        fecha_hora: fechaHoraIso,
+        sede,
+        equipo_local_id: localId,
+        equipo_visitante_id: visitaId,
+        estado: 'programado',
+        publicado: false,
+      });
+
+    if (error) {
+      alert('Error al guardar partido: ' + error.message);
+      return;
+    }
+
+    modalPartido.close();
+    await cargarPartidos();
+  });
+</script>

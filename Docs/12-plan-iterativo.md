@@ -12,7 +12,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 |---|---|
 | IT0 — Definición + diseño | ✅ hecha (Docs 00–11, decisiones registradas) |
 | IT1 — Mockup del home | ✅ aprobada por Juan ("comenzá IT2") — commit `98b047c` pushed |
-| IT2 — Base técnica | 🟡 en curso · **sesión 1 hecha** (`de87cf2`): andamio Astro + Tailwind 4 + `0001` + seed + tests RLS · **pendiente**: proyecto de Supabase de Juan para `link` + `db push` + correr negativas + types |
+| IT2 — Base técnica | 🟡 en curso · **sesiones 1-2 hechas** (`de87cf2`, `7b1e751`): esquema aplicado en Supabase con RLS 6/6 en verde y types generados · esperando el OK de Juan en Studio (checkpoint 2) |
 | IT3 — Sitio público completo | pendiente |
 | IT4 — Panel de la liga | pendiente |
 | IT5 — Delegados y planillas | pendiente |
@@ -59,7 +59,19 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - Cliente `src/lib/supabase.ts` anon-only + `.env.example` + `config.toml` (CLI 2.121.0 instalada como devDep).
 - Build verde. Audited: 0 vulns en producción; las 3 en devDeps quedan documentadas (ver "deuda técnica" abajo).
 
+**Estado de la sesión 2 (2026-10-21, commit `7b1e751`)**:
+- Juan pasó credenciales por `.env` (no viajan al repo). La CLI operó la base **directa** con `--db-url` — sin access token de cuenta (el login por navegador no existe en entorno no-TTY; el diáloguito Connect da URL + publishable key, no auth de CLI).
+- `supabase db push` aplicó `0001` en la primera pasada (sin un error de sintaxis) y quedó registrado en el historial de migraciones remoto.
+- Seed cargado: 1 org, 16 equipos, 14 partidos (12 primera + 2 Sub-15), 32 fichas, 3 planillas, 32 líneas de stats, 7 usuarios.
+- `supabase/tests/rls_negativas.sql` corrió contra la base real: **las 6 negativas en verde** (anon sin planillas; delegado fuera de su club en 0; delegado no escribe partidos ni publica; ayudante sin auspiciantes; dominio de otra org ve 0) + positivos (2 publicados, 12 programados, `v_tabla` con Plaza 1º +8 y Juventud −8).
+- Checks de API pública con la publishable key: `/rest/v1/partidos` devuelve solo publicados, `/planillas` vacía para anon, `/v_tabla` con la tabla correcta (el walkover puntúa 1 punto para Estudiantes Sub-15, 0 para Rowing).
+- `src/lib/db-types.ts` generado desde la base (`gen types --db-url`) y cliente tipeado con `Database`.
+- `scripts/run-sql.mjs` (+ `pg` en devDeps): ejecutor de SQL multi-statement — la CLI abre prepared statement por llamada y los tests necesitan `set_config` + consulta en la misma sesión.
+- Validación de Supabase (tablero de advisors de Studio): 28 hallazgos → los 3 ERROR son las views definer (`v_tabla`/`v_lideres`/`v_sanciones_activas`), decisión documentada de `Docs/02`; el resto (25 WARN: 4 initplan + 20 multiple-permissive + 1 search_path en `updated_at`) quedó en la deuda de abajo.
+
 **Deuda técnica registrada**: Astro 5.18.2 acumula advisories críticos corregidos solo en Astro 7. Ninguna de las superficies afectadas se usa hoy (sitio estático, sin `define:vars`, server islands, spread props dinámicos ni optimización AVIF) y la de esbuild es "Windows dev only" (irrelevante en Linux). **Disparador del upgrade: antes del panel de IT4**, cuando entren islas interactivas. No abrir `npm audit fix --force` (saltaría de major en medio de IT2).
+
+**Deuda de advisors DB (para IT7 Endurecimiento, migración `0002`)**: (a) `auth.uid()` directo en policies de `orgs`/`profiles`/`org_members` — 4 avisos auth_rls_initplan, envolver con `(select auth.uid())`; (b) 20 avisos de multiple_permissive_policies (evaluación extra por fila solo a escala; la corrección queda intacta); (c) `updated_at()` sin `set search_path` fijo (1 aviso); (d) las views definer (`v_tabla`/`v_lideres`/`v_sanciones_activas`) quedan ERROR en el tablero de advisors de Studio por diseño: la barrera real de esas views es su propio WHERE (solo datos publicados), documentado y aceptado — revisar si Supabase cambia su recomendación.
 
 ## IT3 — Sitio público completo (2-3 sesiones)
 

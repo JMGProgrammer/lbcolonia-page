@@ -27,6 +27,7 @@
   - `barrido.cjs`: 13 anchos (320–1300) × ~15 rutas del sitio; por cada combinación compara el `scrollWidth` del documento contra el viewport y lista las rutas con overflow.
   - `diag2.cjs`: para casos puntuales (ancho + ruta), lista los elementos cuyo borde derecho excede el viewport.
   - Mantener la lista de rutas al día con el seed vigente (los partidos van por UUID: ajustar si cambian los datos).
+- Arranque del dev en Astro 7 (2026-10-21): `astro dev` daemoniza solo y `localhost` resuelve a `[::1]` (IPv6) — el harness habla IPv4, así que arrancar con `--host 127.0.0.1` y parar con `npx astro dev stop`; si algo rinde `connection refused`, verificar el bind con `ss -tlnp | grep 4321`.
 
 ## 4. Rendimiento (medido, no estimado)
 

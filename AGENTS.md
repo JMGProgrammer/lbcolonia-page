@@ -6,7 +6,7 @@ Objetivo del repo: web oficial de la Liga de Básquetbol de Colonia (LBC, Urugua
 
 - Tablero con el estado por iteración y el registro detalle de cada sesión: **`Docs/12-plan-iterativo.md`** — es el fuente de verdad de "dónde vamos". Si el doc y el código difieren, corregir el doc al cierre de la sesión.
 - Historial de entregables y tags: **`Changelog.md`** en la raíz.
-- Estado al cierre de IT3 (2026-10-21): sitio público SSR completo funcionando sobre datos reales de Supabase (commits `ffb0cd5`, tags `v0.1`/`v0.2` pushed). **Pendiente: checkpoint 3** (Juan + gente de la liga navega desde el celu; criterio "cualquiera encuentra la de hoy en 2 toques") → recién con ese OK arranca IT4.
+- Estado adelantado (noche 2026-10-21): checkpoint 3 **OK** — deploy de Vercel en producción (runtime `nodejs24.x`) navegado desde el celu con datos móviles; menús y secciones revisados por Juan. **IT4 activa**: arrancar por "Pasos de esta sesión" de su prompt (andamio del panel + cara liga); el upgrade Astro 7 ya está pagado, no re-abrir.
 - Tag automático de "siguiente paso": la iteración en 🟡 del tablero de `Docs/12`.
 
 ## Mapa de docs

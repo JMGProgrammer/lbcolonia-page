@@ -13,8 +13,8 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT0 — Definición + diseño | ✅ hecha (Docs 00–11, decisiones registradas) |
 | IT1 — Mockup del home | ✅ aprobada por Juan ("comenzá IT2") — commit `98b047c` pushed |
 | IT2 — Base técnica | ✅ aprobada por Juan ("comenzá IT3") — commit `7b1e751` + tag `v0.1` (`92e23fe`) |
-| IT3 — Sitio público completo | 🟡 código completo (`ffb0cd5` + tag `v0.2`) · esperando checkpoint 3 (navegación desde el celu de Juan + gente de la liga) |
-| IT4 — Panel de la liga | pendiente |
+| IT3 — Sitio público completo | ✅ hecha (`ffb0cd5` + `12e7506`, tag `v0.2`) — checkpoint 3 **OK** 2026-10-21: deploy Vercel probado desde el celu (menús y secciones, criterio "2 toques" cumplido) |
+| IT4 — Panel de la liga | 🟡 activa (`d07f247`/`e0e95d1`: deps al día, deploy verde) |
 | IT5 — Delegados y planillas | pendiente |
 | IT6 — Complejidad del torneo | pendiente |
 | IT7 — Endurecimiento | pendiente |

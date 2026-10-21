@@ -11,8 +11,8 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | Iteración | Estado |
 |---|---|
 | IT0 — Definición + diseño | ✅ hecha (Docs 00–11, decisiones registradas) |
-| IT1 — Mockup del home | 🟡 terminada — esperando OK de Juan (checkpoint 1) |
-| IT2 — Base técnica | pendiente |
+| IT1 — Mockup del home | ✅ aprobada por Juan ("comenzá IT2") — commit `98b047c` pushed |
+| IT2 — Base técnica | 🟡 en curso · **sesión 1 hecha** (`de87cf2`): andamio Astro + Tailwind 4 + `0001` + seed + tests RLS · **pendiente**: proyecto de Supabase de Juan para `link` + `db push` + correr negativas + types |
 | IT3 — Sitio público completo | pendiente |
 | IT4 — Panel de la liga | pendiente |
 | IT5 — Delegados y planillas | pendiente |
@@ -49,6 +49,17 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 **Checkpoint 2 — revisar cómo**: Juan abre Supabase Studio (con la secretaría después, o solo): ve las tablas con datos reales de la liga. El criterio del OK: "el esquema está bien para operar la liga".
 
 **No incluye**: ninguna página pública real conectada, panel.
+
+**Estado de la sesión 1 (2026-10-21, commit `de87cf2`)**:
+- Andamio Astro 5 + Tailwind 4 en `src/` con tokens de `Docs/11` (página de prueba de tokens, no la home); componentes `Base`/`Rotulo`/`Panel`/`Btn`.
+- `supabase/migrations/0001_esquema.sql` (~995 líneas): 17 tablas + enums + checks, triggers (`on_auth_user_created`, `partidos_guard_publicacion`, `planilla_verificada_cierre`, `orgs_guard_plan`, `updated_at`), helpers SECURITY DEFINER (`org_activa_id`, `es_superadmin`, `rol_en_org`, `es_organizador`, `es_liga_admin`, `mi_club_de`, `es_delegado_local`, `es_miembro_del_partido`, `es_delegado_local_borrador`, `es_visitante_borrador`, `es_delegado_de_equipo`, `es_planilla_publica`), RLS + policies completas de `Docs/03`, grants, views `v_tabla`/`v_lideres`/`v_sanciones_activas` (semántica definer: agregados de lo publicado) y storage (4 buckets + policies con paths `bucket/{org}/{partido}`).
+- `supabase/seed.sql`: org LBC + `app_config org_activa`, 7 cuentas demo (`@demo.lbc.uy`, clave `demo-2026`), 4 clubes reales del afiche, 4 categorías, 16 equipos, 4 torneos, fixture completo de primera (12 partidos del afiche: F1 19:00 finalizada y publicada 78-70 con cuartos, F1 21:00 en disputa, F5-F6 sin sede según afiche), Sub-15 con 1 finalizada + walkover claro.
+- Datos reales vs inventados: cuando el esquema pida algo no confirmado, va flag `[a confirmar con la liga]` (categorías de formativas, playoffs sí/no, puntos de tabla, sedes de F5/F6, horarios exactos); los rosters, marcadores y nombres de test son `[demo]`.
+- `supabase/tests/rls_negativas.sql`: las 6 negativas de `Docs/03 §5` con emulación de JWT (`set_config('role'/'request.jwt.claims')`) + positivos esperados (2 publicados, 12 programados, v_tabla de primera con Plaza 1º y Juventud).
+- Cliente `src/lib/supabase.ts` anon-only + `.env.example` + `config.toml` (CLI 2.121.0 instalada como devDep).
+- Build verde. Audited: 0 vulns en producción; las 3 en devDeps quedan documentadas (ver "deuda técnica" abajo).
+
+**Deuda técnica registrada**: Astro 5.18.2 acumula advisories críticos corregidos solo en Astro 7. Ninguna de las superficies afectadas se usa hoy (sitio estático, sin `define:vars`, server islands, spread props dinámicos ni optimización AVIF) y la de esbuild es "Windows dev only" (irrelevante en Linux). **Disparador del upgrade: antes del panel de IT4**, cuando entren islas interactivas. No abrir `npm audit fix --force` (saltaría de major en medio de IT2).
 
 ## IT3 — Sitio público completo (2-3 sesiones)
 

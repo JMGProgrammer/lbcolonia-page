@@ -3,6 +3,19 @@
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
 Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3).
 
+## 2026-10-21 · hotfix de deploy post-v0.2: runtime Node 24 y deuda Astro pagada (`15c0e94`→)
+
+**Qué cambió**: la primera publicación real en Vercel canceló el build (runtime Node 20 discontinuado) y destapó que el adapter viejo solo sabía emitir runtimes 18/20 ya cancelados. La deuda técnica con disparador "antes del panel de IT4" se adelantó **con OK de Juan**.
+
+### Changed
+- `engines.node`: `20.x` → `24.x` (`15c0e94`).
+- Astro `5.18.2` → `7.4.2`; `@astrojs/vercel` `8.0.0` → `11.0.16` (la v11 exige `astro ^7` y emite `nodejs24.x`); import `@astrojs/vercel/serverless` → `@astrojs/vercel` (deprecated en la v8 que usaba el proyecto, removida en la v11).
+- QA del upgrade en verde: `astro check` 0 errores / 0 warnings / 22 hints (mismo baseline que antes), `npm run build` completo con `runtime: nodejs24.x` en el `.vc-config.json`, smoke HTTP (home/fixture/tabla 200 con datos reales — SSR + RLS + cache intactos) y **barrido responsive 320–1300 × 15 rutas = 195 revisiones, 0 overflows**.
+
+### Known issues
+- `npm audit --omit=dev`: 3 HIGH, una sola cadena — `path-to-regexp` (ReDoS) vía `@vercel/routing-utils` en `@astrojs/vercel@11`. No hay fix publicado: el `--force` propuesto degradaría el adapter a 8 (rompe el deploy). Deuda para revisión en **IT7 Endurecimiento**; `audit fix --force` sigue prohibido sin pedido explícito.
+- Astro 7: `astro dev` daemoniza por defecto y `localhost` resuelve a `[::1]` — para el harness de QA arrancar con `--host 127.0.0.1` y parar con `npx astro dev stop` (actualizado en `Docs/10 §3`).
+
 ## [v0.2] — 2026-10-21 · IT3: web pública SSR completa (`ffb0cd5`)
 
 **Qué puede hacer Juan / la liga**: navegar todo el sitio público con datos reales — fixture, resultados, tabla, fichas, clubes, sanciones, noticias — desde el celu, sin cookies y sin JS.

@@ -40,6 +40,15 @@ Decisión (con Juan, 2026-10-21): el amateur usa **la misma estructura** que las
 
 La diferencia entre competencias queda en la configuración del torneo: nivel de detalle estadístico, sistema de puntos de tabla, playoffs on/off (ver `Docs/02`).
 
+### Datos reales confirmados con el material oficial (afiches LBC 2026, en `assets/images/`)
+
+- Nombre oficial: **Liga de Básquetbol de Colonia**.
+- **Primera División 2026**: 4 clubes — Plaza Colonia, Colonia Rowing, Estudiantes El Colla (Rosario), Juventud (CAJ Colonia). Fixture completo ya disponible en el afiche: ida y vuelta, **6 fechas, todos los sábados 19:00 y 21:00**, con **club anfitrión por fecha** (los dos partidos del día en el gimnasio de un solo club). Arrancó el sábado 17/10 — fecha 1 ya jugada al momento de escribir esto.
+- El afiche dice "Fase Regular" → si hay playoffs después de las 6 fechas, **[a confirmar con la liga]**.
+- Fecha 5 (14/11) y fecha 6 (21/11) con sede "a confirmar" → se modelan igual (partido con sede pendiente).
+- Identidad visual oficial: azul marino profundo, rojo y naranja/dorado (logo escudo con pelota). Paleta aproximada para el sitio (afinar con sampler): fondo `#1c2b56`-ish, acento naranja `#f39c2d`-ish, rojo `#e8222f`-ish, dorado `#e9c46a`-ish.
+- Hashtag oficial de temporada: **#LBC2026**.
+
 ## 4. El motor de contenido (todo torneo es igual)
 
 1. La liga crea el torneo con formato y reglas (sistema de puntos de tabla, tie-breakers, walkovers 20-0 FIBA o lo que determine el reglamento local).

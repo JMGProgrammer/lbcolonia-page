@@ -48,6 +48,15 @@ Serie numerada, se lee en orden:
 - `Docs/` contiene la serie numerada; índice en este README.
 - **`FEATURES.md` en la base**: archivo vivo de ideas, próximos cambios y fixes. Formato: checkbox + `[cambio|idea|fix]` + fecha; lo incorporado se borra, no se acumula.
 
+## Assets (aportados por Juan, en el repo)
+
+En `assets/images/` viven los materiales oficiales de la LBC:
+
+- `logo-lbc-bgr.png` y `logo-lbc.jpg` — logo oficial (escudo con pelota, rojo/azul); el `-bgr` es el de fondo transparente, ideal para el sitio.
+- `afiche-1era-lbc.jpg` + `afiche-1era-lbc-fixture.jpg` — afiches de Primera División 2026: el segundo tiene **el fixture completo transcrito** (4 clubes, 6 fechas, sábados 19:00/21:00, anfitrión por fecha). Datos usados en `Docs/00 §3` y `Docs/02 §7`.
+
+La identidad visual del sitio arranca de acá: azul marino + rojo + naranja/dorado.
+
 ## Estado actual
 
 **Fase 0 — definición completa** (2026-10-21): este directorio con toda la serie de docs. No hay código todavía. Lo próximo es la Fase 1 (`docs/09-fases.md`): scaffolding Astro + migración `0001` de Supabase con el esquema de `Docs/02`.

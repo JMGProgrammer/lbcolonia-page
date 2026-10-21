@@ -6,6 +6,8 @@ La operación de la semana, paso a paso. Espejo del circuito en papel que los cl
 
 ## 1. Ciclo de jornada (el flujo central)
 
+Formato real de LBC primera 2026 (afiche oficial): **6 fechas, ida y vuelta, sábados 19:00 y 21:00, un club anfitrión por fecha** — los dos partidos del día van en el gimnasio del anfitrión (doubleheader). El modelo de datos soporta esto tal cual: cada partido lleva su `sede`; la carga masiva del fixture mapea "anfitrión de la fecha" a la sede de sus 2 partidos.
+
 ```
 LUNES-VIERNES (liga)
   1. Secretaría carga/ajusta el fixture de la jornada.  →  partidos `programado` (público)

@@ -178,9 +178,15 @@ La home y el footer leen por nivel; la liga ordena y activa/desactiva desde el p
 
 ## 7. Preguntas para la secretaría (chequeo pre-0001)
 
-1. Nombres y cortes exactos de las categorías formativas (¿U-14/U-16/U-18? ¿por año calendario hasta cuándo?)
-2. Sistema de puntos de tabla por competencia (¿2/1 FIBA con derrota por walkover 0?)
-3. ¿Se piden cuartos/parciales en la planilla?
-4. ¿Se piden triples por jugador?
-5. Mínimos para goleadores (¿PJ mínimos?)
-6. Contacto real de delegados por club (para org_members del piloto)
+Resueltas con el material oficial (afiches):
+
+- ✅ Primera División 2026: 4 clubes (Plaza Colonia, Colonia Rowing, Estudiantes El Colla, Juventud), ida y vuelta, 6 fechas, sábados 19:00/21:00, club anfitrión por fecha. El fixture completo está en el afiche (`assets/images/afiche-1era-lbc-fixture.jpg`) — puede sembrarse tal cual en el seed de la Fase 1.
+
+Pendientes **[a confirmar con la liga]**:
+
+1. Nombres y cortes exactos de las categorías formativas (¿U-14/U-16/U-18? ¿por año calendario hasta cuándo?) y qué clubes juegan cada una.
+2. ¿Hay playoffs tras la fase regular de primera? (el afiche dice "Fase Regular"; asumo sí hasta confirmar)
+3. Sistema de puntos de tabla por competencia (¿2/1 FIBA con derrota por walkover 0?)
+4. ¿Se piden cuartos/parciales en la planilla? ¿Triples por jugador?
+5. Mínimos para líderes (¿PJ mínimos?)
+6. Nombres de gimnasios/sedes exactos por club (el anfitrión por fecha ya lo da el fixture; falta el nombre del gimnasio) y contactos reales de delegados para las cuentas del piloto.

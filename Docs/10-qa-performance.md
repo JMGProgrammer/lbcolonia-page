@@ -12,6 +12,7 @@
 ## 2. Datos de prueba (`supabase/seed.sql`)
 
 - **8 clubes ficticios** con nombres estilo interior (identificados como demo en pantalla), escudos placeholder, colores contrastantes.
+- **Torneo real opcional**: el fixture completo de Primera División 2026 ya está transcrito del afiche oficial (`assets/images/afiche-1era-lbc-fixture.jpg`) — 4 clubes reales, 6 fechas con anfitrión por fecha. Sembrarlo como torneo real de la org LBC: sirve para demo de venta y para arrancar el piloto con datos verdaderos (la fecha 1 del 17/10 ya se jugó; resultados a pedirle a la liga).
 - 1 torneo en curso con doble jornada jugada + 1 en playoffs simulados + 1 histórico finalizado del año pasado (para probar archivo).
 - Fichas: jugadores duplicados a propósito (control anti-duplicado), jugador sobre-edad en formativas (aviso en UI), sanciones activas con 3 partidos a cumplir.
 - 1 planilla borrador + 1 disputada + 1 verificada (para los 3 estados del inbox).

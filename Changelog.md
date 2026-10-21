@@ -3,6 +3,18 @@
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
 Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3).
 
+## [Unreleased] · IT4: Panel de la Liga (cara secretaría) — sesiones 1 y 2
+
+**Qué puede hacer Juan / la liga**:
+- Acceder al panel institucional `/admin` con cuenta de secretaría (`liga@demo.lbc.uy`), middleware con cabeceras `no-store`, CSP estricta y navegación móvil adaptada (touch targets ≥ 68px).
+- Importar fechas completas desde Excel/CSV con parser tolerante, previsualizador interactivo y fuzzy matching de equipos.
+- Cargar marcadores oficiales, parciales por cuarto y walkovers; publicar partidos con auditoría (`audit_log`) y revalidación en vivo de la tabla pública.
+- Administrar Torneos oficiales con selector de temporada, formato (`liga`, `playoffs`, `torneo`), flags de estadísticas y reglas de puntuación FIBA.
+- Administrar Clubes y Equipos con sincronizador de colores en vivo, gimnasio sede y asignación de categorías.
+- Gestionar Padrón de Jugadores con detector de duplicados en tiempo real por coincidencia de nombre y fecha de nacimiento (`Docs/02 §2`).
+- Administrar Fichas de jugadores con bandeja de entrada filtrada por estado (`solicitada`, `confirmada`, `baja`), confirmación de pases, edición de dorsales (#) y bajas.
+- Bandeja de pendientes del día en `/admin` con contadores en tiempo real (fichas solicitadas, resultados sin publicar, partidos sin sede y disputas).
+
 ## 2026-10-21 · hotfix de deploy post-v0.2: runtime Node 24 y deuda Astro pagada (`15c0e94`→)
 
 **Qué cambió**: la primera publicación real en Vercel canceló el build (runtime Node 20 discontinuado) y destapó que el adapter viejo solo sabía emitir runtimes 18/20 ya cancelados. La deuda técnica con disparador "antes del panel de IT4" se adelantó **con OK de Juan**.

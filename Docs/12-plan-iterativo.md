@@ -116,6 +116,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - Auditoría & Base de datos: migración `0003_audit_log.sql` aplicada en Supabase con tabla `audit_log`, RLS (solo lectura para `liga_admin`) y trigger `partidos_audit_cambios` sobre `partidos`. Script `scripts/db-push.sh` configurado y `src/lib/db-types.ts` regenerado.
 - Revalidación: endpoint `/api/revalidate.ts` para disparar actualización del sitio público al publicar resultados.
 - QA: `astro check` 0 errores / 22 hints; `npm run build` verde (adapter Vercel Node 24); 48/48 pruebas de RLS en verde (incluidas nuevas negativas de `audit_log`); barrido responsive 320–1300 px sin overflow en todas las rutas públicas y del panel.
+- **Checkpoint 4 verificado en vivo por Juan**: login secretaría, pegado masivo de fecha 3 desde Excel con fuzzy match, revisión previa, importación, carga manual de resultado simulado, publicación oficial y reflejo inmediato en el sitio público.
 - Modelos usados: Gemini 3.8 Flash (thinking alto) para redacción del plan e implementación tras aprobación.
 
 ## IT5 — Delegados y planillas (2-3 sesiones)

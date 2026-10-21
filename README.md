@@ -42,6 +42,7 @@ Serie numerada, se lee en orden:
 | 09 | `09-fases.md` | Roadmap de construcción con definición de hecho (DoD) |
 | 10 | `10-qa-performance.md` | QA, accesibilidad, rendimiento, datos de prueba |
 | 11 | `11-diseno.md` | Dirección visual: paleta, tipografía, home, componentes, decisión de modo oscuro |
+| 12 | `12-plan-iterativo.md` | Plan iterativo con iteraciones, entregables, checkpoints y tablero de estado en vivo |
 
 ## Convenciones de documentación (igual que lgrestoreuy)
 

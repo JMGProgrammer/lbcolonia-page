@@ -45,6 +45,198 @@ const porTorneo = (
     }))
   )
 ).filter((x) => x.partidos.length > 0);
+
+interface TemaClub {
+  heroBg: string;
+  heroBorder: string;
+  heroRibete: string;
+  heroEscudoBg: string;
+  badgeClub: string;
+  apodoColor: string;
+  statsBorder: string;
+  statsLabel: string;
+  resenaBg: string;
+  resenaBorder: string;
+  resenaIndicador: string;
+  resenaTitulo: string;
+  resenaHitoBorder: string;
+  resenaBorderB: string;
+  plantelIndicador: string;
+  accordionBorder: string;
+  accordionBg: string;
+  accordionSummary: string;
+  accordionNum: string;
+  accordionTitleHover: string;
+  accordionBadge: string;
+  accordionInteriorBg: string;
+  fichaBorder: string;
+  fichaBg: string;
+  fichaDorsal: string;
+  fichaHoverBorder: string;
+  fixtureIndicador: string;
+  fixtureTorneoTitle: string;
+  fixtureLink: string;
+}
+
+const TEMAS_CLUBES: Record<string, TemaClub> = {
+  'plaza-colonia': {
+    heroBg: 'bg-[#042012]',
+    heroBorder: 'border-emerald-500/40',
+    heroRibete: 'from-emerald-400 via-white to-emerald-500',
+    heroEscudoBg: 'bg-[#02130a]/90 border-emerald-600/35',
+    badgeClub: 'bg-emerald-500 text-black',
+    apodoColor: 'text-emerald-300',
+    statsBorder: 'border-emerald-800/60',
+    statsLabel: 'text-emerald-200/60',
+    resenaBg: 'bg-[#062917]/80',
+    resenaBorder: 'border-emerald-500/30',
+    resenaIndicador: 'bg-emerald-400',
+    resenaTitulo: 'text-emerald-300',
+    resenaHitoBorder: 'border-emerald-400',
+    resenaBorderB: 'border-emerald-800/50',
+    plantelIndicador: 'bg-emerald-400',
+    accordionBorder: 'border-emerald-700/40 group-open/details:border-emerald-400/60',
+    accordionBg: 'bg-[#03190e]/90',
+    accordionSummary: 'bg-[#052615]/70 hover:bg-[#08351e]/90',
+    accordionNum: 'bg-emerald-950 text-emerald-300 border-emerald-700/50',
+    accordionTitleHover: 'group-hover/details:text-emerald-300',
+    accordionBadge: 'bg-[#021109] border-emerald-700/40 text-emerald-200',
+    accordionInteriorBg: 'bg-[#021209]/85 border-emerald-900/60',
+    fichaBorder: 'border-emerald-700/40',
+    fichaBg: 'bg-[#052314]/80',
+    fichaDorsal: 'text-emerald-400 group-hover:text-emerald-300',
+    fichaHoverBorder: 'hover:border-emerald-400',
+    fixtureIndicador: 'bg-emerald-400',
+    fixtureTorneoTitle: 'text-emerald-300',
+    fixtureLink: 'text-emerald-400 hover:text-emerald-300',
+  },
+  'colonia-rowing': {
+    heroBg: 'bg-[#020b17]',
+    heroBorder: 'border-blue-600/35',
+    heroRibete: 'from-blue-700 via-white to-blue-500',
+    heroEscudoBg: 'bg-[#01050c]/90 border-blue-800/50',
+    badgeClub: 'bg-blue-600 text-white',
+    apodoColor: 'text-sky-300',
+    statsBorder: 'border-blue-900/60',
+    statsLabel: 'text-blue-200/60',
+    resenaBg: 'bg-[#041224]/80',
+    resenaBorder: 'border-blue-500/30',
+    resenaIndicador: 'bg-sky-400',
+    resenaTitulo: 'text-sky-300',
+    resenaHitoBorder: 'border-sky-400',
+    resenaBorderB: 'border-blue-900/50',
+    plantelIndicador: 'bg-blue-500',
+    accordionBorder: 'border-blue-800/40 group-open/details:border-blue-400/60',
+    accordionBg: 'bg-[#020d1b]/90',
+    accordionSummary: 'bg-[#04152a]/70 hover:bg-[#071f3e]/90',
+    accordionNum: 'bg-blue-950 text-sky-300 border-blue-700/50',
+    accordionTitleHover: 'group-hover/details:text-sky-300',
+    accordionBadge: 'bg-[#010710] border-blue-700/40 text-sky-200',
+    accordionInteriorBg: 'bg-[#010712]/85 border-blue-950/60',
+    fichaBorder: 'border-blue-800/40',
+    fichaBg: 'bg-[#031326]/80',
+    fichaDorsal: 'text-sky-400 group-hover:text-sky-200',
+    fichaHoverBorder: 'hover:border-sky-400',
+    fixtureIndicador: 'bg-sky-400',
+    fixtureTorneoTitle: 'text-sky-300',
+    fixtureLink: 'text-sky-400 hover:text-sky-300',
+  },
+  'estudiantes-el-colla': {
+    heroBg: 'bg-[#240606]',
+    heroBorder: 'border-amber-500/40',
+    heroRibete: 'from-red-600 via-amber-400 to-emerald-500',
+    heroEscudoBg: 'bg-[#140202]/90 border-red-900/50',
+    badgeClub: 'bg-amber-500 text-black',
+    apodoColor: 'text-amber-300',
+    statsBorder: 'border-red-950/70',
+    statsLabel: 'text-amber-200/60',
+    resenaBg: 'bg-[#2f0808]/80',
+    resenaBorder: 'border-amber-500/30',
+    resenaIndicador: 'bg-amber-400',
+    resenaTitulo: 'text-amber-300',
+    resenaHitoBorder: 'border-amber-400',
+    resenaBorderB: 'border-red-900/50',
+    plantelIndicador: 'bg-red-500',
+    accordionBorder: 'border-red-800/40 group-open/details:border-amber-400/60',
+    accordionBg: 'bg-[#1d0404]/90',
+    accordionSummary: 'bg-[#2a0707]/70 hover:bg-[#380a0a]/90',
+    accordionNum: 'bg-red-950 text-amber-300 border-amber-600/40',
+    accordionTitleHover: 'group-hover/details:text-amber-300',
+    accordionBadge: 'bg-[#120202] border-amber-700/40 text-amber-200',
+    accordionInteriorBg: 'bg-[#110202]/85 border-red-950/60',
+    fichaBorder: 'border-red-800/40',
+    fichaBg: 'bg-[#270707]/80',
+    fichaDorsal: 'text-amber-400 group-hover:text-amber-300',
+    fichaHoverBorder: 'hover:border-amber-400',
+    fixtureIndicador: 'bg-amber-400',
+    fixtureTorneoTitle: 'text-amber-300',
+    fixtureLink: 'text-amber-400 hover:text-amber-300',
+  },
+  'juventud-caj': {
+    heroBg: 'bg-[#0a1226]',
+    heroBorder: 'border-red-500/40',
+    heroRibete: 'from-red-600 via-blue-600 to-red-600',
+    heroEscudoBg: 'bg-[#040813]/90 border-blue-900/60',
+    badgeClub: 'bg-red-600 text-white',
+    apodoColor: 'text-red-300',
+    statsBorder: 'border-blue-950/70',
+    statsLabel: 'text-blue-200/60',
+    resenaBg: 'bg-[#0e1832]/80',
+    resenaBorder: 'border-red-500/30',
+    resenaIndicador: 'bg-red-500',
+    resenaTitulo: 'text-red-300',
+    resenaHitoBorder: 'border-red-500',
+    resenaBorderB: 'border-blue-900/50',
+    plantelIndicador: 'bg-red-500',
+    accordionBorder: 'border-blue-800/40 group-open/details:border-red-500/60',
+    accordionBg: 'bg-[#070e1e]/90',
+    accordionSummary: 'bg-[#0c162d]/70 hover:bg-[#111f40]/90',
+    accordionNum: 'bg-blue-950 text-red-300 border-red-600/40',
+    accordionTitleHover: 'group-hover/details:text-red-300',
+    accordionBadge: 'bg-[#040811] border-blue-700/40 text-red-200',
+    accordionInteriorBg: 'bg-[#040813]/85 border-blue-950/60',
+    fichaBorder: 'border-blue-800/40',
+    fichaBg: 'bg-[#0a1428]/80',
+    fichaDorsal: 'text-red-400 group-hover:text-red-300',
+    fichaHoverBorder: 'hover:border-red-500',
+    fixtureIndicador: 'bg-red-500',
+    fixtureTorneoTitle: 'text-red-300',
+    fixtureLink: 'text-red-400 hover:text-red-300',
+  },
+  'cac-valdense': {
+    heroBg: 'bg-[#051c2e]',
+    heroBorder: 'border-sky-400/40',
+    heroRibete: 'from-sky-400 via-white to-sky-300',
+    heroEscudoBg: 'bg-[#020e17]/90 border-sky-900/60',
+    badgeClub: 'bg-sky-400 text-black',
+    apodoColor: 'text-sky-300',
+    statsBorder: 'border-sky-950/70',
+    statsLabel: 'text-sky-200/60',
+    resenaBg: 'bg-[#07243b]/80',
+    resenaBorder: 'border-sky-400/30',
+    resenaIndicador: 'bg-sky-300',
+    resenaTitulo: 'text-sky-300',
+    resenaHitoBorder: 'border-sky-300',
+    resenaBorderB: 'border-sky-900/50',
+    plantelIndicador: 'bg-sky-400',
+    accordionBorder: 'border-sky-800/40 group-open/details:border-sky-300/60',
+    accordionBg: 'bg-[#041726]/90',
+    accordionSummary: 'bg-[#072137]/70 hover:bg-[#0a2e4d]/90',
+    accordionNum: 'bg-sky-950 text-sky-200 border-sky-600/40',
+    accordionTitleHover: 'group-hover/details:text-sky-300',
+    accordionBadge: 'bg-[#020d16] border-sky-700/40 text-sky-200',
+    accordionInteriorBg: 'bg-[#020e18]/85 border-sky-950/60',
+    fichaBorder: 'border-sky-800/40',
+    fichaBg: 'bg-[#061d31]/80',
+    fichaDorsal: 'text-sky-300 group-hover:text-sky-200',
+    fichaHoverBorder: 'hover:border-sky-300',
+    fixtureIndicador: 'bg-sky-300',
+    fixtureTorneoTitle: 'text-sky-300',
+    fixtureLink: 'text-sky-300 hover:text-sky-200',
+  },
+};
+
+const tema: TemaClub = (club?.slug && TEMAS_CLUBES[club.slug]) || TEMAS_CLUBES['plaza-colonia'];
 ---
 
 <Base
@@ -63,21 +255,24 @@ const porTorneo = (
     ) : (
       <div class="py-8 space-y-12">
         <!-- HEADER PRINCIPAL DEL CLUB (Escudo grande + Ficha identitaria) -->
-        <section class="card-vigor relative overflow-hidden border-t-2 border-t-gold-400 p-6 sm:p-8 bg-navy-950/80">
-          <div class="flex flex-col md:flex-row md:items-center gap-6 lg:gap-10">
+        <section class={`card-vigor relative overflow-hidden border ${tema.heroBorder} ${tema.heroBg} p-6 sm:p-8 shadow-2xl`}>
+          <!-- Ribete superior con la enseña del club -->
+          <div class={`absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r ${tema.heroRibete}`} aria-hidden="true"></div>
+
+          <div class="flex flex-col md:flex-row md:items-center gap-6 lg:gap-10 pt-1">
             <!-- Escudo en tamaño protagónico -->
-            <div class="shrink-0 flex items-center justify-center p-3 bg-navy-900/40 border border-navy-800/80 shadow-2xl">
+            <div class={`shrink-0 flex items-center justify-center p-3.5 ${tema.heroEscudoBg} border shadow-2xl`}>
               <Escudo club={club} tam="2xl" />
             </div>
 
             <!-- Título y Datos de Ficha Rápida -->
             <div class="flex-1 space-y-3">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded-full bg-orange-500 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-ink shadow-sm">
+                <span class={`rounded-full ${tema.badgeClub} px-3 py-0.5 text-xs font-black uppercase tracking-wider shadow-sm`}>
                   Club Afiliado Oficial
                 </span>
                 {cultura?.apodo && (
-                  <span class="text-xs font-bold uppercase tracking-wider text-gold-400">
+                  <span class={`text-xs font-bold uppercase tracking-wider ${tema.apodoColor}`}>
                     «{cultura.apodo}»
                   </span>
                 )}
@@ -87,26 +282,26 @@ const porTorneo = (
                 {club.nombre}
               </h1>
 
-              <p class="text-sm font-semibold uppercase tracking-wider text-paper/70">
+              <p class="text-sm font-semibold uppercase tracking-wider text-paper/75">
                 {cultura?.nombreOficial}
               </p>
 
-              <!-- Grilla de datos técnicos del club (estilo wikipedia deportivo) -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-navy-800/80 text-xs">
+              <!-- Grilla de datos técnicos del club (estilo enciclopédico deportivo) -->
+              <div class={`grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t ${tema.statsBorder} text-xs`}>
                 <div>
-                  <span class="block text-[0.68rem] font-black uppercase tracking-wider text-paper/50">Fundación</span>
+                  <span class={`block text-[0.68rem] font-black uppercase tracking-wider ${tema.statsLabel}`}>Fundación</span>
                   <strong class="font-bold text-paper">{cultura?.fundacion}</strong>
                 </div>
                 <div>
-                  <span class="block text-[0.68rem] font-black uppercase tracking-wider text-paper/50">Ciudad / Sede</span>
+                  <span class={`block text-[0.68rem] font-black uppercase tracking-wider ${tema.statsLabel}`}>Ciudad / Sede</span>
                   <strong class="font-bold text-paper">{cultura?.ciudad}</strong>
                 </div>
                 <div>
-                  <span class="block text-[0.68rem] font-black uppercase tracking-wider text-paper/50">Colores</span>
+                  <span class={`block text-[0.68rem] font-black uppercase tracking-wider ${tema.statsLabel}`}>Colores</span>
                   <strong class="font-bold text-paper">{cultura?.colores}</strong>
                 </div>
                 <div>
-                  <span class="block text-[0.68rem] font-black uppercase tracking-wider text-paper/50">Gimnasio</span>
+                  <span class={`block text-[0.68rem] font-black uppercase tracking-wider ${tema.statsLabel}`}>Gimnasio</span>
                   <strong class="font-bold text-paper truncate block" title={cultura?.gimnasioNombre}>
                     {club.gimnasio ?? cultura?.gimnasioNombre}
                   </strong>
@@ -116,21 +311,21 @@ const porTorneo = (
           </div>
         </section>
 
-        <!-- RESEÑA CULTURAL E HISTÓRICA (tipo wikipedia pero fina y descansada) -->
+        <!-- RESEÑA CULTURAL E HISTÓRICA (con tonalidad complementaria propia del club) -->
         {cultura && (
-          <section class="card-vigor p-6 sm:p-8 bg-navy-950/60 border border-navy-700/70 space-y-4">
-            <div class="flex items-center gap-2 border-b border-navy-800 pb-2.5">
-              <span class="inline-block h-2 w-2 bg-gold-400"></span>
-              <h2 class="m-0 text-sm sm:text-base font-black uppercase tracking-widest text-gold-400">
+          <section class={`card-vigor p-6 sm:p-8 ${tema.resenaBg} border ${tema.resenaBorder} space-y-4 shadow-xl`}>
+            <div class={`flex items-center gap-2 border-b ${tema.resenaBorderB} pb-2.5`}>
+              <span class={`inline-block h-2.5 w-2.5 ${tema.resenaIndicador}`}></span>
+              <h2 class={`m-0 text-sm sm:text-base font-black uppercase tracking-widest ${tema.resenaTitulo}`}>
                 Identidad, Tradición & Arraigo
               </h2>
             </div>
-            <div class="space-y-3 text-paper/85 text-sm sm:text-base font-medium leading-relaxed max-w-4xl">
+            <div class="space-y-3 text-paper/90 text-sm sm:text-base font-medium leading-relaxed max-w-4xl">
               <p class="m-0">
                 {cultura.resena}
               </p>
               {cultura.hito && (
-                <p class="m-0 text-xs sm:text-sm font-semibold text-paper/70 italic border-l-2 border-orange-500 pl-3 py-0.5">
+                <p class={`m-0 text-xs sm:text-sm font-semibold text-paper/80 italic border-l-2 ${tema.resenaHitoBorder} pl-3 py-1 bg-black/20`}>
                   «{cultura.hito}»
                 </p>
               )}
@@ -142,7 +337,7 @@ const porTorneo = (
         <section class="space-y-4" aria-labelledby="t-planteles">
           <div class="flex items-baseline justify-between gap-4 border-b border-navy-700/60 pb-3">
             <div class="flex items-center gap-2.5">
-              <span class="inline-block h-2.5 w-2.5 bg-orange-500"></span>
+              <span class={`inline-block h-2.5 w-2.5 ${tema.plantelIndicador}`}></span>
               <h2 id="t-planteles" class="m-0 text-xl sm:text-2xl font-black uppercase tracking-wide text-paper">
                 Planteles & Fichas Oficiales
               </h2>
@@ -167,19 +362,19 @@ const porTorneo = (
                 return (
                   <details
                     open={abierta}
-                    class="group/details card-vigor overflow-hidden border border-navy-700/80 bg-navy-950/70 transition-all duration-200"
+                    class={`group/details card-vigor overflow-hidden border ${tema.accordionBorder} ${tema.accordionBg} transition-all duration-200 shadow-md`}
                   >
-                    <summary class="flex cursor-pointer items-center justify-between gap-3 p-4 sm:p-5 select-none bg-navy-900/40 hover:bg-navy-900/80 transition-colors list-none">
+                    <summary class={`flex cursor-pointer items-center justify-between gap-3 p-4 sm:p-5 select-none ${tema.accordionSummary} transition-colors list-none`}>
                       <div class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy-800 text-[0.7rem] font-black text-gold-400 border border-navy-700">
+                        <span class={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${tema.accordionNum} text-[0.7rem] font-black border`}>
                           {idx + 1}
                         </span>
-                        <h3 class="m-0 text-base sm:text-lg font-black uppercase tracking-wide text-paper group-hover/details:text-orange-400 transition-colors">
+                        <h3 class={`m-0 text-base sm:text-lg font-black uppercase tracking-wide text-paper ${tema.accordionTitleHover} transition-colors`}>
                           {eq.categorias?.nombre ?? 'Equipo'}
                         </h3>
                       </div>
                       <div class="flex items-center gap-3">
-                        <span class="rounded-full bg-navy-950 border border-navy-700 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-paper/75">
+                        <span class={`rounded-full ${tema.accordionBadge} border px-3 py-0.5 text-xs font-black uppercase tracking-wider`}>
                           {fichas.length} {fichas.length === 1 ? 'Ficha' : 'Fichas'}
                         </span>
                         <svg
@@ -194,7 +389,7 @@ const porTorneo = (
                       </div>
                     </summary>
 
-                    <div class="p-4 sm:p-6 border-t border-navy-800/80 bg-navy-950/40">
+                    <div class={`p-4 sm:p-6 border-t ${tema.accordionInteriorBg}`}>
                       {fichas.length === 0 ? (
                         <p class="py-4 text-center text-xs sm:text-sm font-semibold text-paper/60 italic">
                           Plantel a confirmar por el delegado del club.
@@ -202,7 +397,14 @@ const porTorneo = (
                       ) : (
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                           {fichas.map((f) => (
-                            <JugadorFicha ficha={f} categoriaNombre={eq.categorias?.nombre} />
+                            <JugadorFicha
+                              ficha={f}
+                              categoriaNombre={eq.categorias?.nombre}
+                              themeBorder={tema.fichaBorder}
+                              themeBg={tema.fichaBg}
+                              themeDorsal={tema.fichaDorsal}
+                              themeHoverBorder={tema.fichaHoverBorder}
+                            />
                           ))}
                         </div>
                       )}
@@ -219,7 +421,7 @@ const porTorneo = (
           <section class="space-y-6 pt-4" aria-labelledby="t-calendario">
             <div class="flex items-baseline justify-between gap-4 border-b border-navy-700/60 pb-3">
               <div class="flex items-center gap-2.5">
-                <span class="inline-block h-2.5 w-2.5 bg-gold-400"></span>
+                <span class={`inline-block h-2.5 w-2.5 ${tema.fixtureIndicador}`}></span>
                 <h2 id="t-calendario" class="m-0 text-xl sm:text-2xl font-black uppercase tracking-wide text-paper">
                   Fixture & Resultados de {club.nombre}
                 </h2>
@@ -230,12 +432,12 @@ const porTorneo = (
               {porTorneo.map(({ torneo, partidos }) => (
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">
-                    <h3 class="m-0 text-base sm:text-lg font-black uppercase tracking-wide text-gold-400">
+                    <h3 class={`m-0 text-base sm:text-lg font-black uppercase tracking-wide ${tema.fixtureTorneoTitle}`}>
                       {torneo.nombre}
                     </h3>
                     <a
                       href={`/fixture?torneo=${torneo.id}`}
-                      class="text-xs font-black uppercase tracking-wider text-orange-500 hover:text-orange-400 no-underline transition-colors"
+                      class={`text-xs font-black uppercase tracking-wider ${tema.fixtureLink} no-underline transition-colors`}
                     >
                       Ver torneo completo &rarr;
                     </a>

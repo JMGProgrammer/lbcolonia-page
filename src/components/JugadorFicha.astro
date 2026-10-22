@@ -7,9 +7,20 @@ import type { FichaRoster } from '../lib/data';
 interface Props {
   ficha: FichaRoster;
   categoriaNombre?: string;
+  themeBorder?: string;
+  themeBg?: string;
+  themeDorsal?: string;
+  themeHoverBorder?: string;
 }
 
-const { ficha, categoriaNombre } = Astro.props;
+const {
+  ficha,
+  categoriaNombre,
+  themeBorder = 'border-navy-700/80',
+  themeBg = 'bg-navy-950/70',
+  themeDorsal = 'text-orange-500 group-hover:text-gold-400',
+  themeHoverBorder = 'hover:border-orange-500',
+} = Astro.props;
 const j = ficha.jugadores;
 const dorsal = ficha.dorsal != null ? String(ficha.dorsal).padStart(2, '0') : null;
 const foto = j?.foto_url || '/images/without-photo.webp';
@@ -28,7 +39,7 @@ const hrefJugador = j?.id ? `/jugadores/${j.id}` : '#';
 
 <a
   href={hrefJugador}
-  class="card-vigor group relative flex flex-col overflow-hidden border border-navy-700/80 bg-navy-950/70 p-3 no-underline transition-all duration-200 hover:border-orange-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
+  class={`card-vigor group relative flex flex-col overflow-hidden border ${themeBorder} ${themeBg} ${themeHoverBorder} p-3 no-underline transition-all duration-200 hover:-translate-y-1 hover:shadow-xl cursor-pointer`}
 >
   <!-- Cabecera de la ficha: categoría e indicador de estado ante la liga (círculo verde o rojo) -->
   <div class="flex items-center justify-between pb-2 border-b border-navy-800/70">
@@ -58,7 +69,7 @@ const hrefJugador = j?.id ? `/jugadores/${j.id}` : '#';
   <div class="flex flex-col gap-1 min-w-0 pt-0.5">
     <div class="flex items-baseline gap-1.5 min-w-0" title={j?.nombre_completo}>
       {dorsal && (
-        <span class="num text-sm sm:text-base font-black text-orange-500 group-hover:text-gold-400 transition-colors shrink-0">
+        <span class={`num text-sm sm:text-base font-black ${themeDorsal} transition-colors shrink-0`}>
           #{dorsal}
         </span>
       )}

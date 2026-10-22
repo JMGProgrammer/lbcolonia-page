@@ -40,7 +40,7 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
         />
         <div class="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/40 to-transparent md:bg-gradient-to-r md:from-transparent md:to-navy-950/80"></div>
         <div class="absolute top-4 left-4">
-          <span class="rounded-full bg-orange-500 px-3 py-1 text-xs font-black uppercase tracking-wider text-ink shadow-lg">
+          <span class="border border-orange-500 bg-orange-500 px-3 py-1 text-xs font-black uppercase tracking-wider text-ink shadow-lg">
             Destacado
           </span>
         </div>
@@ -78,7 +78,7 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
   ) : variante === 'horizontal' ? (
     <article class="card-vigor group relative overflow-hidden p-3.5 transition-all duration-200 hover:border-orange-500/50 hover:shadow-xl">
       <a href={`/noticias/${noticia.slug}`} class="flex items-center gap-4 no-underline">
-        <div class="relative h-20 w-24 sm:h-24 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-navy-950">
+        <div class="relative h-20 w-24 sm:h-24 sm:w-28 shrink-0 overflow-hidden bg-navy-950 border border-navy-800">
           <img
             src={portada}
             alt={`Portada: ${noticia.titulo}`}
@@ -104,7 +104,7 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
   ) : (
     <article class="card-vigor group flex flex-col overflow-hidden transition-all duration-300 hover:border-orange-500/50 hover:shadow-2xl">
       <a href={`/noticias/${noticia.slug}`} class="flex h-full flex-col no-underline">
-        <div class="relative aspect-video overflow-hidden bg-navy-950">
+        <div class="relative aspect-video overflow-hidden bg-navy-950 border-b border-navy-800">
           <img
             src={portada}
             alt={`Portada: ${noticia.titulo}`}
@@ -115,7 +115,7 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
           />
           <div class="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/20 to-transparent"></div>
           <div class="absolute bottom-2.5 left-3">
-            <time datetime={fechaIso} class="rounded bg-navy-900/90 border border-gold-400/40 px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-gold-400 shadow-md">
+            <time datetime={fechaIso} class="bg-navy-900/90 border border-gold-400/40 px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-gold-400 shadow-md">
               {fecha ? fechaCorta(fecha) : 'Oficial'}
             </time>
           </div>

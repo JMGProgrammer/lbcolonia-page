@@ -1,34 +1,91 @@
 ---
-// Topbar sticky (patrón mockup IT1): menú móvil solo-CSS con checkbox + :has().
-// Nota: el label "Menú" es para versión táctil; en desktop la nav siempre abre.
+// Topbar oficial de la Liga de Básquetbol de Colonia
+// Diseño deportivo de dos niveles, angular (bordes rectos), alta legibilidad y navegación móvil CSS-only (:has).
 const links = [
-  { href: '/fixture', texto: 'Fixture' },
-  { href: '/tabla', texto: 'Tabla' },
+  { href: '/fixture', texto: 'Fixture & Resultados' },
+  { href: '/tabla', texto: 'Posiciones' },
   { href: '/clubes', texto: 'Clubes' },
-  { href: '/sanciones', texto: 'Sanciones' },
+  { href: '/sanciones', texto: 'Tribunal & Sanciones' },
   { href: '/noticias', texto: 'Noticias' },
 ];
 ---
 
-<header class="sticky top-0 z-30 border-b border-navy-700 bg-navy-950/95 backdrop-blur-sm">
-  <div class="mx-auto flex min-h-16 max-w-[1200px] items-center gap-3 px-4">
-    <a href="/" class="flex shrink-0 items-center gap-2.5 no-underline">
-      <img src="/logo-lbc-bgr.png" alt="Escudo de la Liga de Básquetbol de Colonia" width="40" height="47" class="h-10 w-auto" />
-      <span class="hidden min-[480px]:flex flex-col leading-tight">
-        <strong class="text-base font-black tracking-[0.02em]">LBC</strong>
-        <span class="text-[0.68rem] uppercase tracking-[0.14em] text-paper-muted">Liga de Básquetbol · Colonia</span>
-      </span>
+<header class="sticky top-0 z-40 w-full border-b border-navy-700/80 bg-navy-950/95 backdrop-blur-md">
+  <!-- Top Utility Strip -->
+  <div class="border-b border-navy-800/60 bg-navy-950 px-4 py-1.5 text-[0.68rem] tracking-wider text-paper-muted">
+    <div class="mx-auto flex max-w-[1240px] items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="inline-block h-1.5 w-1.5 bg-gold-400 animate-pulse"></span>
+        <span class="font-bold uppercase text-paper/80">Temporada Oficial 2026</span>
+        <span class="hidden sm:inline text-navy-600">|</span>
+        <span class="hidden sm:inline font-medium text-paper/60 uppercase">Federación Uruguaya de Basketball · Afiliada</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a 
+          href="/panel" 
+          class="flex items-center gap-1.5 font-bold uppercase tracking-widest text-gold-400 hover:text-gold-300 no-underline transition-colors py-0.5"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>Acceso Delegados & Liga</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation Bar -->
+  <div class="mx-auto flex min-h-[68px] max-w-[1240px] items-center justify-between gap-4 px-4 py-2">
+    <!-- Brand / Escudo -->
+    <a href="/" class="flex shrink-0 items-center gap-3.5 no-underline group py-1">
+      <img
+        src="/logo-lbc-bgr.png"
+        alt="Escudo de la Liga de Básquetbol de Colonia"
+        width="46"
+        height="54"
+        class="h-11 sm:h-12 w-auto object-contain drop-shadow-[0_4px_12px_rgba(238,107,31,0.25)] transition-transform group-hover:scale-105"
+      />
+      <div class="flex flex-col leading-none">
+        <span class="flex items-baseline gap-1.5">
+          <strong class="text-xl sm:text-2xl font-black tracking-tight text-paper group-hover:text-gold-400 transition-colors">LBC</strong>
+          <span class="hidden md:inline text-xs font-black tracking-widest uppercase text-gold-400">BÁSQUETBOL</span>
+        </span>
+        <span class="text-[0.62rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.16em] text-paper-muted mt-0.5">
+          Liga de Colonia · Uruguay
+        </span>
+      </div>
     </a>
+
+    <!-- Menu toggle móvil (checkbox CSS-only) -->
     <input id="topbar-menu" type="checkbox" class="topbar-menu checked:sr-only sr-only" aria-label="Mostrar menú" />
-    <label for="topbar-menu" class="ml-auto cursor-pointer rounded-lg border border-navy-700 px-3 py-2 text-[0.78rem] font-bold uppercase tracking-[0.1em] text-paper transition-colors hover:border-orange-500 md:hidden">Menú</label>
-    <nav class="topbar-nav hidden md:ml-auto md:flex md:items-center md:gap-1" aria-label="Navegación principal">
+    <label
+      for="topbar-menu"
+      class="ml-auto cursor-pointer border border-navy-700 bg-navy-900/80 px-3.5 py-2 text-xs font-black uppercase tracking-widest text-paper transition-colors hover:border-orange-500 hover:text-orange-400 lg:hidden"
+    >
+      Menú
+    </label>
+
+    <!-- Nav Desktop -->
+    <nav class="topbar-nav hidden lg:flex lg:items-center lg:gap-1" aria-label="Navegación principal">
       {
         links.map((l) => (
-          <a href={l.href} class="rounded-lg px-2.5 py-2 text-[0.9rem] font-semibold text-paper-muted no-underline transition-colors hover:text-paper md:px-2">
+          <a
+            href={l.href}
+            class="relative px-3.5 py-2 text-[0.82rem] font-black uppercase tracking-wider text-paper/80 no-underline transition-all hover:text-gold-400 hover:bg-navy-900/60"
+          >
             {l.texto}
           </a>
         ))
       }
+      <div class="ml-2 pl-2 border-l border-navy-800">
+        <a
+          href="/fixture"
+          class="border border-orange-500/80 bg-orange-600/20 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-orange-400 hover:bg-orange-600 hover:text-paper no-underline transition-all inline-flex items-center gap-1.5 shadow-[0_2px_10px_rgba(238,107,31,0.2)]"
+        >
+          <span class="h-1.5 w-1.5 bg-orange-400"></span>
+          <span>Resultados</span>
+        </a>
+      </div>
     </nav>
   </div>
 </header>

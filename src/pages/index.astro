@@ -4,13 +4,13 @@
 import Base from '../layouts/Base.astro';
 import Rotulo from '../components/Rotulo.astro';
 import Panel from '../components/Panel.astro';
-import Btn from '../components/Btn.astro';
 import ResultCard from '../components/ResultCard.astro';
 import PartidoFila from '../components/PartidoFila.astro';
 import TablaPosiciones from '../components/TablaPosiciones.astro';
 import NoticiaCard from '../components/NoticiaCard.astro';
 import AuspicianteTile from '../components/AuspicianteTile.astro';
 import Escudo from '../components/Escudo.astro';
+import AficheProximaFecha from '../components/AficheProximaFecha.astro';
 import {
   listarTorneos,
   listarPartidosDeTorneo,
@@ -22,7 +22,7 @@ import {
   torneoPorDefecto,
 } from '../lib/data';
 import type { PartidoVista } from '../lib/data';
-import { fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
+import { fechaCorta, rondaLabel } from '../lib/fmt';
 
 const [torneos, noticias, auspiciantes, paginas, clubes] = await Promise.all([
   listarTorneos(),
@@ -87,8 +87,8 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
         }
       </Rotulo>
     </div>
-    <div class="grid gap-5 md:grid-cols-[2fr_1fr] md:items-stretch">
-      <div>
+    <div class="grid gap-6 lg:grid-cols-12 lg:items-stretch">
+      <div class="lg:col-span-7 flex flex-col justify-between">
         <div class="grid gap-3.5">
           {
             fechaPublicada.length === 0 && (
@@ -102,32 +102,9 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
       </div>
       {
         rondaProxima && (
-          <Panel variante="dorado">
-            <div class="flex items-center justify-center gap-2">
-              <span class="inline-block h-2 w-2 rounded-full bg-gold-400 animate-pulse"></span>
-              <p class="text-center text-xs font-black uppercase tracking-widest text-gold-400">Próxima fecha</p>
-            </div>
-            <h2 class="mt-1 text-center text-lg sm:text-xl font-black tracking-tight text-paper">
-              {rondaLabel(rondaProxima)} · {fechaCorta(fechaProxima[0].fecha_hora)}
-            </h2>
-            <div class="mt-4 grid gap-2.5 rounded-lg bg-navy-950/70 p-3.5 border border-gold-400/20">
-              {
-                fechaProxima.map((p) => (
-                  <p class="num flex items-center justify-center gap-2 text-center text-sm sm:text-base font-bold text-paper">
-                    <span class="text-gold-400 font-extrabold">{horaCorta(p.fecha_hora)}</span>
-                    <span class="num text-paper-muted">·</span>
-                    <span class="truncate">
-                      {p.local?.clubes.nombre} vs {p.visitante?.clubes.nombre}
-                    </span>
-                  </p>
-                ))
-              }
-              <p class="mt-1 text-center text-xs font-semibold text-paper/70 border-t border-navy-800/80 pt-2">{fechaProxima[0].sede ?? 'Sede a confirmar'}</p>
-            </div>
-            <div class="mt-5 text-center">
-              <Btn href={`/fixture?torneo=${primera?.id ?? ''}&ronda=${rondaProxima}`}>Ver fixture completo</Btn>
-            </div>
-          </Panel>
+          <div class="lg:col-span-5 flex flex-col">
+            <AficheProximaFecha ronda={rondaProxima} partidos={fechaProxima} torneoId={primera?.id} />
+          </div>
         )
       }
     </div>

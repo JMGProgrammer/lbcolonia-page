@@ -37,7 +37,7 @@ const aria = `${rondaLabel(partido.ronda)} · ${fechaCorta(partido.fecha_hora)} 
       </div>
       <div class="flex min-w-0 flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
         <span class="flex min-w-0 items-center gap-2.5 sm:w-[46%]">
-          <Escudo club={loc} tam="sm" />
+          <Escudo club={loc} tam="md" />
           <span class={`min-w-0 truncate text-base font-bold ${partido.estado === 'walkover' && partido.local?.id === partido.walkover_ganador_id ? 'text-gold-400' : 'text-paper'}`}>
             {loc?.nombre ?? 'Local'}
           </span>
@@ -46,7 +46,7 @@ const aria = `${rondaLabel(partido.ronda)} · ${fechaCorta(partido.fecha_hora)} 
           {marcador}
         </span>
         <span class="flex min-w-0 items-center gap-2.5 sm:ml-auto sm:w-[46%] sm:flex-row-reverse sm:text-right">
-          <Escudo club={vis} tam="sm" />
+          <Escudo club={vis} tam="md" />
           <span class={`min-w-0 truncate text-base font-bold ${partido.estado === 'walkover' && partido.visitante?.id === partido.walkover_ganador_id ? 'text-gold-400' : 'text-paper'}`}>
             {vis?.nombre ?? 'Visitante'}
           </span>
@@ -54,7 +54,7 @@ const aria = `${rondaLabel(partido.ronda)} · ${fechaCorta(partido.fecha_hora)} 
       </div>
       <div class="flex min-w-0 items-center justify-between gap-2 sm:flex-col sm:items-end">
         <span class="num text-xl font-black text-orange-500 sm:hidden">{marcador}</span>
-        <span class={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider shadow-sm ${tonoBadge[badge.tono] ?? ''}`}>{badge.texto}</span>
+        <span class={`px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? ''}`}>{badge.texto}</span>
       </div>
       <div class="w-full border-t border-navy-700/60 pt-2 text-xs font-medium text-paper/75 sm:min-w-0 sm:max-w-[200px] sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
         {partido.sede ?? 'Sede a confirmar'}
@@ -69,17 +69,17 @@ const aria = `${rondaLabel(partido.ronda)} · ${fechaCorta(partido.fecha_hora)} 
       </div>
       <div class="flex min-w-0 flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
         <span class="flex min-w-0 items-center gap-2.5 sm:w-[46%]">
-          <Escudo club={loc} tam="sm" />
+          <Escudo club={loc} tam="md" />
           <span class="min-w-0 truncate text-base font-bold text-paper">{loc?.nombre ?? 'Local'}</span>
         </span>
         <span class="hidden px-2 text-xs font-black uppercase tracking-widest text-paper-muted sm:inline" aria-hidden="true">vs</span>
         <span class="flex min-w-0 items-center gap-2.5 sm:ml-auto sm:w-[46%] sm:flex-row-reverse sm:text-right">
-          <Escudo club={vis} tam="sm" />
+          <Escudo club={vis} tam="md" />
           <span class="min-w-0 truncate text-base font-bold text-paper">{vis?.nombre ?? 'Visitante'}</span>
         </span>
       </div>
       <div class="flex min-w-0 items-center gap-2 sm:flex-col sm:items-end">
-        <span class={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider shadow-sm ${tonoBadge[badge.tono] ?? ''}`}>{badge.texto}</span>
+        <span class={`px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? ''}`}>{badge.texto}</span>
       </div>
       <div class="w-full border-t border-navy-700/60 pt-2 text-xs font-medium text-paper/75 sm:min-w-0 sm:max-w-[200px] sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
         {partido.sede ?? 'Sede a confirmar'}

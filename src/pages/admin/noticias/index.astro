@@ -1,0 +1,616 @@
+---
+// Gestión de Noticias Oficiales (/admin/noticias)
+// Docs/05 §1A: Publicar noticias, editor Markdown con vista previa, destacados y etiquetas.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Noticias" seccionActiva="noticias">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Prensa y Comunicación
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Noticias de la Liga
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Comunicados oficiales, crónicas de partidos y novedades para el sitio público
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <a
+          href="/noticias"
+          target="_blank"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          <svg class="h-4 w-4 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Ver en el sitio
+        </a>
+
+        <button
+          id="btn-nueva-noticia"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nueva noticia
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda y conteo -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <div class="relative flex-1 max-w-md">
+        <input
+          id="input-buscar-noticia"
+          type="search"
+          placeholder="Buscar por título o etiqueta..."
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 pl-9 pr-3 py-1.5 text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"
+        />
+        <svg class="absolute left-2.5 top-2 h-4 w-4 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+
+      <p id="contador-noticias" class="text-xs text-paper-muted">
+        Cargando noticias...
+      </p>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div id="cargando-noticias" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div id="lista-noticias-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No se encontraron noticias registradas.</p>
+    </div>
+
+    <!-- Tabla de noticias -->
+    <div id="contenedor-noticias" class="hidden overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900 shadow-lg">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
+            <th class="py-3 px-4">Artículo</th>
+            <th class="py-3 px-4">Etiquetas</th>
+            <th class="py-3 px-4">Fecha</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-noticias" class="divide-y divide-navy-800">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Editor de Noticia -->
+  <dialog
+    id="modal-noticia"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-4xl w-[95%] max-h-[90vh] overflow-y-auto"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-noticia-titulo" class="text-base font-bold text-paper">
+        Nueva Noticia
+      </h3>
+      <button id="modal-noticia-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-noticia" class="mt-4 space-y-4">
+      <input type="hidden" id="noticia-id" />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="noticia-titulo-input" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Título
+          </label>
+          <input
+            id="noticia-titulo-input"
+            type="text"
+            required
+            placeholder="Ej: Arrancó la Primera División 2026"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="noticia-slug" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Slug / URL amigable
+          </label>
+          <input
+            id="noticia-slug"
+            type="text"
+            required
+            placeholder="arranco-la-primera-2026"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs font-mono text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label for="noticia-bajada" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Bajada o copete (resumen corto)
+        </label>
+        <textarea
+          id="noticia-bajada"
+          rows="2"
+          placeholder="Breve introducción que acompaña al título en portada..."
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="noticia-portada" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            URL Imagen de portada (opcional)
+          </label>
+          <input
+            id="noticia-portada"
+            type="url"
+            placeholder="https://... o /fotos/portada.jpg"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="noticia-etiquetas" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Etiquetas (separadas por comas)
+          </label>
+          <input
+            id="noticia-etiquetas"
+            type="text"
+            placeholder="Primera, Fecha 1, Colonia"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6 rounded-lg border border-navy-800 bg-navy-950 p-3">
+        <label class="flex items-center gap-2 cursor-pointer text-xs">
+          <input
+            id="noticia-publicado"
+            type="checkbox"
+            checked
+            class="h-4 w-4 rounded border-navy-700 bg-navy-900 text-orange-500 focus:ring-orange-500"
+          />
+          <span class="font-bold text-paper">Publicar en el sitio</span>
+        </label>
+
+        <label class="flex items-center gap-2 cursor-pointer text-xs">
+          <input
+            id="noticia-destacado"
+            type="checkbox"
+            class="h-4 w-4 rounded border-navy-700 bg-navy-900 text-orange-500 focus:ring-orange-500"
+          />
+          <span class="font-bold text-gold-400">Marcar como noticia destacada</span>
+        </label>
+      </div>
+
+      <!-- Editor Markdown + Vista previa -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label for="noticia-cuerpo" class="text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Cuerpo del artículo (Markdown)
+          </label>
+          <span class="text-[0.65rem] text-paper-muted">
+            Soporta títulos (#), negritas (**), cursivas (*) y listas (-)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <textarea
+            id="noticia-cuerpo"
+            rows="10"
+            placeholder="Escriba aquí el contenido del artículo en formato Markdown..."
+            class="w-full font-mono rounded-lg border border-navy-700 bg-navy-950 p-3 text-xs text-paper focus:border-orange-500 focus:outline-none leading-relaxed resize-y"
+          ></textarea>
+
+          <div class="flex flex-col rounded-lg border border-navy-800 bg-navy-950/70 p-3">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-orange-400 mb-2">
+              Vista previa en vivo
+            </span>
+            <div
+              id="noticia-preview"
+              class="prose prose-invert max-w-none text-xs text-paper leading-relaxed overflow-y-auto max-h-56"
+            >
+              <p class="text-paper-muted italic">La vista previa aparecerá aquí al escribir...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-noticia-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold text-ink hover:bg-orange-700 transition-colors"
+        >
+          Guardar Noticia
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, obtenerEstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: any = null;
+  let noticiasMemoria: any[] = [];
+
+  const modalNoticia = document.getElementById('modal-noticia') as HTMLDialogElement;
+  const formNoticia = document.getElementById('form-noticia') as HTMLFormElement;
+  const inputTitulo = document.getElementById('noticia-titulo-input') as HTMLInputElement;
+  const inputSlug = document.getElementById('noticia-slug') as HTMLInputElement;
+  const textareaCuerpo = document.getElementById('noticia-cuerpo') as HTMLTextAreaElement;
+  const divPreview = document.getElementById('noticia-preview') as HTMLElement;
+
+  // Renderizador ligero Markdown client-side compatible con CSP estricta
+  function miniMarkdown(texto: string): string {
+    if (!texto) return '<p class="text-paper-muted italic">Sin contenido aún...</p>';
+
+    const lineas = texto.split('\n');
+    const out: string[] = [];
+    let enLista = false;
+
+    const inline = (s: string) =>
+      s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" class="text-orange-400 underline font-semibold" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    const cerrarLista = () => {
+      if (enLista) {
+        out.push('</ul>');
+        enLista = false;
+      }
+    };
+
+    for (const linea of lineas) {
+      const t = linea.trim();
+      if (!t) {
+        cerrarLista();
+        continue;
+      }
+
+      const h = /^(#{1,3})\s+(.*)$/.exec(t);
+      if (h) {
+        cerrarLista();
+        const nivel = h[1].length;
+        const cls = nivel === 1 ? 'text-base font-black text-paper mt-3 mb-1' : 'text-sm font-bold text-orange-400 mt-2 mb-1';
+        out.push(`<h${nivel} class="${cls}">${inline(h[2])}</h${nivel}>`);
+        continue;
+      }
+
+      const li = /^[-*]\s+(.*)$/.exec(t);
+      if (li) {
+        if (!enLista) {
+          out.push('<ul class="list-disc pl-5 my-2 space-y-1">');
+          enLista = true;
+        }
+        out.push(`<li>${inline(li[1])}</li>`);
+        continue;
+      }
+
+      cerrarLista();
+      out.push(`<p class="my-1.5 leading-relaxed">${inline(t)}</p>`);
+    }
+
+    cerrarLista();
+    return out.join('\n');
+  }
+
+  function actualizarPreview() {
+    if (divPreview && textareaCuerpo) {
+      divPreview.innerHTML = miniMarkdown(textareaCuerpo.value);
+    }
+  }
+
+  textareaCuerpo?.addEventListener('input', actualizarPreview);
+
+  // Auto-slug a partir del título
+  inputTitulo?.addEventListener('input', () => {
+    const id = (document.getElementById('noticia-id') as HTMLInputElement).value;
+    if (!id) {
+      const slug = inputTitulo.value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      inputSlug.value = slug;
+    }
+  });
+
+  async function cargarNoticias() {
+    const cargando = document.getElementById('cargando-noticias');
+    const contenedor = document.getElementById('contenedor-noticias');
+    const vacia = document.getElementById('lista-noticias-vacia');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+    vacia?.classList.add('hidden');
+
+    const { data, error } = await supabaseBrowser
+      .from('noticias')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    cargando?.classList.add('hidden');
+
+    if (error) {
+      console.error('Error al cargar noticias:', error);
+      alert('Error al cargar noticias: ' + error.message);
+      return;
+    }
+
+    noticiasMemoria = data || [];
+    renderizarNoticias();
+  }
+
+  function renderizarNoticias() {
+    const contenedor = document.getElementById('contenedor-noticias');
+    const vacia = document.getElementById('lista-noticias-vacia');
+    const tbody = document.getElementById('tbody-noticias');
+    const contador = document.getElementById('contador-noticias');
+    if (!tbody) return;
+
+    const busqueda = (document.getElementById('input-buscar-noticia') as HTMLInputElement)?.value.trim().toLowerCase() || '';
+
+    const filtradas = noticiasMemoria.filter((n) => {
+      if (!busqueda) return true;
+      const matchTitulo = n.titulo.toLowerCase().includes(busqueda);
+      const matchSlug = n.slug.toLowerCase().includes(busqueda);
+      const matchEtiquetas = (n.etiquetas || []).some((e: string) => e.toLowerCase().includes(busqueda));
+      return matchTitulo || matchSlug || matchEtiquetas;
+    });
+
+    if (contador) {
+      contador.textContent = `${filtradas.length} noticia${filtradas.length === 1 ? '' : 's'}`;
+    }
+
+    if (filtradas.length === 0) {
+      contenedor?.classList.add('hidden');
+      vacia?.classList.remove('hidden');
+      return;
+    }
+
+    vacia?.classList.add('hidden');
+    contenedor?.classList.remove('hidden');
+
+    tbody.innerHTML = filtradas
+      .map((n) => {
+        const fechaStr = n.publicado_at
+          ? new Date(n.publicado_at).toLocaleDateString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric' })
+          : new Date(n.created_at).toLocaleDateString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        const badgeEstado = n.publicado
+          ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-emerald-400">Publicada</span>`
+          : `<span class="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-amber-400">Borrador</span>`;
+
+        const badgeDestacado = n.destacado
+          ? `<span class="rounded bg-gold-400/20 border border-gold-400/40 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase text-gold-400">★ Destacada</span>`
+          : '';
+
+        const tagsHtml = (n.etiquetas || [])
+          .map((t: string) => `<span class="rounded bg-navy-800 px-1.5 py-0.5 text-[0.65rem] text-paper-muted">${t}</span>`)
+          .join(' ');
+
+        return `
+          <tr class="hover:bg-navy-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2">
+                <div class="font-bold text-paper">${n.titulo}</div>
+                ${badgeDestacado}
+              </div>
+              <div class="text-[0.7rem] text-paper-muted font-mono">/${n.slug}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex flex-wrap gap-1">${tagsHtml || '<span class="text-paper-muted">-</span>'}</div>
+            </td>
+            <td class="py-3 px-4 text-paper-muted">
+              ${fechaStr}
+            </td>
+            <td class="py-3 px-4">
+              ${badgeEstado}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <div class="inline-flex items-center gap-1.5 justify-end">
+                <button
+                  type="button"
+                  data-accion="editar"
+                  data-id="${n.id}"
+                  class="rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1 text-xs text-paper-muted hover:text-paper hover:bg-navy-700 transition-colors"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  data-accion="eliminar"
+                  data-id="${n.id}"
+                  data-confirm="¿Eliminar la noticia '${n.titulo}'? Esta acción no se puede deshacer."
+                  class="rounded-lg border border-navy-700 bg-navy-800 px-2 py-1 text-xs text-paper-muted hover:text-red-400 hover:border-red-500/40 transition-colors"
+                >
+                  Borrar
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  // Delegación de eventos en tabla
+  document.getElementById('tbody-noticias')?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'editar') {
+      const noticia = noticiasMemoria.find((n) => n.id === id);
+      if (noticia) abrirModalEditar(noticia);
+    }
+  });
+
+  // Evento confirmado por diálogo nativo
+  document.getElementById('tbody-noticias')?.addEventListener('confirmado', async (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'eliminar') {
+      const { error } = await supabaseBrowser
+        .from('noticias')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al eliminar noticia: ' + error.message);
+        return;
+      }
+      await cargarNoticias();
+    }
+  });
+
+  document.getElementById('input-buscar-noticia')?.addEventListener('input', renderizarNoticias);
+
+  function abrirModalEditar(n: any) {
+    formNoticia.reset();
+    (document.getElementById('noticia-id') as HTMLInputElement).value = n.id;
+    (document.getElementById('modal-noticia-titulo') as HTMLElement).textContent = 'Editar Noticia';
+    inputTitulo.value = n.titulo || '';
+    inputSlug.value = n.slug || '';
+    (document.getElementById('noticia-bajada') as HTMLTextAreaElement).value = n.bajada || '';
+    (document.getElementById('noticia-portada') as HTMLInputElement).value = n.portada_url || '';
+    (document.getElementById('noticia-etiquetas') as HTMLInputElement).value = (n.etiquetas || []).join(', ');
+    (document.getElementById('noticia-publicado') as HTMLInputElement).checked = !!n.publicado;
+    (document.getElementById('noticia-destacado') as HTMLInputElement).checked = !!n.destacado;
+    textareaCuerpo.value = n.cuerpo_md || '';
+    actualizarPreview();
+    modalNoticia.showModal();
+  }
+
+  document.getElementById('btn-nueva-noticia')?.addEventListener('click', () => {
+    formNoticia.reset();
+    (document.getElementById('noticia-id') as HTMLInputElement).value = '';
+    (document.getElementById('modal-noticia-titulo') as HTMLElement).textContent = 'Nueva Noticia';
+    (document.getElementById('noticia-publicado') as HTMLInputElement).checked = true;
+    (document.getElementById('noticia-destacado') as HTMLInputElement).checked = false;
+    actualizarPreview();
+    modalNoticia.showModal();
+  });
+
+  document.getElementById('modal-noticia-cerrar')?.addEventListener('click', () => modalNoticia.close());
+  document.getElementById('modal-noticia-cancelar')?.addEventListener('click', () => modalNoticia.close());
+
+  formNoticia.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const id = (document.getElementById('noticia-id') as HTMLInputElement).value;
+    const titulo = inputTitulo.value.trim();
+    const slug = inputSlug.value.trim();
+    const bajada = (document.getElementById('noticia-bajada') as HTMLTextAreaElement).value.trim() || null;
+    const portadaUrl = (document.getElementById('noticia-portada') as HTMLInputElement).value.trim() || null;
+    const etiquetasTexto = (document.getElementById('noticia-etiquetas') as HTMLInputElement).value.trim();
+    const etiquetas = etiquetasTexto
+      ? etiquetasTexto.split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
+    const publicado = (document.getElementById('noticia-publicado') as HTMLInputElement).checked;
+    const destacado = (document.getElementById('noticia-destacado') as HTMLInputElement).checked;
+    const cuerpoMd = textareaCuerpo.value;
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      titulo,
+      slug,
+      bajada,
+      portada_url: portadaUrl,
+      etiquetas,
+      publicado,
+      destacado,
+      cuerpo_md: cuerpoMd,
+      publicado_at: publicado ? new Date().toISOString() : null,
+    };
+
+    if (id) {
+      const { error } = await supabaseBrowser
+        .from('noticias')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al actualizar noticia: ' + error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabaseBrowser
+        .from('noticias')
+        .insert(payload);
+
+      if (error) {
+        if (error.code === '23505') {
+          alert('Ya existe una noticia con ese slug o URL amigable.');
+        } else {
+          alert('Error al registrar noticia: ' + error.message);
+        }
+        return;
+      }
+    }
+
+    modalNoticia.close();
+    await cargarNoticias();
+  });
+
+  // Inicialización
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarNoticias();
+  });
+
+  obtenerEstadoAdmin().then(async (estado) => {
+    if (estado.autenticado && estado.esOrganizador) {
+      estadoAdmin = estado;
+      await cargarNoticias();
+    }
+  });
+</script>

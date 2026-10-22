@@ -1,0 +1,476 @@
+---
+// Gestión de Auspiciantes Comerciales (/admin/auspiciantes)
+// Docs/05 §1A & Docs/03 §2: Niveles (oro/plata/bronce/colaborador), logos, orden. Solo liga_admin escribe.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Auspiciantes" seccionActiva="auspiciantes">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Comercial
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Auspiciantes Oficiales
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Patrocinadores de la liga, niveles comerciales y franjas de publicidad
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <button
+          id="btn-nuevo-auspiciante"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo auspiciante
+        </button>
+      </div>
+    </div>
+
+    <!-- Aviso si el rol es ayudante (Docs/03 §2: auspiciantes es solo de liga_admin) -->
+    <div id="alerta-rol-ayudante" class="hidden rounded-[14px] border border-amber-500/40 bg-amber-500/10 p-4">
+      <div class="flex items-start gap-3">
+        <svg class="h-5 w-5 text-amber-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <h3 class="text-xs font-bold text-paper">Modo de sólo lectura para Ayudante</h3>
+          <p class="mt-0.5 text-xs text-paper-muted">
+            Por política de seguridad estatutaria, la administración comercial y de auspiciantes está reservada para el rol Administrador de Liga.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div id="cargando-auspiciantes" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div id="lista-auspiciantes-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No se encontraron auspiciantes registrados.</p>
+    </div>
+
+    <!-- Tabla de auspiciantes -->
+    <div id="contenedor-auspiciantes" class="hidden overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900 shadow-lg">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
+            <th class="py-3 px-4">Patrocinador</th>
+            <th class="py-3 px-4">Nivel Comercial</th>
+            <th class="py-3 px-4">Enlace</th>
+            <th class="py-3 px-4 text-center">Orden</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-auspiciantes" class="divide-y divide-navy-800">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Alta / Edición de Auspiciante -->
+  <dialog
+    id="modal-auspiciante"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-lg w-[95%]"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-auspiciante-titulo" class="text-base font-bold text-paper">
+        Nuevo Auspiciante
+      </h3>
+      <button id="modal-auspiciante-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-auspiciante" class="mt-4 space-y-4">
+      <input type="hidden" id="auspiciante-id" />
+
+      <div>
+        <label for="auspiciante-nombre" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Nombre de la empresa o marca
+        </label>
+        <input
+          id="auspiciante-nombre"
+          type="text"
+          required
+          placeholder="Ej: Banco República"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="auspiciante-nivel" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Nivel comercial
+          </label>
+          <select
+            id="auspiciante-nivel"
+            required
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          >
+            <option value="oro">Oro (Principal)</option>
+            <option value="plata" selected>Plata (Oficial)</option>
+            <option value="bronce">Bronce (Acompaña)</option>
+            <option value="colaborador">Colaborador</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="auspiciante-orden" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Prioridad / Orden
+          </label>
+          <input
+            id="auspiciante-orden"
+            type="number"
+            min="0"
+            max="99"
+            value="1"
+            required
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label for="auspiciante-logo" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          URL del Logo (vectorial o transparente)
+        </label>
+        <input
+          id="auspiciante-logo"
+          type="url"
+          placeholder="https://... o /logos/sponsor.png"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label for="auspiciante-link" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          Enlace a sitio web oficial
+        </label>
+        <input
+          id="auspiciante-link"
+          type="url"
+          placeholder="https://www.marca.com.uy"
+          class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div class="rounded-lg border border-navy-800 bg-navy-950 p-3">
+        <label class="flex items-center gap-2 cursor-pointer text-xs">
+          <input
+            id="auspiciante-activo"
+            type="checkbox"
+            checked
+            class="h-4 w-4 rounded border-navy-700 bg-navy-900 text-orange-500 focus:ring-orange-500"
+          />
+          <span class="font-bold text-paper">Auspicio activo (visible en sitio público y banner)</span>
+        </label>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-auspiciante-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          id="btn-submit-auspiciante"
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold text-ink hover:bg-orange-700 transition-colors"
+        >
+          Guardar Auspiciante
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, obtenerEstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: any = null;
+  let auspiciantesMemoria: any[] = [];
+
+  const modalAusp = document.getElementById('modal-auspiciante') as HTMLDialogElement;
+  const formAusp = document.getElementById('form-auspiciante') as HTMLFormElement;
+  const btnNuevo = document.getElementById('btn-nuevo-auspiciante') as HTMLButtonElement;
+  const alertaAyudante = document.getElementById('alerta-rol-ayudante');
+
+  async function cargarAuspiciantes() {
+    const cargando = document.getElementById('cargando-auspiciantes');
+    const contenedor = document.getElementById('contenedor-auspiciantes');
+    const vacia = document.getElementById('lista-auspiciantes-vacia');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+    vacia?.classList.add('hidden');
+
+    const { data, error } = await supabaseBrowser
+      .from('auspiciantes')
+      .select('*')
+      .order('orden', { ascending: true });
+
+    cargando?.classList.add('hidden');
+
+    if (error) {
+      console.error('Error al cargar auspiciantes:', error);
+      alert('Error al cargar auspiciantes: ' + error.message);
+      return;
+    }
+
+    auspiciantesMemoria = data || [];
+    renderizarAuspiciantes();
+  }
+
+  function renderizarAuspiciantes() {
+    const contenedor = document.getElementById('contenedor-auspiciantes');
+    const vacia = document.getElementById('lista-auspiciantes-vacia');
+    const tbody = document.getElementById('tbody-auspiciantes');
+    if (!tbody) return;
+
+    if (auspiciantesMemoria.length === 0) {
+      contenedor?.classList.add('hidden');
+      vacia?.classList.remove('hidden');
+      return;
+    }
+
+    vacia?.classList.add('hidden');
+    contenedor?.classList.remove('hidden');
+
+    const esAdmin = estadoAdmin?.rol === 'liga_admin' || estadoAdmin?.rol === 'superadmin';
+
+    tbody.innerHTML = auspiciantesMemoria
+      .map((a) => {
+        let badgeNivel = '';
+        if (a.nivel === 'oro') {
+          badgeNivel = `<span class="rounded bg-gold-400/20 border border-gold-400/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-gold-400">Oro</span>`;
+        } else if (a.nivel === 'plata') {
+          badgeNivel = `<span class="rounded bg-slate-300/20 border border-slate-300/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-slate-200">Plata</span>`;
+        } else if (a.nivel === 'bronce') {
+          badgeNivel = `<span class="rounded bg-amber-700/20 border border-amber-700/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-amber-500">Bronce</span>`;
+        } else {
+          badgeNivel = `<span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted">Colaborador</span>`;
+        }
+
+        const badgeEstado = a.activo
+          ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-emerald-400">Activo</span>`
+          : `<span class="inline-flex items-center gap-1 rounded-full bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted">Inactivo</span>`;
+
+        const linkHtml = a.link
+          ? `<a href="${a.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-orange-400 hover:underline font-mono truncate max-w-[150px] inline-block">${a.link.replace(/^https?:\/\//, '')}</a>`
+          : `<span class="text-paper-muted">-</span>`;
+
+        let accionesHtml = '';
+        if (esAdmin) {
+          accionesHtml = `
+            <div class="inline-flex items-center gap-1.5 justify-end">
+              <button
+                type="button"
+                data-accion="editar"
+                data-id="${a.id}"
+                class="rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1 text-xs text-paper-muted hover:text-paper hover:bg-navy-700 transition-colors"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                data-accion="eliminar"
+                data-id="${a.id}"
+                data-confirm="¿Eliminar el auspiciante '${a.nombre}'? Dejará de aparecer en la franja pública."
+                class="rounded-lg border border-navy-700 bg-navy-800 px-2 py-1 text-xs text-paper-muted hover:text-red-400 hover:border-red-500/40 transition-colors"
+              >
+                Borrar
+              </button>
+            </div>
+          `;
+        } else {
+          accionesHtml = `<span class="text-[0.7rem] text-paper-muted italic">Sólo lectura</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-navy-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-bold text-paper">${a.nombre}</div>
+              ${a.logo_url ? `<div class="text-[0.65rem] text-paper-muted truncate max-w-[200px]">${a.logo_url}</div>` : ''}
+            </td>
+            <td class="py-3 px-4">
+              ${badgeNivel}
+            </td>
+            <td class="py-3 px-4">
+              ${linkHtml}
+            </td>
+            <td class="py-3 px-4 text-center font-mono">
+              ${a.orden}
+            </td>
+            <td class="py-3 px-4">
+              ${badgeEstado}
+            </td>
+            <td class="py-3 px-4 text-right">
+              ${accionesHtml}
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  // Delegación de eventos en tabla
+  document.getElementById('tbody-auspiciantes')?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'editar') {
+      const ausp = auspiciantesMemoria.find((a) => a.id === id);
+      if (ausp) abrirModalEditar(ausp);
+    }
+  });
+
+  // Evento confirmado por diálogo nativo
+  document.getElementById('tbody-auspiciantes')?.addEventListener('confirmado', async (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'eliminar') {
+      const { error } = await supabaseBrowser
+        .from('auspiciantes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al eliminar auspiciante: ' + error.message);
+        return;
+      }
+      await cargarAuspiciantes();
+    }
+  });
+
+  function abrirModalEditar(a: any) {
+    formAusp.reset();
+    (document.getElementById('auspiciante-id') as HTMLInputElement).value = a.id;
+    (document.getElementById('modal-auspiciante-titulo') as HTMLElement).textContent = 'Editar Auspiciante';
+    (document.getElementById('auspiciante-nombre') as HTMLInputElement).value = a.nombre || '';
+    (document.getElementById('auspiciante-nivel') as HTMLSelectElement).value = a.nivel || 'plata';
+    (document.getElementById('auspiciante-orden') as HTMLInputElement).value = String(a.orden ?? 1);
+    (document.getElementById('auspiciante-logo') as HTMLInputElement).value = a.logo_url || '';
+    (document.getElementById('auspiciante-link') as HTMLInputElement).value = a.link || '';
+    (document.getElementById('auspiciante-activo') as HTMLInputElement).checked = !!a.activo;
+    modalAusp.showModal();
+  }
+
+  btnNuevo?.addEventListener('click', () => {
+    formAusp.reset();
+    (document.getElementById('auspiciante-id') as HTMLInputElement).value = '';
+    (document.getElementById('modal-auspiciante-titulo') as HTMLElement).textContent = 'Nuevo Auspiciante';
+    (document.getElementById('auspiciante-orden') as HTMLInputElement).value = '1';
+    (document.getElementById('auspiciante-activo') as HTMLInputElement).checked = true;
+    modalAusp.showModal();
+  });
+
+  document.getElementById('modal-auspiciante-cerrar')?.addEventListener('click', () => modalAusp.close());
+  document.getElementById('modal-auspiciante-cancelar')?.addEventListener('click', () => modalAusp.close());
+
+  formAusp.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const id = (document.getElementById('auspiciante-id') as HTMLInputElement).value;
+    const nombre = (document.getElementById('auspiciante-nombre') as HTMLInputElement).value.trim();
+    const nivel = (document.getElementById('auspiciante-nivel') as HTMLSelectElement).value as any;
+    const orden = parseInt((document.getElementById('auspiciante-orden') as HTMLInputElement).value || '1', 10);
+    const logoUrl = (document.getElementById('auspiciante-logo') as HTMLInputElement).value.trim() || null;
+    const link = (document.getElementById('auspiciante-link') as HTMLInputElement).value.trim() || null;
+    const activo = (document.getElementById('auspiciante-activo') as HTMLInputElement).checked;
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      nombre,
+      nivel,
+      orden,
+      logo_url: logoUrl,
+      link,
+      activo,
+    };
+
+    if (id) {
+      const { error } = await supabaseBrowser
+        .from('auspiciantes')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al actualizar auspiciante: ' + error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabaseBrowser
+        .from('auspiciantes')
+        .insert(payload);
+
+      if (error) {
+        alert('Error al registrar auspiciante: ' + error.message);
+        return;
+      }
+    }
+
+    modalAusp.close();
+    await cargarAuspiciantes();
+  });
+
+  function aplicarGuardPermisos(rol: string) {
+    const esAdmin = rol === 'liga_admin' || rol === 'superadmin';
+    if (!esAdmin) {
+      if (btnNuevo) btnNuevo.classList.add('hidden');
+      if (alertaAyudante) alertaAyudante.classList.remove('hidden');
+    } else {
+      if (btnNuevo) btnNuevo.classList.remove('hidden');
+      if (alertaAyudante) alertaAyudante.classList.add('hidden');
+    }
+  }
+
+  // Inicialización
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    aplicarGuardPermisos(estadoAdmin.rol);
+    await cargarAuspiciantes();
+  });
+
+  obtenerEstadoAdmin().then(async (estado) => {
+    if (estado.autenticado && estado.esOrganizador) {
+      estadoAdmin = estado;
+      aplicarGuardPermisos(estadoAdmin.rol);
+      await cargarAuspiciantes();
+    }
+  });
+</script>

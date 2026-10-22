@@ -1,0 +1,493 @@
+---
+// Gestión de Páginas Institucionales (/admin/paginas)
+// Docs/05 §1A: Administrar páginas estáticas y reglamentarias que alimentan /[slug]
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Páginas" seccionActiva="paginas">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Contenido Institucional
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Páginas de la Liga
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Páginas reglamentarias, institucionales y de contacto del sitio público
+        </p>
+      </div>
+
+      <button
+        id="btn-nueva-pagina"
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98] self-start sm:self-auto"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nueva página
+      </button>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div id="cargando-paginas" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div id="lista-paginas-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No se encontraron páginas registradas.</p>
+    </div>
+
+    <!-- Tabla de páginas -->
+    <div id="contenedor-paginas" class="hidden overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900 shadow-lg">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
+            <th class="py-3 px-4">Página</th>
+            <th class="py-3 px-4">Ruta pública</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-paginas" class="divide-y divide-navy-800">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Editor de Página -->
+  <dialog
+    id="modal-pagina"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-4xl w-[95%] max-h-[90vh] overflow-y-auto"
+  >
+    <div class="flex items-center justify-between border-b border-navy-800 pb-3">
+      <h3 id="modal-pagina-titulo" class="text-base font-bold text-paper">
+        Nueva Página
+      </h3>
+      <button id="modal-pagina-cerrar" type="button" class="text-paper-muted hover:text-paper">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form id="form-pagina" class="mt-4 space-y-4">
+      <input type="hidden" id="pagina-id" />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="pagina-titulo" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Título de la página
+          </label>
+          <input
+            id="pagina-titulo"
+            type="text"
+            required
+            placeholder="Ej: Reglamento General LBC"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="pagina-slug" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Slug / Ruta (URL)
+          </label>
+          <div class="mt-1 flex items-center rounded-lg border border-navy-700 bg-navy-950 px-3 py-2">
+            <span class="text-xs font-mono text-paper-muted select-none">/</span>
+            <input
+              id="pagina-slug"
+              type="text"
+              required
+              placeholder="reglamento"
+              class="w-full bg-transparent px-1 text-xs font-mono text-paper focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-navy-800 bg-navy-950 p-3">
+        <label class="flex items-center gap-2 cursor-pointer text-xs">
+          <input
+            id="pagina-publicado"
+            type="checkbox"
+            checked
+            class="h-4 w-4 rounded border-navy-700 bg-navy-900 text-orange-500 focus:ring-orange-500"
+          />
+          <span class="font-bold text-paper">Publicar página (accesible en la web pública)</span>
+        </label>
+      </div>
+
+      <!-- Editor Markdown + Vista previa -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label for="pagina-cuerpo" class="text-xs font-bold uppercase tracking-wider text-paper-muted">
+            Contenido de la página (Markdown)
+          </label>
+          <span class="text-[0.65rem] text-paper-muted">
+            Soporta títulos (#), negritas (**), cursivas (*) y listas (-)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <textarea
+            id="pagina-cuerpo"
+            rows="12"
+            placeholder="Escriba aquí los estatutos, artículos o contenido institucional..."
+            class="w-full font-mono rounded-lg border border-navy-700 bg-navy-950 p-3 text-xs text-paper focus:border-orange-500 focus:outline-none leading-relaxed resize-y"
+          ></textarea>
+
+          <div class="flex flex-col rounded-lg border border-navy-800 bg-navy-950/70 p-3">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-orange-400 mb-2">
+              Vista previa en vivo
+            </span>
+            <div
+              id="pagina-preview"
+              class="prose prose-invert max-w-none text-xs text-paper leading-relaxed overflow-y-auto max-h-64"
+            >
+              <p class="text-paper-muted italic">La vista previa aparecerá aquí al escribir...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2 border-t border-navy-800 pt-4">
+        <button
+          id="modal-pagina-cancelar"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold text-ink hover:bg-orange-700 transition-colors"
+        >
+          Guardar Página
+        </button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, obtenerEstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: any = null;
+  let paginasMemoria: any[] = [];
+
+  const modalPagina = document.getElementById('modal-pagina') as HTMLDialogElement;
+  const formPagina = document.getElementById('form-pagina') as HTMLFormElement;
+  const inputTitulo = document.getElementById('pagina-titulo') as HTMLInputElement;
+  const inputSlug = document.getElementById('pagina-slug') as HTMLInputElement;
+  const textareaCuerpo = document.getElementById('pagina-cuerpo') as HTMLTextAreaElement;
+  const divPreview = document.getElementById('pagina-preview') as HTMLElement;
+
+  function miniMarkdown(texto: string): string {
+    if (!texto) return '<p class="text-paper-muted italic">Sin contenido aún...</p>';
+
+    const lineas = texto.split('\n');
+    const out: string[] = [];
+    let enLista = false;
+
+    const inline = (s: string) =>
+      s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" class="text-orange-400 underline font-semibold" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    const cerrarLista = () => {
+      if (enLista) {
+        out.push('</ul>');
+        enLista = false;
+      }
+    };
+
+    for (const linea of lineas) {
+      const t = linea.trim();
+      if (!t) {
+        cerrarLista();
+        continue;
+      }
+
+      const h = /^(#{1,3})\s+(.*)$/.exec(t);
+      if (h) {
+        cerrarLista();
+        const nivel = h[1].length;
+        const cls = nivel === 1 ? 'text-base font-black text-paper mt-3 mb-1' : 'text-sm font-bold text-orange-400 mt-2 mb-1';
+        out.push(`<h${nivel} class="${cls}">${inline(h[2])}</h${nivel}>`);
+        continue;
+      }
+
+      const li = /^[-*]\s+(.*)$/.exec(t);
+      if (li) {
+        if (!enLista) {
+          out.push('<ul class="list-disc pl-5 my-2 space-y-1">');
+          enLista = true;
+        }
+        out.push(`<li>${inline(li[1])}</li>`);
+        continue;
+      }
+
+      cerrarLista();
+      out.push(`<p class="my-1.5 leading-relaxed">${inline(t)}</p>`);
+    }
+
+    cerrarLista();
+    return out.join('\n');
+  }
+
+  function actualizarPreview() {
+    if (divPreview && textareaCuerpo) {
+      divPreview.innerHTML = miniMarkdown(textareaCuerpo.value);
+    }
+  }
+
+  textareaCuerpo?.addEventListener('input', actualizarPreview);
+
+  // Auto-slug a partir del título
+  inputTitulo?.addEventListener('input', () => {
+    const id = (document.getElementById('pagina-id') as HTMLInputElement).value;
+    if (!id) {
+      const slug = inputTitulo.value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      inputSlug.value = slug;
+    }
+  });
+
+  async function cargarPaginas() {
+    const cargando = document.getElementById('cargando-paginas');
+    const contenedor = document.getElementById('contenedor-paginas');
+    const vacia = document.getElementById('lista-paginas-vacia');
+
+    cargando?.classList.remove('hidden');
+    contenedor?.classList.add('hidden');
+    vacia?.classList.add('hidden');
+
+    const { data, error } = await supabaseBrowser
+      .from('paginas')
+      .select('*')
+      .order('slug', { ascending: true });
+
+    cargando?.classList.add('hidden');
+
+    if (error) {
+      console.error('Error al cargar páginas:', error);
+      alert('Error al cargar páginas: ' + error.message);
+      return;
+    }
+
+    paginasMemoria = data || [];
+    renderizarPaginas();
+  }
+
+  function renderizarPaginas() {
+    const contenedor = document.getElementById('contenedor-paginas');
+    const vacia = document.getElementById('lista-paginas-vacia');
+    const tbody = document.getElementById('tbody-paginas');
+    if (!tbody) return;
+
+    if (paginasMemoria.length === 0) {
+      contenedor?.classList.add('hidden');
+      vacia?.classList.remove('hidden');
+      return;
+    }
+
+    vacia?.classList.add('hidden');
+    contenedor?.classList.remove('hidden');
+
+    tbody.innerHTML = paginasMemoria
+      .map((p) => {
+        const badgeEstado = p.publicado
+          ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-emerald-400">Publicada</span>`
+          : `<span class="inline-flex items-center gap-1 rounded-full bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted">Oculta</span>`;
+
+        return `
+          <tr class="hover:bg-navy-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-bold text-paper">${p.titulo}</div>
+            </td>
+            <td class="py-3 px-4">
+              <a
+                href="/${p.slug}"
+                target="_blank"
+                class="font-mono text-xs text-orange-400 hover:underline inline-flex items-center gap-1"
+              >
+                <span>/${p.slug}</span>
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </td>
+            <td class="py-3 px-4">
+              ${badgeEstado}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <div class="inline-flex items-center gap-1.5 justify-end">
+                <button
+                  type="button"
+                  data-accion="editar"
+                  data-id="${p.id}"
+                  class="rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1 text-xs text-paper-muted hover:text-paper hover:bg-navy-700 transition-colors"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  data-accion="eliminar"
+                  data-id="${p.id}"
+                  data-confirm="¿Eliminar la página '/${p.slug}'? Esta acción dejará la ruta pública sin contenido."
+                  class="rounded-lg border border-navy-700 bg-navy-800 px-2 py-1 text-xs text-paper-muted hover:text-red-400 hover:border-red-500/40 transition-colors"
+                >
+                  Borrar
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  // Delegación de eventos en tabla
+  document.getElementById('tbody-paginas')?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'editar') {
+      const pagina = paginasMemoria.find((p) => p.id === id);
+      if (pagina) abrirModalEditar(pagina);
+    }
+  });
+
+  // Evento confirmado por diálogo nativo
+  document.getElementById('tbody-paginas')?.addEventListener('confirmado', async (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id || !accion) return;
+
+    if (accion === 'eliminar') {
+      const { error } = await supabaseBrowser
+        .from('paginas')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al eliminar página: ' + error.message);
+        return;
+      }
+      await cargarPaginas();
+    }
+  });
+
+  function abrirModalEditar(p: any) {
+    formPagina.reset();
+    (document.getElementById('pagina-id') as HTMLInputElement).value = p.id;
+    (document.getElementById('modal-pagina-titulo') as HTMLElement).textContent = 'Editar Página';
+    inputTitulo.value = p.titulo || '';
+    inputSlug.value = p.slug || '';
+    (document.getElementById('pagina-publicado') as HTMLInputElement).checked = !!p.publicado;
+    textareaCuerpo.value = p.cuerpo_md || '';
+    actualizarPreview();
+    modalPagina.showModal();
+  }
+
+  document.getElementById('btn-nueva-pagina')?.addEventListener('click', () => {
+    formPagina.reset();
+    (document.getElementById('pagina-id') as HTMLInputElement).value = '';
+    (document.getElementById('modal-pagina-titulo') as HTMLElement).textContent = 'Nueva Página';
+    (document.getElementById('pagina-publicado') as HTMLInputElement).checked = true;
+    actualizarPreview();
+    modalPagina.showModal();
+  });
+
+  document.getElementById('modal-pagina-cerrar')?.addEventListener('click', () => modalPagina.close());
+  document.getElementById('modal-pagina-cancelar')?.addEventListener('click', () => modalPagina.close());
+
+  formPagina.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!estadoAdmin?.orgId) {
+      alert('No se detectó organización activa.');
+      return;
+    }
+
+    const id = (document.getElementById('pagina-id') as HTMLInputElement).value;
+    const titulo = inputTitulo.value.trim();
+    const slug = inputSlug.value.trim().replace(/^\/+/, '');
+    const publicado = (document.getElementById('pagina-publicado') as HTMLInputElement).checked;
+    const cuerpoMd = textareaCuerpo.value;
+
+    const payload = {
+      org_id: estadoAdmin.orgId,
+      titulo,
+      slug,
+      publicado,
+      cuerpo_md: cuerpoMd,
+    };
+
+    if (id) {
+      const { error } = await supabaseBrowser
+        .from('paginas')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al actualizar página: ' + error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabaseBrowser
+        .from('paginas')
+        .insert(payload);
+
+      if (error) {
+        if (error.code === '23505') {
+          alert('Ya existe una página registrada con esa ruta /' + slug);
+        } else {
+          alert('Error al registrar página: ' + error.message);
+        }
+        return;
+      }
+    }
+
+    modalPagina.close();
+    await cargarPaginas();
+  });
+
+  // Inicialización
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarPaginas();
+  });
+
+  obtenerEstadoAdmin().then(async (estado) => {
+    if (estado.autenticado && estado.esOrganizador) {
+      estadoAdmin = estado;
+      await cargarPaginas();
+    }
+  });
+</script>

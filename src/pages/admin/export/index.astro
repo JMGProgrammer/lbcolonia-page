@@ -1,0 +1,495 @@
+---
+// Centro de Descargas y Exportación CSV (/admin/export)
+// Docs/05 §1A: Descarga CSV de tablas, fixture, fichas y clubes con UTF-8 BOM para Microsoft Excel
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Exportar Datos" seccionActiva="export">
+  <div class="space-y-6">
+    <!-- Encabezado de sección -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
+            Respaldo y Análisis
+          </span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">
+            Exportar Datos a Excel (CSV)
+          </h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">
+          Descarga directa de padrones, calendarios y clasificaciones en formato CSV con codificación UTF-8 BOM
+        </p>
+      </div>
+
+      <a
+        href="/admin"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-navy-700 bg-navy-800 px-3 py-2 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors self-start sm:self-auto"
+      >
+        Volver al Resumen
+      </a>
+    </div>
+
+    <!-- Selector global de torneo para filtros de exportación -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <label for="select-torneo-export" class="text-xs font-bold uppercase tracking-wider text-paper-muted shrink-0">
+          Torneo para exportar:
+        </label>
+        <select
+          id="select-torneo-export"
+          class="rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none w-full sm:w-auto"
+        >
+          <option value="todos">Todos los torneos</option>
+        </select>
+      </div>
+
+      <p class="text-xs text-paper-muted">
+        Formato optimizado con separador punto y coma (;) para Excel en español
+      </p>
+    </div>
+
+    <!-- Rejilla de tarjetas de exportación -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Tarjeta 1: Tabla de Posiciones -->
+      <div class="flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-lg">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                <path d="M3 9h18"></path>
+                <path d="M9 21V9"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-paper">Tabla de Posiciones</h3>
+              <p class="text-xs text-paper-muted">Clasificación acumulada y estadísticas</p>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-paper-muted leading-relaxed">
+            Exporta puntos de campeonato, partidos jugados, victorias, derrotas, tantos a favor, tantos en contra y diferencia de gol de cada club.
+          </p>
+        </div>
+
+        <button
+          id="btn-export-tabla"
+          type="button"
+          class="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Descargar Tabla (.csv)
+        </button>
+      </div>
+
+      <!-- Tarjeta 2: Fixture Oficial -->
+      <div class="flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-lg">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-paper">Fixture y Resultados</h3>
+              <p class="text-xs text-paper-muted">Calendario completo de partidos</p>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-paper-muted leading-relaxed">
+            Exporta todos los cotejos con jornada/ronda, fecha, hora local, gimnasio sede, clubes enfrentados, tanteador final y estado oficial.
+          </p>
+        </div>
+
+        <button
+          id="btn-export-fixture"
+          type="button"
+          class="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Descargar Fixture (.csv)
+        </button>
+      </div>
+
+      <!-- Tarjeta 3: Padrón y Fichas -->
+      <div class="flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-lg">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-paper">Roster y Fichas Oficiales</h3>
+              <p class="text-xs text-paper-muted">Jugadores habilitados por club y torneo</p>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-paper-muted leading-relaxed">
+            Exporta el padrón con nombre del jugador, fecha de nacimiento, edad, club y equipo asignado, dorsal (#), vigencia y estado de la ficha.
+          </p>
+        </div>
+
+        <button
+          id="btn-export-fichas"
+          type="button"
+          class="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Descargar Fichas (.csv)
+        </button>
+      </div>
+
+      <!-- Tarjeta 4: Clubes Institucionales -->
+      <div class="flex flex-col justify-between rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-lg">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-paper">Clubes e Instituciones</h3>
+              <p class="text-xs text-paper-muted">Directorio federado de la liga</p>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-paper-muted leading-relaxed">
+            Exporta el listado institucional de clubes con su gimnasio o sede oficial, paleta de colores distintiva y estado de afiliación.
+          </p>
+        </div>
+
+        <button
+          id="btn-export-clubes"
+          type="button"
+          class="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:bg-orange-700 active:scale-[0.98]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Descargar Clubes (.csv)
+        </button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, obtenerEstadoAdmin } from '../../../lib/supabase-browser';
+
+  let estadoAdmin: any = null;
+  let torneosMemoria: any[] = [];
+
+  function descargarCSV(nombreArchivo: string, encabezados: string[], filas: (string | number | null | undefined)[][]) {
+    const escapeCSV = (val: any) => {
+      if (val === null || val === undefined) return '';
+      const s = String(val).replace(/"/g, '""');
+      return s.includes(';') || s.includes('"') || s.includes('\n') || s.includes('\r')
+        ? `"${s}"`
+        : s;
+    };
+
+    const lineas = [
+      encabezados.map(escapeCSV).join(';'),
+      ...filas.map((f) => f.map(escapeCSV).join(';')),
+    ];
+
+    // BOM UTF-8 (\uFEFF) para que Excel abra sin problemas de acentos ni eñes
+    const blob = new Blob(['\uFEFF' + lineas.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function cargarTorneos() {
+    if (!estadoAdmin?.orgId) return;
+
+    const { data: torneos } = await supabaseBrowser
+      .from('torneos')
+      .select('id, nombre, temporada')
+      .eq('org_id', estadoAdmin.orgId)
+      .order('temporada', { ascending: false });
+
+    torneosMemoria = torneos || [];
+
+    const select = document.getElementById('select-torneo-export') as HTMLSelectElement;
+    if (select) {
+      select.innerHTML = '<option value="todos">Todos los torneos</option>';
+      torneosMemoria.forEach((t) => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.nombre} (${t.temporada})`;
+        select.appendChild(opt);
+      });
+    }
+  }
+
+  // 1. Exportar Tabla de Posiciones
+  document.getElementById('btn-export-tabla')?.addEventListener('click', async () => {
+    const select = document.getElementById('select-torneo-export') as HTMLSelectElement;
+    const torneoId = select?.value || 'todos';
+
+    let query = supabaseBrowser.from('v_tabla').select('*');
+    if (torneoId !== 'todos') {
+      query = query.eq('torneo_id', torneoId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      alert('Error al consultar tabla: ' + error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert('No hay posiciones registradas para el criterio seleccionado.');
+      return;
+    }
+
+    const encabezados = [
+      'Posición',
+      'Equipo',
+      'Torneo',
+      'Partidos Jugados',
+      'Victorias',
+      'Derrotas',
+      'Puntos',
+      'Puntos a Favor',
+      'Puntos en Contra',
+      'Diferencia',
+    ];
+
+    const filas = data.map((d: any) => [
+      d.posicion,
+      d.equipo_nombre,
+      d.torneo_nombre,
+      d.partidos_jugados,
+      d.partidos_ganados,
+      d.partidos_perdidos,
+      d.puntos,
+      d.puntos_favor,
+      d.puntos_contra,
+      d.diferencia_puntos,
+    ]);
+
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    descargarCSV(`LBC_Tabla_Posiciones_${fechaHoy}.csv`, encabezados, filas);
+  });
+
+  // 2. Exportar Fixture y Resultados
+  document.getElementById('btn-export-fixture')?.addEventListener('click', async () => {
+    const select = document.getElementById('select-torneo-export') as HTMLSelectElement;
+    const torneoId = select?.value || 'todos';
+
+    let query = supabaseBrowser
+      .from('partidos')
+      .select(`
+        ronda, fecha_hora, sede, estado, puntos_local, puntos_visitante, publicado,
+        torneos (nombre, temporada),
+        local:equipo_local_id (nombre_mostrar, clubes(nombre)),
+        visitante:equipo_visitante_id (nombre_mostrar, clubes(nombre))
+      `)
+      .order('fecha_hora', { ascending: true });
+
+    if (torneoId !== 'todos') {
+      query = query.eq('torneo_id', torneoId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      alert('Error al consultar fixture: ' + error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert('No hay partidos en el fixture para el criterio seleccionado.');
+      return;
+    }
+
+    const encabezados = [
+      'Torneo',
+      'Temporada',
+      'Ronda / Jornada',
+      'Fecha y Hora (Montevideo)',
+      'Gimnasio / Sede',
+      'Equipo Local',
+      'Marcador Local',
+      'Marcador Visitante',
+      'Equipo Visitante',
+      'Estado',
+      'Publicado',
+    ];
+
+    const filas = data.map((p: any) => {
+      const fechaLocal = new Date(p.fecha_hora).toLocaleString('es-UY', { timeZone: 'America/Montevideo' });
+      const eqLocal = p.local?.nombre_mostrar || p.local?.clubes?.nombre || 'Local';
+      const eqVis = p.visitante?.nombre_mostrar || p.visitante?.clubes?.nombre || 'Visitante';
+
+      return [
+        p.torneos?.nombre || 'Torneo',
+        p.torneos?.temporada || '',
+        `Fecha ${p.ronda}`,
+        fechaLocal,
+        p.sede || 'Por confirmar',
+        eqLocal,
+        p.puntos_local !== null ? p.puntos_local : '-',
+        p.puntos_visitante !== null ? p.puntos_visitante : '-',
+        eqVis,
+        p.estado,
+        p.publicado ? 'SÍ' : 'NO',
+      ];
+    });
+
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    descargarCSV(`LBC_Fixture_${fechaHoy}.csv`, encabezados, filas);
+  });
+
+  // 3. Exportar Fichas y Rosters
+  document.getElementById('btn-export-fichas')?.addEventListener('click', async () => {
+    const select = document.getElementById('select-torneo-export') as HTMLSelectElement;
+    const torneoId = select?.value || 'todos';
+
+    let query = supabaseBrowser
+      .from('fichas')
+      .select(`
+        dorsal, estado, desde, hasta,
+        jugadores (nombre_completo, fecha_nacimiento),
+        equipos (nombre_mostrar, clubes(nombre)),
+        torneos (nombre, temporada)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (torneoId !== 'todos') {
+      query = query.eq('torneo_id', torneoId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      alert('Error al consultar fichas: ' + error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert('No hay fichas registradas para el criterio seleccionado.');
+      return;
+    }
+
+    const encabezados = [
+      'Jugador',
+      'Fecha de Nacimiento',
+      'Edad',
+      'Club',
+      'Equipo / Categoría',
+      'Torneo',
+      'Dorsal (#)',
+      'Estado de Ficha',
+      'Vigencia Desde',
+      'Vigencia Hasta',
+    ];
+
+    const hoy = new Date();
+    const calcularEdadNum = (fn: string | null) => {
+      if (!fn) return '-';
+      const [y, m, d] = fn.split('-').map(Number);
+      let edad = hoy.getFullYear() - y;
+      const mes = hoy.getMonth() + 1;
+      const dia = hoy.getDate();
+      if (mes < m || (mes === m && dia < d)) edad--;
+      return edad;
+    };
+
+    const filas = data.map((f: any) => [
+      f.jugadores?.nombre_completo || '',
+      f.jugadores?.fecha_nacimiento || '',
+      calcularEdadNum(f.jugadores?.fecha_nacimiento),
+      f.equipos?.clubes?.nombre || '',
+      f.equipos?.nombre_mostrar || '',
+      f.torneos?.nombre || '',
+      f.dorsal !== null ? f.dorsal : '',
+      f.estado,
+      f.desde,
+      f.hasta || 'Vigente',
+    ]);
+
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    descargarCSV(`LBC_Fichas_Rosters_${fechaHoy}.csv`, encabezados, filas);
+  });
+
+  // 4. Exportar Directorio de Clubes
+  document.getElementById('btn-export-clubes')?.addEventListener('click', async () => {
+    const { data, error } = await supabaseBrowser
+      .from('clubes')
+      .select('*')
+      .order('nombre', { ascending: true });
+
+    if (error) {
+      alert('Error al consultar clubes: ' + error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert('No hay clubes registrados.');
+      return;
+    }
+
+    const encabezados = [
+      'Club',
+      'Slug / Identificador',
+      'Gimnasio Sede',
+      'Color Primario (Hex)',
+      'Color Secundario (Hex)',
+      'Activo',
+      'Fecha de Registro',
+    ];
+
+    const filas = data.map((c: any) => [
+      c.nombre,
+      c.slug,
+      c.gimnasio || 'Sin gimnasio asignado',
+      c.color1 || '',
+      c.color2 || '',
+      c.activo ? 'SÍ' : 'NO',
+      new Date(c.created_at).toLocaleDateString('es-UY'),
+    ]);
+
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    descargarCSV(`LBC_Directorio_Clubes_${fechaHoy}.csv`, encabezados, filas);
+  });
+
+  // Inicialización
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargarTorneos();
+  });
+
+  obtenerEstadoAdmin().then(async (estado) => {
+    if (estado.autenticado && estado.esOrganizador) {
+      estadoAdmin = estado;
+      await cargarTorneos();
+    }
+  });
+</script>

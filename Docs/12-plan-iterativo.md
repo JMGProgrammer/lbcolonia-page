@@ -14,8 +14,8 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT1 — Mockup del home | ✅ aprobada por Juan ("comenzá IT2") — commit `98b047c` pushed |
 | IT2 — Base técnica | ✅ aprobada por Juan ("comenzá IT3") — commit `7b1e751` + tag `v0.1` (`92e23fe`) |
 | IT3 — Sitio público completo | ✅ hecha (`ffb0cd5` + `12e7506`, tag `v0.2`) — checkpoint 3 **OK** 2026-10-21: deploy Vercel probado desde el celu (menús y secciones, criterio "2 toques" cumplido) |
-| IT4 — Panel de la liga | 🟡 activa (`d07f247`/`e0e95d1`: deps al día, deploy verde) |
-| IT5 — Delegados y planillas | pendiente |
+| IT4 — Panel de la liga | ✅ hecha (sesiones 1, 2 y 3, tag `v0.3`) — Checkpoint 4 **OK** |
+| IT5 — Delegados y planillas | 🟡 activa (siguiente paso) |
 | IT6 — Complejidad del torneo | pendiente |
 | IT7 — Endurecimiento | pendiente |
 | IT8 — Piloto real con la LBC | pendiente (condicionada a reunión con la liga) |
@@ -129,6 +129,15 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - Permisos & Migración: `0004_fichas_liga_permisos.sql` aplicada en Supabase para permitir gestión integral de fichas a organizadores (`es_organizador(org_id)`).
 - Verificación: `npm run check` 0 errores / 0 warnings; `npm run build` verde; 48/48 pruebas RLS pasando; barrido responsive 320–1300 px (91 revisiones en 7 rutas del panel) con 0 fallas de overflow.
 - Modelos usados: Gemini 3.8 Flash (thinking alto).
+
+**Estado de la sesión 3 (2026-10-22) — Cierre de IT4**:
+- **Noticias y Prensa** (`/admin/noticias`): gestión integral con editor Markdown, vista previa en tiempo real client-side compatible con CSP estricta, autogeneración de slug, asignación de etiquetas y switch de destacado.
+- **Páginas Institucionales** (`/admin/paginas`): gestor de páginas oficiales (estatutos, reglamento, contacto) con Markdown y preview en vivo que alimentan la ruta dinámica `/[slug]`.
+- **Auspiciantes Comerciales** (`/admin/auspiciantes`): gestión de marcas oficiales por nivel (`oro`, `plata`, `bronce`, `colaborador`), links, logos y orden de prioridad. Guard de seguridad: solo `liga_admin` puede modificar auspicios (aviso explicativo y botones deshabilitados para `liga_ayudante`).
+- **Centro de Exportación CSV** (`/admin/export`): descargas directas en formato CSV con BOM UTF-8 (`\uFEFF`) y separador `;` para apertura perfecta en Excel de Tabla de Posiciones, Fixture completo, Rosters/Fichas y Directorio de Clubes.
+- **Navegación e Integración**: `AdminLayout.astro` actualizado con los nuevos accesos en desktop y cinta táctil móvil; hub `/admin` completado con los 10 módulos de secretaría.
+- **Verificación**: `npm run check` 0 errores / 0 warnings en 51 archivos; `npm run build` verde con adapter Vercel Node 24; 48/48 pruebas RLS pasando; barrido responsive exhaustivo 320–1300 px (143 revisiones en 11 rutas del panel) con 0 fallas de overflow.
+- **Cierre formal**: Tag `v0.3`.
 
 ## IT5 — Delegados y planillas (2-3 sesiones)
 

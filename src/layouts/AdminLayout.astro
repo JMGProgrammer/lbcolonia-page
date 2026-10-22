@@ -5,7 +5,18 @@ import '../styles/global.css';
 
 interface Props {
   title?: string;
-  seccionActiva?: 'resumen' | 'fixture' | 'importar' | 'torneos' | 'clubes' | 'jugadores' | 'fichas';
+  seccionActiva?:
+    | 'resumen'
+    | 'fixture'
+    | 'importar'
+    | 'torneos'
+    | 'clubes'
+    | 'jugadores'
+    | 'fichas'
+    | 'noticias'
+    | 'paginas'
+    | 'auspiciantes'
+    | 'export';
 }
 
 const { title = 'Panel de Control', seccionActiva = 'resumen' } = Astro.props;
@@ -41,11 +52,11 @@ const tituloFinal = `${title} · Panel LBC`;
         </div>
 
         <!-- Navegación desktop -->
-        <nav class="hidden lg:flex items-center gap-1 text-xs font-semibold">
+        <nav class="hidden xl:flex items-center gap-1 text-xs font-semibold">
           <a
             href="/admin"
             class:list={[
-              'rounded-lg px-2.5 py-1.5 transition-colors',
+              'rounded-lg px-2 py-1.5 transition-colors',
               seccionActiva === 'resumen'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
@@ -56,7 +67,7 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/fixture"
             class:list={[
-              'rounded-lg px-2.5 py-1.5 transition-colors',
+              'rounded-lg px-2 py-1.5 transition-colors',
               seccionActiva === 'fixture' || seccionActiva === 'importar'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
@@ -67,7 +78,7 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/torneos"
             class:list={[
-              'rounded-lg px-2.5 py-1.5 transition-colors',
+              'rounded-lg px-2 py-1.5 transition-colors',
               seccionActiva === 'torneos'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
@@ -78,7 +89,7 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/clubes"
             class:list={[
-              'rounded-lg px-2.5 py-1.5 transition-colors',
+              'rounded-lg px-2 py-1.5 transition-colors',
               seccionActiva === 'clubes'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
@@ -89,7 +100,7 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/jugadores"
             class:list={[
-              'rounded-lg px-2.5 py-1.5 transition-colors',
+              'rounded-lg px-2 py-1.5 transition-colors',
               seccionActiva === 'jugadores'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
@@ -100,13 +111,57 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/fichas"
             class:list={[
-              'rounded-lg px-2.5 py-1.5 transition-colors',
+              'rounded-lg px-2 py-1.5 transition-colors',
               seccionActiva === 'fichas'
                 ? 'bg-orange-500 font-bold text-ink'
                 : 'text-paper hover:bg-navy-800',
             ]}
           >
             Fichas
+          </a>
+          <a
+            href="/admin/noticias"
+            class:list={[
+              'rounded-lg px-2 py-1.5 transition-colors',
+              seccionActiva === 'noticias'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Noticias
+          </a>
+          <a
+            href="/admin/paginas"
+            class:list={[
+              'rounded-lg px-2 py-1.5 transition-colors',
+              seccionActiva === 'paginas'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Páginas
+          </a>
+          <a
+            href="/admin/auspiciantes"
+            class:list={[
+              'rounded-lg px-2 py-1.5 transition-colors',
+              seccionActiva === 'auspiciantes'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Auspiciantes
+          </a>
+          <a
+            href="/admin/export"
+            class:list={[
+              'rounded-lg px-2 py-1.5 transition-colors',
+              seccionActiva === 'export'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Exportar
           </a>
         </nav>
 
@@ -244,6 +299,68 @@ const tituloFinal = `${title} · Panel LBC`;
           <path d="m9 12 2 2 4-4"></path>
         </svg>
         <span class="text-[0.65rem] uppercase tracking-wider">Fichas</span>
+      </a>
+
+      <a
+        href="/admin/noticias"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'noticias' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+          <path d="M18 14h-8"></path>
+          <path d="M15 18h-5"></path>
+          <path d="M10 6h8v4h-8V6Z"></path>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Noticias</span>
+      </a>
+
+      <a
+        href="/admin/paginas"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'paginas' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Páginas</span>
+      </a>
+
+      <a
+        href="/admin/auspiciantes"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'auspiciantes' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="7"></circle>
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Auspicios</span>
+      </a>
+
+      <a
+        href="/admin/export"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'export' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Exportar</span>
       </a>
 
       <button

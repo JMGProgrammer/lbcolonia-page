@@ -1,9 +1,9 @@
 # Changelog — lbc-web
 
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
-Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3).
+Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4).
 
-## [Unreleased] · IT4: Panel de la Liga (cara secretaría) — sesiones 1 y 2
+## [v0.3] — 2026-10-22 · IT4: Panel de la Liga completo
 
 **Qué puede hacer Juan / la liga**:
 - Acceder al panel institucional `/admin` con cuenta de secretaría (`liga@demo.lbc.uy`), middleware con cabeceras `no-store`, CSP estricta y navegación móvil adaptada (touch targets ≥ 68px).
@@ -13,6 +13,10 @@ Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v
 - Administrar Clubes y Equipos con sincronizador de colores en vivo, gimnasio sede y asignación de categorías.
 - Gestionar Padrón de Jugadores con detector de duplicados en tiempo real por coincidencia de nombre y fecha de nacimiento (`Docs/02 §2`).
 - Administrar Fichas de jugadores con bandeja de entrada filtrada por estado (`solicitada`, `confirmada`, `baja`), confirmación de pases, edición de dorsales (#) y bajas.
+- Redactar Noticias oficiales con editor Markdown, vista previa en tiempo real client-side, portadas y etiquetas.
+- Gestionar Páginas institucionales (`/[slug]`) como reglamentos y contactos oficiales.
+- Administrar Auspiciantes oficiales categorizados por nivel (`oro`, `plata`, `bronce`, `colaborador`) con control estricto de roles (`liga_admin`).
+- Exportar a Excel (CSV con UTF-8 BOM y separador `;`) las tablas de posiciones, el fixture completo, los rosters/fichas y el directorio de clubes.
 - Bandeja de pendientes del día en `/admin` con contadores en tiempo real (fichas solicitadas, resultados sin publicar, partidos sin sede y disputas).
 
 ## 2026-10-21 · hotfix de deploy post-v0.2: runtime Node 24 y deuda Astro pagada (`15c0e94`→)

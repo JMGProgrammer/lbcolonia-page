@@ -74,14 +74,24 @@ La página `src/pages/jugadores/[slug].astro` se divide en 4 bloques:
 
 ---
 
-## 4. Puntos de integración en el sitio existente
+## 4. Puntos de integración e interactividad en el sitio existente
 
-1. **Ficha de Club (`/clubes/[slug]`)**:
-   - Cada jugador en la lista desplegable de la categoría (`JugadorFicha.astro`) se convierte en un enlace directo a su perfil: `/jugadores/[slug]`.
-2. **Ficha de Partido (`/partidos/[id]`)**:
-   - En la tabla de estadísticas del boxscore, el nombre del jugador es un enlace a su perfil.
-3. **Nueva sección de Estadísticas y Líderes (`/estadisticas`)**:
-   - Top anotadores, líderes en triples y mejores valoraciones de cada categoría con acceso al perfil.
+Cada lista y tabla de jugadores en todo el sitio contará con interactividad completa (hover reactivo + navegación):
+
+### 4.1. Boxscore de Partido (`/partidos/[id]`)
+- **Hover reactivo con realce**: Al pasar el mouse sobre la fila de un jugador en la tabla de estadísticas de cualquiera de los dos equipos:
+  - La fila completa se resalta (`hover:bg-navy-700/80 transition-colors`).
+  - El nombre del jugador cambia a color acento (`text-orange-400 font-black`).
+  - El cursor cambia a `pointer`, indicando claramente que es interactivo.
+- **Clic de navegación**: Al hacer clic en la fila o en el nombre del jugador, navega inmediatamente a la página de detalle y perfil personal (`/jugadores/[id]` o `/jugadores/[slug]`).
+
+### 4.2. Roster y Fichas de Club (`/clubes/[slug]`)
+- **Hover en tarjetas de jugador (`JugadorFicha.astro`)**:
+  - Al posar el mouse, la tarjeta reacciona con elevación (`hover:-translate-y-0.5`), borde luminoso (`hover:border-orange-500/70`) y sombreado deportivo (`hover:shadow-lg`).
+- **Clic de navegación**: Toda la tarjeta actúa como enlace (`<a href="/jugadores/[slug]">`), abriendo el perfil individual con sus promedios, fotos e historial.
+
+### 4.3. Tablas de Líderes y Estadísticas (`/estadisticas`)
+- Al interactuar con el ranking de máximos anotadores, reboteadores o asistidores, cada posición es clicable con efecto hover para consultar el desglose completo del jugador.
 
 ---
 

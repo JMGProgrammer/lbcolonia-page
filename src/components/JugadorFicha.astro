@@ -1,0 +1,72 @@
+---
+// Ficha oficial de jugador LBC
+// Tarjeta angular con silueta/foto, dorsal deportivo destacado y datos oficiales
+import type { FichaRoster } from '../lib/data';
+
+interface Props {
+  ficha: FichaRoster;
+  categoriaNombre?: string;
+}
+
+const { ficha, categoriaNombre } = Astro.props;
+const j = ficha.jugadores;
+const dorsal = ficha.dorsal != null ? String(ficha.dorsal).padStart(2, '0') : null;
+const foto = j?.foto_url || '/images/without-photo.webp';
+
+let nacimientoAnio = '';
+if (j?.fecha_nacimiento) {
+  try {
+    nacimientoAnio = new Date(j.fecha_nacimiento).getFullYear().toString();
+  } catch {
+    // fallback
+  }
+}
+---
+
+<div class="card-vigor group relative flex flex-col overflow-hidden border border-navy-700/80 bg-navy-950/70 p-3.5 transition-all duration-200 hover:border-orange-500/60 hover:-translate-y-1 hover:shadow-xl">
+  <!-- Cabecera de la ficha: dorsal y estado -->
+  <div class="flex items-center justify-between border-b border-navy-800/80 pb-2">
+    <div class="flex items-center gap-1.5">
+      <span class="text-[0.62rem] font-black uppercase tracking-widest text-paper/60">Dorsal</span>
+      <span class="num text-base font-black text-orange-500 group-hover:text-gold-400 transition-colors">
+        {dorsal ? `#${dorsal}` : '—'}
+      </span>
+    </div>
+    <span class="px-1.5 py-0.5 text-[0.6rem] font-black uppercase tracking-wider bg-navy-900 border border-emerald-500/30 text-emerald-400">
+      Ficha Oficial
+    </span>
+  </div>
+
+  <!-- Foto / Silueta del jugador -->
+  <div class="relative my-3 flex h-36 sm:h-40 w-full items-center justify-center overflow-hidden bg-navy-900/60 border border-navy-800/70">
+    <img
+      src={foto}
+      alt={`Foto de ${j?.nombre_completo ?? 'Jugador'}`}
+      loading="lazy"
+      class="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+    />
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/90 via-transparent to-transparent"></div>
+    {dorsal && (
+      <span class="num pointer-events-none absolute bottom-1 right-2 text-3xl font-black text-paper/10 select-none">
+        {dorsal}
+      </span>
+    )}
+  </div>
+
+  <!-- Información del jugador -->
+  <div class="flex flex-col gap-1 min-w-0">
+    <h4 class="m-0 text-sm font-black leading-snug text-paper group-hover:text-orange-400 transition-colors truncate" title={j?.nombre_completo}>
+      {j?.nombre_completo ?? 'Jugador'}
+    </h4>
+    <div class="flex items-center justify-between text-[0.7rem] text-paper/60 pt-0.5">
+      <span class="uppercase tracking-wider font-semibold">
+        {categoriaNombre ?? 'Plantel'}
+      </span>
+      {nacimientoAnio && (
+        <span class="num font-bold text-gold-400/90">
+          Clase {nacimientoAnio}
+        </span>
+      )}
+    </div>
+  </div>
+</div>

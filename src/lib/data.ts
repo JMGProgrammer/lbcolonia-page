@@ -123,7 +123,12 @@ export interface FichaRoster {
   equipo_id: string;
   dorsal: number | null;
   estado: 'solicitada' | 'confirmada' | 'baja';
-  jugadores: { id: string; nombre_completo: string };
+  jugadores: {
+    id: string;
+    nombre_completo: string;
+    fecha_nacimiento?: string | null;
+    foto_url?: string | null;
+  };
   torneos: { id: string; nombre: string };
 }
 
@@ -360,7 +365,7 @@ export function rosterDeEquipos(equipoIds: string[]): Promise<FichaRoster[]> {
   return filas(
     supabase
       .from('fichas')
-      .select('equipo_id,id,dorsal,estado,jugadores(id,nombre_completo),torneos(id,nombre)')
+      .select('equipo_id,id,dorsal,estado,jugadores(id,nombre_completo,fecha_nacimiento,foto_url),torneos(id,nombre)')
       .in('equipo_id', equipoIds)
       .order('dorsal', { ascending: true, nullsFirst: false })
       .returns<FichaRoster[]>()

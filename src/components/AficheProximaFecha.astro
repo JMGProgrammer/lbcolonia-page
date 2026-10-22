@@ -1,5 +1,7 @@
 ---
-// Afiche oficial GameDay / Próxima Fecha con jugador real de la LBC
+// Afiche "Próxima fecha" (matchday) con jugador real de la LBC.
+// Duelo estelar en grilla de 3 columnas con mínimos en 0: los nombres largos bajan de línea
+// dentro de su columna y nunca se pisan con la hora, a cualquier ancho (320 px en adelante).
 import Escudo from './Escudo.astro';
 import type { PartidoVista } from '../lib/data';
 import { fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
@@ -8,117 +10,96 @@ interface Props {
   ronda: string;
   partidos: PartidoVista[];
   torneoId?: string;
+  competencia?: string;
 }
 
-const { ronda, partidos, torneoId } = Astro.props;
+const { ronda, partidos, torneoId, competencia = 'Primera División' } = Astro.props;
 const primerPartido = partidos[0];
 const fechaIso = primerPartido?.fecha_hora ?? '';
+// el partido de cierre de la jornada (horario central) es el estelar
 const estelar = partidos[partidos.length - 1] ?? primerPartido;
+const sede = primerPartido?.sede ?? 'Sede a confirmar por la liga';
 ---
 
-<div class="card-vigor relative overflow-hidden p-6 sm:p-7 flex flex-col justify-between border-t-2 border-t-gold-400">
-  <!-- Fondo con jugador en acción recortado y gradiente deportivo -->
-  <div class="pointer-events-none absolute -right-6 bottom-0 top-10 w-64 sm:w-72 overflow-hidden opacity-35 sm:opacity-45 mix-blend-luminosity">
-    <img
-      src="/images/jugadores/jugador-plaza-verde.webp"
-      alt="Jugador de la Liga de Básquetbol de Colonia"
-      class="h-full w-full object-contain object-bottom filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
-      loading="lazy"
-    />
-  </div>
-  <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/90 to-transparent"></div>
+<article class="card-vigor relative flex h-full flex-col overflow-hidden border-t-2 border-t-gold-400" aria-labelledby="afiche-titulo">
+  <!-- jugador recortado: ocupa la mitad derecha, detrás del contenido -->
+  <img
+    src="/images/jugadores/jugador-plaza-verde.webp"
+    alt=""
+    aria-hidden="true"
+    loading="lazy"
+    class="pointer-events-none absolute -right-8 bottom-0 h-[78%] w-auto max-w-none object-contain object-bottom opacity-30 sm:opacity-40"
+  />
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/85 to-navy-950/30" aria-hidden="true"></div>
 
-  <!-- Contenido principal -->
-  <div class="relative z-10 space-y-5">
-    <!-- Encabezado con badge y fecha -->
-    <div class="flex items-center justify-between border-b border-navy-700/60 pb-3">
-      <div class="flex items-center gap-2">
-        <span class="inline-block h-2.5 w-2.5 bg-orange-500 animate-pulse"></span>
-        <span class="text-xs font-black uppercase tracking-widest text-gold-400">
-          Matchday Oficial
-        </span>
-      </div>
-      <span class="text-xs font-bold uppercase tracking-wider text-paper/70">
-        {rondaLabel(ronda)}
+  <div class="relative z-10 flex flex-1 flex-col gap-5 p-5 sm:p-6">
+    <!-- cabecera -->
+    <header class="flex items-center justify-between gap-3 border-b border-navy-700/60 pb-3">
+      <span class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gold-400">
+        <span class="inline-block h-2.5 w-2.5 animate-pulse bg-orange-500" aria-hidden="true"></span>
+        Próxima fecha
       </span>
-    </div>
+      <span class="min-w-0 truncate text-[0.7rem] font-bold uppercase tracking-wider text-paper/65">{competencia}</span>
+    </header>
 
-    <!-- Título de la fecha -->
     <div>
-      <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-tight text-paper">
+      <h2 id="afiche-titulo" class="m-0 text-3xl font-black uppercase leading-none tracking-tight text-paper sm:text-4xl">
         {rondaLabel(ronda)}
       </h2>
-      <p class="mt-0.5 text-xs font-bold uppercase tracking-wider text-orange-400">
-        {fechaIso ? fechaCorta(fechaIso) : ''}
-      </p>
+      <p class="mt-1.5 text-sm font-black uppercase tracking-wider text-orange-400">{fechaIso ? fechaCorta(fechaIso) : ''}</p>
     </div>
 
-    <!-- Partido estelar con escudos grandes enfrentados -->
-    {estelar && (
-      <div class="rounded-none bg-navy-950/80 p-4 border border-navy-700/80 backdrop-blur-sm shadow-xl">
-        <span class="block text-[0.68rem] font-black uppercase tracking-widest text-paper/60 mb-2.5">
-          Partido Destacado de la Fecha
-        </span>
-        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center">
-          <!-- Local -->
-          <div class="flex flex-col items-center gap-1 min-w-0">
-            <Escudo club={estelar.local?.clubes} tam="lg" />
-            <span class="text-xs sm:text-sm font-black text-paper leading-tight">
-              {estelar.local?.clubes.nombre}
-            </span>
+    <!-- duelo estelar -->
+    {
+      estelar && (
+        <section class="border border-navy-700/80 bg-navy-950/85 p-4" aria-label="Partido destacado">
+          <p class="m-0 mb-3 text-[0.68rem] font-black uppercase tracking-widest text-paper/60">Partido destacado</p>
+          <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 text-center">
+            <div class="flex min-w-0 flex-col items-center gap-2">
+              <Escudo club={estelar.local?.clubes} tam="lg" />
+              <span class="text-balance text-xs font-black leading-tight text-paper sm:text-sm">{estelar.local?.clubes.nombre}</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 self-center px-1">
+              <span class="num text-lg font-black leading-none text-orange-400 sm:text-xl">{horaCorta(estelar.fecha_hora)}</span>
+              <span class="border border-gold-400/30 bg-navy-900 px-1.5 py-0.5 text-[0.62rem] font-black uppercase tracking-widest text-gold-400">vs</span>
+            </div>
+            <div class="flex min-w-0 flex-col items-center gap-2">
+              <Escudo club={estelar.visitante?.clubes} tam="lg" />
+              <span class="text-balance text-xs font-black leading-tight text-paper sm:text-sm">{estelar.visitante?.clubes.nombre}</span>
+            </div>
           </div>
+        </section>
+      )
+    }
 
-          <!-- Centro VS / Hora -->
-          <div class="flex flex-col items-center justify-center px-1">
-            <span class="num text-base sm:text-xl font-black text-orange-400">
-              {horaCorta(estelar.fecha_hora)}
-            </span>
-            <span class="text-[0.62rem] font-black uppercase tracking-widest text-gold-400 px-1.5 py-0.5 bg-navy-900 border border-gold-400/30">
-              VS
-            </span>
-          </div>
-
-          <!-- Visitante -->
-          <div class="flex flex-col items-center gap-1 min-w-0">
-            <Escudo club={estelar.visitante?.clubes} tam="lg" />
-            <span class="text-xs sm:text-sm font-black text-paper leading-tight">
-              {estelar.visitante?.clubes.nombre}
-            </span>
-          </div>
-        </div>
-      </div>
-    )}
-
-    <!-- Cartelera completa de la fecha -->
-    <div class="space-y-2 pt-1">
-      <span class="block text-xs font-black uppercase tracking-wider text-paper/80">
-        Cartelera de la jornada:
-      </span>
-      <div class="space-y-1.5">
-        {partidos.map((p) => (
-          <div class="flex items-center justify-between text-xs font-semibold py-1.5 px-3 bg-navy-900/60 border-l-2 border-orange-500 text-paper">
-            <span class="font-bold text-paper">
-              {p.local?.clubes.nombre} vs {p.visitante?.clubes.nombre}
-            </span>
-            <span class="num font-black text-orange-400 text-sm">
-              {horaCorta(p.fecha_hora)}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p class="text-[0.72rem] font-medium text-paper/60 pt-1">
-        📍 {primerPartido?.sede ?? 'Gimnasios y sedes oficiales a confirmar'}
+    <!-- cartelera -->
+    <section aria-label="Cartelera de la jornada">
+      <p class="m-0 mb-2 text-xs font-black uppercase tracking-wider text-paper/80">Cartelera de la jornada</p>
+      <ul class="m-0 grid list-none gap-1.5 p-0">
+        {
+          partidos.map((p) => (
+            <li class="flex items-center gap-3 border-l-2 border-orange-500 bg-navy-950/85 px-3 py-2 text-xs font-bold text-paper">
+              <span class="num w-11 shrink-0 text-sm font-black text-orange-400">{horaCorta(p.fecha_hora)}</span>
+              <span class="min-w-0 truncate">
+                {p.local?.clubes.nombre} <span class="text-paper-muted">vs</span> {p.visitante?.clubes.nombre}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="m-0 mt-2.5 flex items-start gap-1.5 text-[0.72rem] font-medium text-paper/65">
+        <svg class="mt-px h-3.5 w-3.5 shrink-0 text-orange-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+        </svg>
+        <span>{sede}</span>
       </p>
-    </div>
-  </div>
+    </section>
 
-  <!-- Botón de acción recto -->
-  <div class="relative z-10 pt-5 mt-4 border-t border-navy-700/60">
     <a
       href={`/fixture?torneo=${torneoId ?? ''}&ronda=${ronda}`}
-      class="block w-full text-center bg-orange-500 hover:bg-orange-400 text-ink text-xs sm:text-sm font-black uppercase tracking-wider py-3 transition-colors shadow-lg active:scale-[0.99] no-underline"
+      class="mt-auto block bg-orange-500 py-3 text-center text-xs font-black uppercase tracking-wider text-ink no-underline shadow-lg transition-colors hover:bg-orange-400 active:scale-[0.99] sm:text-sm"
     >
-      Ver fixture completo y detalles &rarr;
+      Ver fixture completo &rarr;
     </a>
   </div>
-</div>
+</article>

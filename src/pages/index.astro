@@ -74,6 +74,15 @@ const eventosLd = [...publicados, ...fechaProxima]
 const cabeceraNoticias = 'flex flex-wrap items-baseline justify-between gap-4 mb-5 border-b border-navy-700/60 pb-3';
 const h2seccion = 'm-0 text-xl sm:text-2xl font-black uppercase tracking-wide text-paper flex items-center gap-2';
 const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-orange-500 hover:text-orange-400 no-underline transition-colors';
+
+/* Competencias: Primera aparte, Formativas agrupadas (U22 … U10, ya ordenadas por categoría) */
+const formativas = torneos.filter((t) => t.id !== primera?.id && /^U\d+/i.test(t.categorias?.nombre ?? ''));
+const anioTemporada = primera?.temporada ?? new Date().getFullYear();
+const estadoTxt = (e: string) => (e === 'en_curso' ? 'En curso' : e === 'proximo' ? 'Próximo' : 'Finalizado');
+const btnComp =
+  'flex-1 border border-navy-600 bg-navy-900/90 px-3 py-2.5 text-center text-xs font-black uppercase tracking-wider text-paper no-underline transition-colors hover:border-orange-500 hover:bg-orange-500 hover:text-ink';
+const btnCompMini =
+  'flex-1 border border-navy-700 px-2 py-1.5 text-center text-[0.68rem] font-black uppercase tracking-wider text-paper/85 no-underline transition-colors hover:border-gold-400 hover:bg-gold-400 hover:text-ink';
 ---
 
 <Base>
@@ -103,7 +112,7 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
       {
         rondaProxima && (
           <div class="lg:col-span-5 flex flex-col">
-            <AficheProximaFecha ronda={rondaProxima} partidos={fechaProxima} torneoId={primera?.id} />
+            <AficheProximaFecha ronda={rondaProxima} partidos={fechaProxima} torneoId={primera?.id} competencia={primera?.nombre} />
           </div>
         )
       }
@@ -125,17 +134,16 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
           </a>
         </div>
 
-        <div class="space-y-4">
-          <NoticiaCard noticia={noticias[0]} variante="destacada" />
-
+        <NoticiaCard noticia={noticias[0]} variante="destacada">
           {noticias.length > 1 && (
-            <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-auto border-t border-navy-700/60 pt-4">
+              <p class="m-0 mb-1 text-[0.7rem] font-black uppercase tracking-widest text-paper/60">Más noticias</p>
               {noticias.slice(1, 4).map((n) => (
-                <NoticiaCard noticia={n} variante="horizontal" />
+                <NoticiaCard noticia={n} variante="mini" />
               ))}
             </div>
           )}
-        </div>
+        </NoticiaCard>
       </section>
     )
   }
@@ -201,7 +209,7 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
             rondasListadas.map((r) => (
               <a
                 href={`/fixture?torneo=${primera?.id ?? ''}&ronda=${r}`}
-                class="rounded-full border border-navy-700 px-4 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.09em] text-paper-muted no-underline transition-colors hover:border-orange-500 hover:text-paper"
+                class="border border-navy-700 px-4 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.09em] text-paper-muted no-underline transition-colors hover:border-orange-500 hover:text-paper"
               >
                 {rondaLabel(r)}
               </a>
@@ -220,32 +228,57 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
   <section class="pb-10" aria-labelledby="t-competencias">
     <div class={cabeceraNoticias}>
       <h2 id="t-competencias" class={h2seccion}>
-        Competencias
+        Competencias {anioTemporada}
       </h2>
     </div>
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 lg:grid-cols-12">
       {
-        torneos.map((t) => (
-          <Panel>
-            <div class="flex items-center justify-between gap-2">
-              <span class="rounded bg-navy-950/80 px-2 py-0.5 text-xs font-black uppercase tracking-wider text-gold-400 border border-navy-800">
-                {t.categorias?.nombre}
-              </span>
-              <span class="text-xs font-bold uppercase tracking-wider text-paper/70">
-                {t.estado === 'en_curso' ? 'En curso' : t.estado === 'proximo' ? 'Próximo' : 'Finalizado'}
-              </span>
+        primera && (
+          <article class="card-vigor relative flex flex-col justify-between gap-5 overflow-hidden border-t-2 border-t-orange-500 p-6 lg:col-span-5">
+            <img src="/images/jugadores/jugador-rowing.webp" alt="" aria-hidden="true" loading="lazy" class="pointer-events-none absolute -right-6 bottom-0 h-[92%] w-auto max-w-none opacity-25" />
+            <div class="relative">
+              <div class="flex items-center gap-2">
+                <span class="bg-orange-500 px-2 py-0.5 text-[0.7rem] font-black uppercase tracking-wider text-ink">Primera</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-paper/70">{estadoTxt(primera.estado)}</span>
+              </div>
+              <h3 class="m-0 mt-3 text-2xl font-black uppercase leading-none tracking-tight text-paper sm:text-3xl">{primera.nombre}</h3>
+              <p class="m-0 mt-2 max-w-[30ch] text-sm font-medium text-paper/75">La máxima categoría de la liga: fixture, resultados y tabla al día.</p>
             </div>
-            <h3 class="mt-2 text-base sm:text-lg font-black leading-tight text-paper">{t.nombre}</h3>
-            <div class="mt-4 flex gap-2">
-              <a href={`/fixture?torneo=${t.id}`} class="flex-1 text-center rounded-lg bg-navy-800/90 border border-navy-700 px-3 py-2 text-xs font-bold uppercase tracking-wider no-underline transition-all hover:border-orange-500 hover:bg-orange-500 hover:text-ink">
-                Fixture
-              </a>
-              <a href={`/tabla?torneo=${t.id}`} class="flex-1 text-center rounded-lg bg-navy-800/90 border border-navy-700 px-3 py-2 text-xs font-bold uppercase tracking-wider no-underline transition-all hover:border-gold-400 hover:bg-gold-400 hover:text-ink">
-                Tabla
-              </a>
+            <div class="relative flex gap-2">
+              <a href={`/fixture?torneo=${primera.id}`} class={btnComp}>Fixture</a>
+              <a href={`/tabla?torneo=${primera.id}`} class={btnComp}>Tabla</a>
             </div>
-          </Panel>
-        ))
+          </article>
+        )
+      }
+      {
+        formativas.length > 0 && (
+          <article class="card-vigor flex flex-col gap-4 border-t-2 border-t-gold-400 p-6 lg:col-span-7">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="bg-gold-400 px-2 py-0.5 text-[0.7rem] font-black uppercase tracking-wider text-ink">Formativas</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-paper/70">{formativas.length} categorías</span>
+              </div>
+              <span class="text-xs font-semibold text-paper/60">De U10 a U22 · la base de la liga</span>
+            </div>
+            <ul class="m-0 grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-3">
+              {
+                formativas.map((t) => (
+                  <li class="flex flex-col gap-2 border border-navy-700/80 bg-navy-950/60 p-3">
+                    <div class="flex items-baseline justify-between gap-2">
+                      <strong class="num text-xl font-black tracking-tight text-paper">{t.categorias?.nombre}</strong>
+                      <span class="text-[0.65rem] font-bold uppercase tracking-wider text-paper/55">{estadoTxt(t.estado)}</span>
+                    </div>
+                    <div class="flex gap-1.5">
+                      <a href={`/fixture?torneo=${t.id}`} class={btnCompMini}>Fixture</a>
+                      <a href={`/tabla?torneo=${t.id}`} class={btnCompMini}>Tabla</a>
+                    </div>
+                  </li>
+                ))
+              }
+            </ul>
+          </article>
+        )
       }
     </div>
   </section>

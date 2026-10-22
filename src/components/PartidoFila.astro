@@ -1,5 +1,7 @@
 ---
 // Fila compacta de partido para listados (fixture/home/club): agenda o resultado.
+// Desktop: grilla de columnas FIJAS (fecha · local · vs · visitante · estado · sede) para que
+// todas las filas alineen igual sin importar el largo de los nombres. Móvil: apilado.
 // Card enlazada a la ficha solo cuando hay resultado público (finalizado/walkover).
 import Escudo from './Escudo.astro';
 import type { PartidoVista } from '../lib/data';
@@ -13,6 +15,7 @@ const { partido } = Astro.props;
 const loc = partido.local?.clubes;
 const vis = partido.visitante?.clubes;
 const esResultado = partido.publicado && (partido.estado === 'finalizado' || partido.estado === 'walkover');
+const esWO = partido.estado === 'walkover';
 const badge = etiquetaEstado(partido.estado);
 const tonoBadge: Record<string, string> = {
   gris: 'bg-navy-700 text-paper',
@@ -20,71 +23,52 @@ const tonoBadge: Record<string, string> = {
   rojo: 'bg-red-500 text-paper',
   dorado: 'bg-gold-400 text-ink',
 };
-const marcador = partido.estado === 'walkover' ? 'W' : `${partido.puntos_local ?? ''}–${partido.puntos_visitante ?? ''}`;
+const ganaL = esResultado && (esWO ? partido.local?.id === partido.walkover_ganador_id : (partido.puntos_local ?? 0) > (partido.puntos_visitante ?? 0));
+const ganaV = esResultado && (esWO ? partido.visitante?.id === partido.walkover_ganador_id : (partido.puntos_visitante ?? 0) > (partido.puntos_local ?? 0));
+const centro = esResultado ? (esWO ? 'W.O.' : `${partido.puntos_local ?? 0}–${partido.puntos_visitante ?? 0}`) : 'vs';
 
-const marco =
-  'card-vigor flex min-w-0 flex-col gap-3.5 p-4 sm:p-4.5 transition-all duration-200 sm:flex-row sm:items-center sm:gap-5';
-const marcoActiva = `${marco} hover:border-orange-500/50 hover:shadow-xl`;
+const Tag = esResultado ? 'a' : 'article';
 const aria = `${rondaLabel(partido.ronda)} · ${fechaCorta(partido.fecha_hora)} ${horaCorta(partido.fecha_hora)} · ${loc?.nombre ?? ''} vs ${vis?.nombre ?? ''}`;
+const marco =
+  'card-vigor grid min-w-0 gap-3 p-4 no-underline transition-all duration-200 ' +
+  'md:grid-cols-[84px_minmax(0,1fr)_72px_minmax(0,1fr)_116px_minmax(0,170px)] md:items-center md:gap-4 md:py-3.5' +
+  (esResultado ? ' hover:border-orange-500/50 hover:shadow-xl' : '');
+const nombre = 'min-w-0 truncate text-[0.95rem] sm:text-base font-bold';
 ---
 
-{
-  esResultado ? (
-    <a href={`/partidos/${partido.id}`} aria-label={aria} class={marcoActiva}>
-      <div class="min-w-[95px] shrink-0 border-b border-navy-700/60 pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
-        <strong class="block text-xs font-black uppercase tracking-wider text-gold-400">{fechaCorta(partido.fecha_hora)}</strong>
-        <span class="num text-lg font-black text-paper">{horaCorta(partido.fecha_hora)}</span>
-      </div>
-      <div class="flex min-w-0 flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <span class="flex min-w-0 items-center gap-2.5 sm:w-[46%]">
-          <Escudo club={loc} tam="md" />
-          <span class={`min-w-0 truncate text-base font-bold ${partido.estado === 'walkover' && partido.local?.id === partido.walkover_ganador_id ? 'text-gold-400' : 'text-paper'}`}>
-            {loc?.nombre ?? 'Local'}
-          </span>
-        </span>
-        <span class="hidden px-2 text-base font-black text-orange-500 sm:inline" aria-hidden="true">
-          {marcador}
-        </span>
-        <span class="flex min-w-0 items-center gap-2.5 sm:ml-auto sm:w-[46%] sm:flex-row-reverse sm:text-right">
-          <Escudo club={vis} tam="md" />
-          <span class={`min-w-0 truncate text-base font-bold ${partido.estado === 'walkover' && partido.visitante?.id === partido.walkover_ganador_id ? 'text-gold-400' : 'text-paper'}`}>
-            {vis?.nombre ?? 'Visitante'}
-          </span>
-        </span>
-      </div>
-      <div class="flex min-w-0 items-center justify-between gap-2 sm:flex-col sm:items-end">
-        <span class="num text-xl font-black text-orange-500 sm:hidden">{marcador}</span>
-        <span class={`px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? ''}`}>{badge.texto}</span>
-      </div>
-      <div class="w-full border-t border-navy-700/60 pt-2 text-xs font-medium text-paper/75 sm:min-w-0 sm:max-w-[200px] sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
-        {partido.sede ?? 'Sede a confirmar'}
-      </div>
-      {partido.nota_publica && <p class="text-xs font-semibold text-gold-400 sm:min-w-0 sm:max-w-[220px] sm:text-right">{partido.nota_publica}</p>}
-    </a>
-  ) : (
-    <article aria-label={aria} class={marco}>
-      <div class="min-w-[95px] shrink-0 border-b border-navy-700/60 pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
-        <strong class="block text-xs font-black uppercase tracking-wider text-gold-400">{fechaCorta(partido.fecha_hora)}</strong>
-        <span class="num text-lg font-black text-paper">{horaCorta(partido.fecha_hora)}</span>
-      </div>
-      <div class="flex min-w-0 flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <span class="flex min-w-0 items-center gap-2.5 sm:w-[46%]">
-          <Escudo club={loc} tam="md" />
-          <span class="min-w-0 truncate text-base font-bold text-paper">{loc?.nombre ?? 'Local'}</span>
-        </span>
-        <span class="hidden px-2 text-xs font-black uppercase tracking-widest text-paper-muted sm:inline" aria-hidden="true">vs</span>
-        <span class="flex min-w-0 items-center gap-2.5 sm:ml-auto sm:w-[46%] sm:flex-row-reverse sm:text-right">
-          <Escudo club={vis} tam="md" />
-          <span class="min-w-0 truncate text-base font-bold text-paper">{vis?.nombre ?? 'Visitante'}</span>
-        </span>
-      </div>
-      <div class="flex min-w-0 items-center gap-2 sm:flex-col sm:items-end">
-        <span class={`px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? ''}`}>{badge.texto}</span>
-      </div>
-      <div class="w-full border-t border-navy-700/60 pt-2 text-xs font-medium text-paper/75 sm:min-w-0 sm:max-w-[200px] sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
-        {partido.sede ?? 'Sede a confirmar'}
-      </div>
-      {partido.nota_publica && <p class="text-xs font-semibold text-gold-400 sm:min-w-0 sm:max-w-[220px] sm:text-right">{partido.nota_publica}</p>}
-    </article>
-  )
-}
+<Tag href={esResultado ? `/partidos/${partido.id}` : undefined} aria-label={aria} class={marco}>
+  <!-- fecha / hora -->
+  <div class="flex items-baseline justify-between gap-2 border-b border-navy-700/60 pb-2 md:block md:border-b-0 md:border-r md:pb-0 md:pr-3">
+    <strong class="block text-xs font-black uppercase tracking-wider text-gold-400">{fechaCorta(partido.fecha_hora)}</strong>
+    <span class="num text-lg font-black text-paper">{horaCorta(partido.fecha_hora)}</span>
+  </div>
+
+  <!-- local -->
+  <div class="flex min-w-0 items-center gap-3">
+    <Escudo club={loc} tam="md" />
+    <span class={`${nombre} ${ganaL ? 'text-gold-400' : esResultado ? 'text-paper/75' : 'text-paper'}`}>{loc?.nombre ?? 'Local'}</span>
+    {esResultado && !esWO && <span class={`num ml-auto text-lg font-black md:hidden ${ganaL ? 'text-orange-500' : 'text-paper/50'}`}>{partido.puntos_local ?? 0}</span>}
+  </div>
+
+  <!-- centro: vs o marcador (solo desktop; en móvil el marcador va junto a cada equipo) -->
+  <div class="hidden text-center md:block" aria-hidden="true">
+    <span class={esResultado ? 'num text-lg font-black text-orange-500' : 'text-xs font-black uppercase tracking-[0.2em] text-paper-muted'}>{centro}</span>
+  </div>
+
+  <!-- visitante: escudo pegado al centro, nombre hacia afuera -->
+  <div class="flex min-w-0 items-center gap-3 md:flex-row-reverse md:justify-start md:text-right">
+    <Escudo club={vis} tam="md" />
+    <span class={`${nombre} ${ganaV ? 'text-gold-400' : esResultado ? 'text-paper/75' : 'text-paper'}`}>{vis?.nombre ?? 'Visitante'}</span>
+    {esResultado && !esWO && <span class={`num ml-auto text-lg font-black md:hidden ${ganaV ? 'text-orange-500' : 'text-paper/50'}`}>{partido.puntos_visitante ?? 0}</span>}
+  </div>
+
+  <!-- estado + sede (en móvil comparten fila) -->
+  <div class="flex items-center gap-2 md:justify-center">
+    <span class={`whitespace-nowrap px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.gris}`}>{badge.texto}</span>
+  </div>
+  <p class="m-0 min-w-0 text-xs font-medium leading-snug text-paper/70 line-clamp-2 md:text-right">
+    {partido.sede ?? 'Sede a confirmar'}
+  </p>
+
+  {partido.nota_publica && <p class="m-0 text-xs font-semibold text-gold-400 md:col-span-full md:text-right">{partido.nota_publica}</p>}
+</Tag>

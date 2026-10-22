@@ -172,10 +172,12 @@ async function fila<T>(prom: PromiseLike<RespuestaSupa<T[]>>): Promise<T | null>
 
 /* --------------------------------- consultas --------------------------------- */
 
+/** Torneos en el orden de categorías de la liga (Primera, U22 … U10). */
 export async function listarTorneos(): Promise<TorneoInfo[]> {
-  return filas(
+  const torneos = await filas(
     supabase.from('torneos').select(SELECT_TORNEO).returns<TorneoInfo[]>()
   );
+  return torneos.sort((a, b) => (a.categorias?.orden ?? 99) - (b.categorias?.orden ?? 99));
 }
 
 /** Torneo por defecto: Primera (1RA); si no hay, el en_curso con menor orden de categoría. */

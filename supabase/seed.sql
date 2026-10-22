@@ -5,7 +5,9 @@
 --   · Org LBC (organización real del piloto) con el brand de los afiches
 --   · 4 clubes reales de Primera 2026 (nombres tal como salen en el afiche)
 --   · Fixture completo de Primera: 6 fechas, doble jornada, anfitrión por fecha
---   · Torneos demo de formativas (Sub-15/Sub-13) y amateur
+--   · Formativas U10, U12, U14, U16, U18, U22 (estructura real de la liga;
+--     fixture demo solo en U16). Sin Amateur: no lo organiza la liga por ahora.
+--   · CAC Valdense: club de la liga con equipos en Formativas (no juega Primera 2026)
 --   · Rosters [demo] con fichas confirmadas
 --   · 3 planillas de ejemplo: verificada / disputada / borrador + 1 walkover
 --   · Sanción demo, noticias, auspiciantes y páginas
@@ -33,24 +35,23 @@ declare
   v_id_rowin uuid := '00000000-0000-0000-0000-0000000001c2';
   v_id_estud uuid := '00000000-0000-0000-0000-0000000001c3';
   v_id_juv   uuid := '00000000-0000-0000-0000-0000000001c4';
+  v_id_valdense uuid := '00000000-0000-0000-0000-0000000001c5';
 
   v_cat_primer uuid;
-  v_cat_sub15  uuid;
-  v_cat_sub13  uuid;
-  v_cat_amat   uuid;
+  v_cat_u16    uuid;
+  v_cat_u14    uuid;
 
   v_torneo_primer uuid;
-  v_torneo_sub15  uuid;
-  v_torneo_sub13  uuid;
-  v_torneo_amat   uuid;
+  v_torneo_u16    uuid;
+  v_torneo_u14    uuid;
 
   v_eq_plaza uuid; v_eq_rowin uuid; v_eq_estud uuid; v_eq_juv uuid;       -- primera
-  v_eq15_plaza uuid; v_eq15_rowin uuid; v_eq15_estud uuid; v_eq15_juv uuid; -- Sub-15
+  v_eq16_plaza uuid; v_eq16_rowin uuid; v_eq16_estud uuid; v_eq16_juv uuid; -- U16
 
   v_p1 uuid;  -- fecha 1 · Plaza-Juventud (verificada y publicada)
   v_p2 uuid;  -- fecha 1 · Estudiantes-Rowing (en disputa)
-  v_p3 uuid;  -- Sub-15 · Plaza-Juventud (planilla borrador)
-  v_pw uuid;  -- Sub-15 · Rowing-Estudiantes (walkover demo)
+  v_p3 uuid;  -- U16 · Plaza-Juventud (planilla borrador)
+  v_pw uuid;  -- U16 · Rowing-Estudiantes (walkover demo)
 
   v_pl1 uuid; v_pl2 uuid; v_pl3 uuid;  -- planillas 1/2/3
 begin
@@ -107,7 +108,8 @@ begin
     (v_id_plaza, v_org, 'Plaza Colonia',        'plaza-colonia',        'Gimnasio de Plaza Colonia [gimnasios/sedes reales a confirmar con la liga]'),
     (v_id_rowin, v_org, 'Colonia Rowing',       'colonia-rowing',       'Gimnasio de Colonia Rowing [gimnasios/sedes reales a confirmar con la liga]'),
     (v_id_estud, v_org, 'Estudiantes El Colla', 'estudiantes-el-colla', 'Gimnasio de Estudiantes El Colla, Rosario [a confirmar con la liga]'),
-    (v_id_juv,   v_org, 'Juventud',             'juventud-caj',         'Gimnasio de Juventud [a confirmar con la liga]');
+    (v_id_juv,   v_org, 'Juventud',             'juventud-caj',         'Gimnasio de Juventud [a confirmar con la liga]'),
+    (v_id_valdense, v_org, 'CAC Valdense',      'cac-valdense',         'Gimnasio de CAC Valdense, Colonia Valdense [a confirmar con la liga]');
 
   insert into org_members (org_id, user_id, rol, club_id) values
     (v_org, v_user_d_pla, 'delegado', v_id_plaza),
@@ -115,17 +117,23 @@ begin
     (v_org, v_user_d_est, 'delegado', v_id_estud),
     (v_org, v_user_d_juv, 'delegado', v_id_juv);
 
-  -- --------------------------------- categorías [nombres reales a confirmar] --
-  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'Primera', '1RA',   1, false) returning id into v_cat_primer;
-  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'Sub-15',  'SUB15', 2, true)  returning id into v_cat_sub15;
-  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'Sub-13',  'SUB13', 3, true)  returning id into v_cat_sub13;
-  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'Amateur', 'AMA',   4, false) returning id into v_cat_amat;
+  -- ------------------------------ categorías reales: Primera + Formativas --
+  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'Primera', '1RA', 1, false) returning id into v_cat_primer;
+  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values
+    (v_org, 'U22', 'U22', 2, true),
+    (v_org, 'U18', 'U18', 3, true);
+  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'U16', 'U16', 4, true) returning id into v_cat_u16;
+  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values (v_org, 'U14', 'U14', 5, true) returning id into v_cat_u14;
+  insert into categorias (org_id, nombre, acronimo, orden, es_formativa) values
+    (v_org, 'U12', 'U12', 6, true),
+    (v_org, 'U10', 'U10', 7, true);
 
-  -- equipos: uno por club y categoría
+  -- equipos: todos los clubes en Formativas; Primera solo los 4 del afiche 2026
   insert into equipos (org_id, club_id, categoria_id, nombre_mostrar)
   select v_org, c.id, ct.id, c.nombre || ' - ' || ct.acronimo
   from clubes c cross join categorias ct
-  where c.org_id = v_org;
+  where c.org_id = v_org and ct.org_id = v_org
+    and (ct.es_formativa or c.id <> v_id_valdense);
 
   -- referencias a los equipos que usa el fixture
   select eq.id into v_eq_plaza from equipos eq join clubes c on c.id = eq.club_id
@@ -140,18 +148,18 @@ begin
   select eq.id into v_eq_juv from equipos eq join clubes c on c.id = eq.club_id
     join categorias ct on ct.id = eq.categoria_id
     where eq.org_id = v_org and c.slug = 'juventud-caj' and ct.nombre = 'Primera';
-  select eq.id into v_eq15_plaza from equipos eq join clubes c on c.id = eq.club_id
+  select eq.id into v_eq16_plaza from equipos eq join clubes c on c.id = eq.club_id
     join categorias ct on ct.id = eq.categoria_id
-    where eq.org_id = v_org and c.slug = 'plaza-colonia' and ct.nombre = 'Sub-15';
-  select eq.id into v_eq15_rowin from equipos eq join clubes c on c.id = eq.club_id
+    where eq.org_id = v_org and c.slug = 'plaza-colonia' and ct.nombre = 'U16';
+  select eq.id into v_eq16_rowin from equipos eq join clubes c on c.id = eq.club_id
     join categorias ct on ct.id = eq.categoria_id
-    where eq.org_id = v_org and c.slug = 'colonia-rowing' and ct.nombre = 'Sub-15';
-  select eq.id into v_eq15_estud from equipos eq join clubes c on c.id = eq.club_id
+    where eq.org_id = v_org and c.slug = 'colonia-rowing' and ct.nombre = 'U16';
+  select eq.id into v_eq16_estud from equipos eq join clubes c on c.id = eq.club_id
     join categorias ct on ct.id = eq.categoria_id
-    where eq.org_id = v_org and c.slug = 'estudiantes-el-colla' and ct.nombre = 'Sub-15';
-  select eq.id into v_eq15_juv from equipos eq join clubes c on c.id = eq.club_id
+    where eq.org_id = v_org and c.slug = 'estudiantes-el-colla' and ct.nombre = 'U16';
+  select eq.id into v_eq16_juv from equipos eq join clubes c on c.id = eq.club_id
     join categorias ct on ct.id = eq.categoria_id
-    where eq.org_id = v_org and c.slug = 'juventud-caj' and ct.nombre = 'Sub-15';
+    where eq.org_id = v_org and c.slug = 'juventud-caj' and ct.nombre = 'U16';
 
   -- ------------------------------------------------------------- torneos --
   insert into torneos (org_id, categoria_id, temporada, nombre, formato, estado, estadisticas_detalladas)
@@ -159,16 +167,18 @@ begin
   returning id into v_torneo_primer;
 
   insert into torneos (org_id, categoria_id, temporada, nombre, formato, estado, estadisticas_detalladas)
-  values (v_org, v_cat_sub15, 2026, 'Copa Sub-15 2026', 'torneo', 'en_curso', false)
-  returning id into v_torneo_sub15;
+  values (v_org, v_cat_u16, 2026, 'Formativas U16 2026', 'liga', 'en_curso', false)
+  returning id into v_torneo_u16;
 
   insert into torneos (org_id, categoria_id, temporada, nombre, formato, estado, estadisticas_detalladas)
-  values (v_org, v_cat_sub13, 2026, 'Copa Sub-13 2026', 'torneo', 'proximo', false)
-  returning id into v_torneo_sub13;
+  values (v_org, v_cat_u14, 2026, 'Formativas U14 2026', 'liga', 'en_curso', false)
+  returning id into v_torneo_u14;
 
+  -- resto de Formativas: torneo 2026 en curso, fixture a cargar por la liga
   insert into torneos (org_id, categoria_id, temporada, nombre, formato, estado, estadisticas_detalladas)
-  values (v_org, v_cat_amat, 2026, 'Campeonato Amateur 2026', 'torneo', 'proximo', false)
-  returning id into v_torneo_amat;
+  select v_org, ct.id, 2026, 'Formativas ' || ct.nombre || ' 2026', 'liga', 'en_curso', false
+  from categorias ct
+  where ct.org_id = v_org and ct.nombre in ('U22', 'U18', 'U12', 'U10');
 
   -- ------------------------------ fixture real de Primera (afiche oficial) --
   -- Fecha 1 · 17/10 · anfitrión Estudiantes El Colla (Rosario)
@@ -210,19 +220,19 @@ begin
   (v_org, v_torneo_primer, '6', make_timestamptz(2026, 11, 21, 19, 0, 0, 'America/Montevideo'), null, 'Sede y anfitrión a confirmar por la liga', v_eq_estud, v_eq_rowin),
   (v_org, v_torneo_primer, '6', make_timestamptz(2026, 11, 21, 21, 0, 0, 'America/Montevideo'), null, 'Sede y anfitrión a confirmar por la liga', v_eq_juv,   v_eq_plaza);
 
-  -- ---------------------------- fixture demo de formativas (Sub-15, 17/10) --
+  -- ---------------------------- fixture demo de formativas (U16, 17/10) --
   -- Marcadores del partido 19:00 [demo]; el walkover pruebe la view de tabla.
   insert into partidos (org_id, torneo_id, ronda, fecha_hora, sede, equipo_local_id, equipo_visitante_id)
-  values (v_org, v_torneo_sub15, '1', make_timestamptz(2026, 10, 17, 17, 0, 0, 'America/Montevideo'),
-          'Gimnasio de Estudiantes El Colla, Rosario', v_eq15_plaza, v_eq15_juv)
+  values (v_org, v_torneo_u16, '1', make_timestamptz(2026, 10, 17, 17, 0, 0, 'America/Montevideo'),
+          'Gimnasio de Estudiantes El Colla, Rosario', v_eq16_plaza, v_eq16_juv)
   returning id into v_p3;
 
   insert into partidos (org_id, torneo_id, ronda, fecha_hora, sede, equipo_local_id, equipo_visitante_id,
                         estado, walkover_ganador_id, publicado, publicado_at, nota_publica)
-  values (v_org, v_torneo_sub15, '1', make_timestamptz(2026, 10, 17, 18, 30, 0, 'America/Montevideo'),
+  values (v_org, v_torneo_u16, '1', make_timestamptz(2026, 10, 17, 18, 30, 0, 'America/Montevideo'),
           'Gimnasio de Estudiantes El Colla, Rosario',
-          v_eq15_rowin, v_eq15_estud,
-          'walkover', v_eq15_estud, true, now(), 'No presentación del club visitante [demo]')
+          v_eq16_rowin, v_eq16_estud,
+          'walkover', v_eq16_estud, true, now(), 'No presentación del club visitante [demo]')
   returning id into v_pw;
 
   -- -------------------------------------------------- rosters [demo] + fichas --
@@ -252,14 +262,14 @@ begin
     (v_id_rowin, 'Primera', 'Ignacio Pintos [demo]',       7,  date '2003-11-23'),
     (v_id_rowin, 'Primera', 'Valentín Cuello [demo]',      9,  date '1999-12-08'),
     (v_id_rowin, 'Primera', 'Juan Barros [demo]',          11, date '2002-03-19'),
-    (v_id_plaza, 'Sub-15', 'Rafael Pereira [demo]',        4,  date '2011-03-14'),
-    (v_id_plaza, 'Sub-15', 'Tomas Ferreira [demo]',        5,  date '2011-07-22'),
-    (v_id_plaza, 'Sub-15', 'Luciano Couce [demo]',         7,  date '2010-01-30'),
-    (v_id_plaza, 'Sub-15', 'Mateo Bentancor [demo]',       8,  date '2012-09-05'),
-    (v_id_juv,   'Sub-15', 'Simón González [demo]',        4,  date '2011-06-09'),
-    (v_id_juv,   'Sub-15', 'Julián Latorre [demo]',        5,  date '2011-02-27'),
-    (v_id_juv,   'Sub-15', 'Maximiliano Barreto [demo]',   7,  date '2010-10-16'),
-    (v_id_juv,   'Sub-15', 'Facundo Silvera [demo]',       8,  date '2012-08-21');
+    (v_id_plaza, 'U16', 'Rafael Pereira [demo]',        4,  date '2011-03-14'),
+    (v_id_plaza, 'U16', 'Tomas Ferreira [demo]',        5,  date '2011-07-22'),
+    (v_id_plaza, 'U16', 'Luciano Couce [demo]',         7,  date '2010-01-30'),
+    (v_id_plaza, 'U16', 'Mateo Bentancor [demo]',       8,  date '2012-09-05'),
+    (v_id_juv,   'U16', 'Simón González [demo]',        4,  date '2011-06-09'),
+    (v_id_juv,   'U16', 'Julián Latorre [demo]',        5,  date '2011-02-27'),
+    (v_id_juv,   'U16', 'Maximiliano Barreto [demo]',   7,  date '2010-10-16'),
+    (v_id_juv,   'U16', 'Facundo Silvera [demo]',       8,  date '2012-08-21');
 
   insert into jugadores (org_id, nombre_completo, fecha_nacimiento, notas)
   select v_org, j.nombre, j.nace, 'Roster [demo] para el piloto'
@@ -270,7 +280,7 @@ begin
     v_org,
     pl.id,
     eq.id,
-    case eq.categoria_id when v_cat_primer then v_torneo_primer else v_torneo_sub15 end,
+    case eq.categoria_id when v_cat_primer then v_torneo_primer else v_torneo_u16 end,
     j.dorsal,
     'confirmada',
     date '2026-10-01'
@@ -294,7 +304,7 @@ begin
           v_user_d_est, v_id_rowin, 'La suma del tercer cuarto no da el marcador del papel [demo]')
   returning id into v_pl2;
 
-  -- Planilla 3 · borrador: Sub-15 fecha 1 cargada esta noche, sin verificar
+  -- Planilla 3 · borrador: U16 fecha 1 cargada esta noche, sin verificar
   insert into planillas (org_id, partido_id, estado, foto_url, cargada_por)
   values (v_org, v_p3, 'borrador', 'planillas/' || v_org || '/' || v_p3 || '/foto-demo.jpg',
           v_user_d_pla)
@@ -350,7 +360,7 @@ begin
   ) as s(dorsal, minutos, pts, fl, reb, asist, tp)
   join fichas f on f.equipo_id = v_eq_rowin and f.dorsal = s.dorsal and f.torneo_id = v_torneo_primer;
 
-  -- estadísticas de la planilla 3 (borrador de Sub-15)
+  -- estadísticas de la planilla 3 (borrador de U16)
   insert into planilla_stats (org_id, planilla_id, ficha_id, dorsal, minutos, puntos, faltas, rebotes)
   select v_org, v_pl3, f.id, s.dorsal, s.minutos, s.pts, s.fl, s.reb
   from (values
@@ -359,7 +369,7 @@ begin
     (7::int, 24::int, 15::int, 1::int, 2::int),
     (8::int, 22::int, 16::int, 2::int, 2::int)
   ) as s(dorsal, minutos, pts, fl, reb)
-  join fichas f on f.equipo_id = v_eq15_plaza and f.dorsal = s.dorsal and f.torneo_id = v_torneo_sub15;
+  join fichas f on f.equipo_id = v_eq16_plaza and f.dorsal = s.dorsal and f.torneo_id = v_torneo_u16;
 
   insert into planilla_stats (org_id, planilla_id, ficha_id, dorsal, minutos, puntos, faltas, rebotes)
   select v_org, v_pl3, f.id, s.dorsal, s.minutos, s.pts, s.fl, s.reb
@@ -369,7 +379,7 @@ begin
     (7::int, 22::int, 14::int, 3::int, 2::int),
     (8::int, 20::int, 15::int, 2::int, 1::int)
   ) as s(dorsal, minutos, pts, fl, reb)
-  join fichas f on f.equipo_id = v_eq15_juv and f.dorsal = s.dorsal and f.torneo_id = v_torneo_sub15;
+  join fichas f on f.equipo_id = v_eq16_juv and f.dorsal = s.dorsal and f.torneo_id = v_torneo_u16;
 
   -- ------------------------------------------------------------ sanciones --
   -- 1 sanción demo: 3 partidos a cumplir desde la fecha 1

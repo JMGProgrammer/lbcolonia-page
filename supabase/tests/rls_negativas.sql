@@ -99,10 +99,10 @@ rollback;
 -- ============================================================================
 begin;
 select set_config('role', 'anon', true);
--- partidos publicados visibles: la fecha 1 de primera + el walkover Sub-15
+-- partidos publicados visibles: la fecha 1 de primera + el walkover U16
 select 'POS-1 · anon ve partidos publicados → esperado 2' as prueba,
        count(*) as filas from partidos where publicado;
--- fixture programado visible: 10 de fechas 2-6 + el 21:00 de la fecha 1 + 1 Sub-15
+-- fixture programado visible: 10 de fechas 2-6 + el 21:00 de la fecha 1 + 1 U16
 select 'POS-2 · anon ve el fixture programado → esperado 12' as prueba,
        count(*) as filas from partidos where estado = 'programado';
 -- tabla calculada de la primera: Plaza 1º

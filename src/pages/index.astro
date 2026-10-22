@@ -79,7 +79,7 @@ const btnComp =
 const sponsorsOficiales = [
   {
     nombre: 'Montes del Plata',
-    logo: '/images/sponsors/sponsor-montes-del-plata.jpeg',
+    logo: '/images/sponsors/sponsor-montes-del-plata.png',
     categoria: 'Sponsor Principal',
   },
   {
@@ -94,7 +94,7 @@ const sponsorsOficiales = [
   },
   {
     nombre: 'Los Muchachos',
-    logo: '/images/sponsors/sponsor-los-muchachos.jpeg',
+    logo: '/images/sponsors/sponsor-los-muchachos.png',
     categoria: 'Auspiciante Oficial',
   },
 ];
@@ -151,18 +151,16 @@ const sponsorsOficiales = [
 
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4 pt-4">
         {sponsorsOficiales.map((s) => (
-          <div class="group relative flex flex-col items-center justify-center rounded-xl border border-navy-700/60 bg-white/95 p-3.5 sm:p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-orange-500 hover:shadow-[0_8px_24px_rgba(238,107,31,0.25)]">
-            <div class="flex h-16 sm:h-20 w-full items-center justify-center">
-              <img
-                src={s.logo}
-                alt={`Logo de ${s.nombre}`}
-                loading="lazy"
-                class="max-h-full max-w-full object-contain filter contrast-105 transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-            <span class="mt-2 block text-center text-[0.65rem] font-black uppercase tracking-wider text-ink/75 truncate w-full">
-              {s.nombre}
-            </span>
+          <div
+            title={s.nombre}
+            class="group relative flex h-20 sm:h-24 items-center justify-center rounded-xl border border-navy-700/60 bg-white/95 p-3.5 sm:p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-orange-500 hover:shadow-[0_8px_24px_rgba(238,107,31,0.25)]"
+          >
+            <img
+              src={s.logo}
+              alt={`Logo de ${s.nombre}`}
+              loading="lazy"
+              class="max-h-full max-w-full object-contain filter contrast-105 transition-transform duration-300 group-hover:scale-105"
+            />
           </div>
         ))}
       </div>

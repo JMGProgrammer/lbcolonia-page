@@ -1,0 +1,226 @@
+---
+// Página oficial de Campeonatos LBC (/campeonatos)
+// Muestra las competencias de la liga (Primera, Formativas, Amateur) y los equipos que las integran.
+import Base from '../../layouts/Base.astro';
+import Escudo from '../../components/Escudo.astro';
+import { listarTorneos, listarClubes } from '../../lib/data';
+
+const [torneos, clubes] = await Promise.all([listarTorneos(), listarClubes()]);
+
+// Clasificación de torneos
+const torneoPrimera = torneos.find((t) => t.categorias?.acronimo === '1RA') ?? torneos[0];
+const torneosFormativas = torneos.filter((t) => t.categorias?.acronimo !== '1RA');
+
+// En Primera participan: Plaza Colonia, Colonia Rowing, Estudiantes El Colla, Juventud (CACV no juega en Primera)
+const clubesPrimera = clubes.filter((c) => c.slug !== 'cac-valdense');
+// En Formativas participan los 5 clubes oficiales
+const clubesFormativas = clubes;
+---
+
+<Base
+  title="Campeonatos Oficiales 2026"
+  description="Competencias oficiales de la Liga de Básquetbol de Colonia: Primera División, Formativas (U22 a U10) y Torneo Amateur."
+>
+  <div class="py-8 space-y-12">
+    <!-- Header de la Sección -->
+    <header class="space-y-3 border-b border-navy-700/60 pb-6">
+      <div class="flex items-center gap-2">
+        <span class="inline-block h-2.5 w-2.5 bg-orange-500"></span>
+        <span class="text-xs font-black uppercase tracking-widest text-gold-400">Temporada Oficial 2026</span>
+      </div>
+      <h1 class="m-0 text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-paper">
+        Campeonatos LBC
+      </h1>
+      <p class="max-w-3xl text-sm sm:text-base text-paper/75 leading-relaxed">
+        Estructura deportiva de la Liga de Básquetbol de Colonia: torneos mayores, formativas federadas y competencias amateur del departamento.
+      </p>
+    </header>
+
+    <!-- 1. CAMPEONATO PRIMERA DIVISIÓN -->
+    <section class="card-vigor overflow-hidden border border-navy-700/80 bg-navy-950/80 p-6 sm:p-8 space-y-6 shadow-2xl relative">
+      <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-orange-500 via-gold-400 to-orange-500"></div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-800 pb-4">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="rounded-full bg-orange-500 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-ink shadow-sm">
+              En Curso
+            </span>
+            <span class="text-xs font-bold uppercase tracking-wider text-gold-400">
+              Categoría Mayores · Temporada 2026
+            </span>
+          </div>
+          <h2 class="m-0 mt-2 text-2xl sm:text-3xl font-black uppercase tracking-wide text-paper">
+            Primera División LBC
+          </h2>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          {torneoPrimera && (
+            <>
+              <a
+                href={`/tabla?torneo=${torneoPrimera.id}`}
+                class="rounded-lg border border-navy-700 bg-navy-900 px-4 py-2 text-xs font-black uppercase tracking-wider text-paper hover:border-gold-400 hover:text-gold-400 no-underline transition-colors"
+              >
+                Ver Posiciones &rarr;
+              </a>
+              <a
+                href={`/fixture?torneo=${torneoPrimera.id}`}
+                class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-black uppercase tracking-wider text-ink hover:bg-orange-400 no-underline transition-colors shadow-sm"
+              >
+                Ver Fixture &rarr;
+              </a>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <h3 class="m-0 text-xs font-black uppercase tracking-widest text-paper/70">
+            Equipos Participantes (4 Clubes)
+          </h3>
+          <span class="text-[0.72rem] font-semibold text-paper/50">
+            * C.A.C. Valdense no compite en Primera División esta temporada (participa en Formativas).
+          </span>
+        </div>
+
+        <!-- Grilla de Equipos de Primera -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {clubesPrimera.map((c) => (
+            <a
+              href={`/clubes/${c.slug}`}
+              class="group flex items-center gap-3.5 rounded-xl border border-navy-700/70 bg-navy-900/60 p-4 no-underline transition-all duration-200 hover:-translate-y-1 hover:border-orange-500/70 hover:bg-navy-900"
+            >
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-black/30 border border-white/10 p-1.5">
+                <Escudo club={c} tam="md" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <strong class="block truncate text-sm font-black uppercase tracking-wide text-paper group-hover:text-gold-400 transition-colors">
+                  {c.nombre}
+                </strong>
+                <span class="block truncate text-xs text-paper/50">
+                  {c.gimnasio ?? 'Sede oficial'}
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CAMPEONATOS DE DIVISIONES FORMATIVAS -->
+    <section class="card-vigor overflow-hidden border border-navy-700/80 bg-navy-950/80 p-6 sm:p-8 space-y-6 shadow-2xl relative">
+      <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-600 via-sky-400 to-blue-600"></div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-800 pb-4">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="rounded-full bg-blue-600 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-paper shadow-sm">
+              En Curso
+            </span>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-400">
+              6 Categorías · U22, U18, U16, U14, U12, U10
+            </span>
+          </div>
+          <h2 class="m-0 mt-2 text-2xl sm:text-3xl font-black uppercase tracking-wide text-paper">
+            Divisiones Formativas LBC
+          </h2>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            href="/tabla"
+            class="rounded-lg border border-navy-700 bg-navy-900 px-4 py-2 text-xs font-black uppercase tracking-wider text-paper hover:border-sky-400 hover:text-sky-300 no-underline transition-colors"
+          >
+            Tablas por Categoría &rarr;
+          </a>
+          <a
+            href="/fixture"
+            class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-black uppercase tracking-wider text-paper hover:bg-blue-500 no-underline transition-colors shadow-sm"
+          >
+            Fixture Formativas &rarr;
+          </a>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <h3 class="m-0 text-xs font-black uppercase tracking-widest text-paper/70">
+            Clubes con Presencia Formativa (5 Clubes)
+          </h3>
+          <span class="text-[0.72rem] font-semibold text-sky-300">
+            Incluye la participación integral de Club Atlético Colonia Valdense (CACV).
+          </span>
+        </div>
+
+        <!-- Grilla de los 5 Clubes en Formativas -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
+          {clubesFormativas.map((c) => (
+            <a
+              href={`/clubes/${c.slug}`}
+              class="group flex flex-col items-center text-center rounded-xl border border-navy-700/70 bg-navy-900/60 p-4 no-underline transition-all duration-200 hover:-translate-y-1 hover:border-sky-400/70 hover:bg-navy-900"
+            >
+              <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-black/30 border border-white/10 p-2">
+                <Escudo club={c} tam="lg" />
+              </div>
+              <strong class="mt-3 block truncate w-full text-xs sm:text-sm font-black uppercase tracking-wide text-paper group-hover:text-sky-300 transition-colors">
+                {c.nombre}
+              </strong>
+              <span class="mt-1 inline-block rounded-full bg-navy-950 border border-navy-800 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-wider text-paper/60">
+                U10 a U22
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Pestañas de categorías formativas del torneo -->
+      <div class="pt-2 border-t border-navy-800/80">
+        <span class="block text-[0.68rem] font-black uppercase tracking-widest text-paper/50 mb-2">
+          Categorías activas homologadas:
+        </span>
+        <div class="flex flex-wrap gap-2">
+          {torneosFormativas.map((t) => (
+            <a
+              href={`/tabla?torneo=${t.id}`}
+              class="rounded-lg border border-navy-800 bg-navy-900/40 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-paper/80 hover:border-sky-400 hover:text-sky-300 no-underline transition-colors"
+            >
+              {t.categorias?.nombre ?? t.nombre}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. CAMPEONATO AMATEUR LBC (Próximamente) -->
+    <section class="card-vigor overflow-hidden border border-navy-700/80 bg-navy-950/80 p-6 sm:p-8 space-y-4 shadow-xl relative">
+      <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500"></div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-800 pb-4">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="rounded-full bg-amber-500 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-ink shadow-sm">
+              Próximo Lanzamiento
+            </span>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">
+              En Homologación · Secretaría LBC
+            </span>
+          </div>
+          <h2 class="m-0 mt-2 text-2xl sm:text-3xl font-black uppercase tracking-wide text-paper">
+            Torneo Departamental Amateur
+          </h2>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-paper/80 text-sm leading-relaxed max-w-3xl">
+        <p class="m-0">
+          La Liga de Básquetbol de Colonia trabaja en la reglamentación y apertura de inscripciones para el <strong>Torneo Departamental Amateur</strong>, orientado a planteles libres, veteranos y equipos departamentales que buscan competir bajo el arbitraje y la fiscalización oficial de la LBC.
+        </p>
+        <p class="m-0 text-xs sm:text-sm font-semibold text-paper/60 italic border-l-2 border-amber-400 pl-3 py-1 bg-black/20">
+          Próximamente se publicarán las bases reglamentarias, requisitos de ficha médica y los equipos confirmados por secretaría.
+        </p>
+      </div>
+    </section>
+  </div>
+</Base>

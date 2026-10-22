@@ -8,7 +8,6 @@ import ResultCard from '../components/ResultCard.astro';
 import TablaPosiciones from '../components/TablaPosiciones.astro';
 import NavegadorFechas from '../components/NavegadorFechas.astro';
 import NoticiaCard from '../components/NoticiaCard.astro';
-import AuspicianteTile from '../components/AuspicianteTile.astro';
 import Escudo from '../components/Escudo.astro';
 import AficheProximaFecha from '../components/AficheProximaFecha.astro';
 import {
@@ -16,7 +15,6 @@ import {
   listarPartidosDeTorneo,
   tablaDeTorneo,
   listarNoticias,
-  listarAuspiciantes,
   listarPaginas,
   listarClubes,
   torneoPorDefecto,
@@ -24,10 +22,9 @@ import {
 import type { PartidoVista } from '../lib/data';
 import { fechaCorta, rondaLabel } from '../lib/fmt';
 
-const [torneos, noticias, auspiciantes, paginas, clubes] = await Promise.all([
+const [torneos, noticias, paginas, clubes] = await Promise.all([
   listarTorneos(),
   listarNoticias(4),
-  listarAuspiciantes(),
   listarPaginas(),
   listarClubes(),
 ]);
@@ -78,6 +75,29 @@ const anioTemporada = primera?.temporada ?? new Date().getFullYear();
 const estadoTxt = (e: string) => (e === 'en_curso' ? 'En curso' : e === 'proximo' ? 'Próximo' : 'Finalizado');
 const btnComp =
   'flex-1 rounded-full border border-navy-600 bg-navy-900/90 px-3 py-2 text-center text-xs font-black uppercase tracking-wider text-paper no-underline transition-all hover:border-orange-500 hover:bg-orange-500 hover:text-ink shadow-sm';
+
+const sponsorsOficiales = [
+  {
+    nombre: 'Montes del Plata',
+    logo: '/images/sponsors/sponsor-montes-del-plata.jpeg',
+    categoria: 'Sponsor Principal',
+  },
+  {
+    nombre: 'Pepsi',
+    logo: '/images/sponsors/sponsor-pepsi.webp',
+    categoria: 'Bebida Oficial',
+  },
+  {
+    nombre: 'Turil',
+    logo: '/images/sponsors/sponsor-turil.png',
+    categoria: 'Transporte Oficial',
+  },
+  {
+    nombre: 'Los Muchachos',
+    logo: '/images/sponsors/sponsor-los-muchachos.jpeg',
+    categoria: 'Auspiciante Oficial',
+  },
+];
 ---
 
 <Base>
@@ -111,6 +131,41 @@ const btnComp =
           </div>
         )
       }
+    </div>
+  </section>
+
+  <!-- SPONSORS OFICIALES DE LA LIGA (Ubicados antes de Actualidad y Noticias) -->
+  <section class="pb-10 pt-1" aria-labelledby="t-sponsors-home">
+    <div class="card-vigor overflow-hidden border border-navy-700/80 bg-navy-950/75 p-5 sm:p-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3.5 border-b border-navy-800">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-block h-2 w-2 rounded-full bg-gold-400"></span>
+          <h2 id="t-sponsors-home" class="m-0 text-xs sm:text-sm font-black uppercase tracking-widest text-gold-400">
+            Sponsors Oficiales · Liga de Básquetbol de Colonia
+          </h2>
+        </div>
+        <span class="text-[0.68rem] font-bold uppercase tracking-wider text-paper/50">
+          Temporada 2026
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4 pt-4">
+        {sponsorsOficiales.map((s) => (
+          <div class="group relative flex flex-col items-center justify-center rounded-xl border border-navy-700/60 bg-white/95 p-3.5 sm:p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-orange-500 hover:shadow-[0_8px_24px_rgba(238,107,31,0.25)]">
+            <div class="flex h-16 sm:h-20 w-full items-center justify-center">
+              <img
+                src={s.logo}
+                alt={`Logo de ${s.nombre}`}
+                loading="lazy"
+                class="max-h-full max-w-full object-contain filter contrast-105 transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+            <span class="mt-2 block text-center text-[0.65rem] font-black uppercase tracking-wider text-ink/75 truncate w-full">
+              {s.nombre}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -346,25 +401,9 @@ const btnComp =
   }
 
   {
-    auspiciantes.length > 0 && (
-      <section class="pb-4" aria-labelledby="t-auspicios">
-        <div class={cabeceraNoticias}>
-          <h2 id="t-auspicios" class={h2seccion}>
-            Auspician la LBC
-          </h2>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {auspiciantes.map((a) => (
-            <AuspicianteTile a={a} />
-          ))}
-        </div>
-      </section>
-    )
-  }
-
-  {
     eventosLd.length > 0 && (
       <script is:inline type="application/ld+json" set:html={JSON.stringify(eventosLd)} />
     )
   }
 </Base>
+  

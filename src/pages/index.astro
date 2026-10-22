@@ -5,7 +5,6 @@ import Base from '../layouts/Base.astro';
 import Rotulo from '../components/Rotulo.astro';
 import Panel from '../components/Panel.astro';
 import Btn from '../components/Btn.astro';
-import Escudo from '../components/Escudo.astro';
 import ResultCard from '../components/ResultCard.astro';
 import PartidoFila from '../components/PartidoFila.astro';
 import TablaPosiciones from '../components/TablaPosiciones.astro';
@@ -21,7 +20,7 @@ import {
   torneoPorDefecto,
 } from '../lib/data';
 import type { PartidoVista } from '../lib/data';
-import { etiquetaEstado, fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
+import { fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
 
 const [torneos, noticias, auspiciantes, paginas] = await Promise.all([
   listarTorneos(),
@@ -69,27 +68,29 @@ const eventosLd = [...publicados, ...fechaProxima]
     ],
   }));
 
-const cabeceraNoticias = 'flex flex-wrap items-baseline justify-between gap-4 mb-4';
-const h2seccion = 'm-0 text-[1.35rem] font-black tracking-[0.01em]';
-const linkmas = 'text-[0.8rem] font-bold tracking-[0.05em] text-orange-500 no-underline hover:underline';
+const cabeceraNoticias = 'flex flex-wrap items-baseline justify-between gap-4 mb-5 border-b border-navy-700/60 pb-3';
+const h2seccion = 'm-0 text-xl sm:text-2xl font-black uppercase tracking-wide text-paper flex items-center gap-2';
+const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-orange-500 hover:text-orange-400 no-underline transition-colors';
 ---
 
 <Base>
-  <section class="py-9" aria-labelledby="rotulo-hero">
-    <Rotulo id="rotulo-hero">
-      {
-        primera
-          ? `${primera.nombre} · ${rondaPublicada ? `${rondaLabel(rondaPublicada)} · ${fechaCorta(fechaPublicada[0].fecha_hora)}` : 'sin resultados aún'}`
-          : 'Liga de Básquetbol de Colonia'
-      }
-    </Rotulo>
-    <div class="grid gap-4 md:grid-cols-[2fr_1fr] md:items-stretch">
+  <section class="py-8 sm:py-10" aria-labelledby="rotulo-hero">
+    <div class="mb-4">
+      <Rotulo id="rotulo-hero">
+        {
+          primera
+            ? `${primera.nombre} · ${rondaPublicada ? `${rondaLabel(rondaPublicada)} · ${fechaCorta(fechaPublicada[0].fecha_hora)}` : 'sin resultados aún'}`
+            : 'Liga de Básquetbol de Colonia'
+        }
+      </Rotulo>
+    </div>
+    <div class="grid gap-5 md:grid-cols-[2fr_1fr] md:items-stretch">
       <div>
-        <div class="grid gap-3">
+        <div class="grid gap-3.5">
           {
             fechaPublicada.length === 0 && (
               <Panel>
-                <p class="text-center text-sm text-paper-muted">Aún no hay resultados publicados de esta competencia.</p>
+                <p class="py-6 text-center text-base font-semibold text-paper-muted">Aún no hay resultados publicados de esta competencia.</p>
               </Panel>
             )
           }
@@ -99,25 +100,28 @@ const linkmas = 'text-[0.8rem] font-bold tracking-[0.05em] text-orange-500 no-un
       {
         rondaProxima && (
           <Panel variante="dorado">
-            <p class="text-center text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">Próxima fecha</p>
-            <h2 class="mt-1 text-center text-lg font-extrabold">
+            <div class="flex items-center justify-center gap-2">
+              <span class="inline-block h-2 w-2 rounded-full bg-gold-400 animate-pulse"></span>
+              <p class="text-center text-xs font-black uppercase tracking-widest text-gold-400">Próxima fecha</p>
+            </div>
+            <h2 class="mt-1 text-center text-lg sm:text-xl font-black tracking-tight text-paper">
               {rondaLabel(rondaProxima)} · {fechaCorta(fechaProxima[0].fecha_hora)}
             </h2>
-            <div class="mt-3 grid gap-2">
+            <div class="mt-4 grid gap-2.5 rounded-lg bg-navy-950/70 p-3.5 border border-gold-400/20">
               {
                 fechaProxima.map((p) => (
-                  <p class="num flex items-center justify-center gap-2 text-center text-sm font-bold">
-                    <span>{horaCorta(p.fecha_hora)}</span>
+                  <p class="num flex items-center justify-center gap-2 text-center text-sm sm:text-base font-bold text-paper">
+                    <span class="text-gold-400 font-extrabold">{horaCorta(p.fecha_hora)}</span>
                     <span class="num text-paper-muted">·</span>
-                    <span>
+                    <span class="truncate">
                       {p.local?.clubes.nombre} vs {p.visitante?.clubes.nombre}
                     </span>
                   </p>
                 ))
               }
-              <p class="text-center text-[0.8rem] text-paper-muted">{fechaProxima[0].sede ?? 'Sede a confirmar'}</p>
+              <p class="mt-1 text-center text-xs font-semibold text-paper/70 border-t border-navy-800/80 pt-2">{fechaProxima[0].sede ?? 'Sede a confirmar'}</p>
             </div>
-            <div class="mt-4 text-center">
+            <div class="mt-5 text-center">
               <Btn href={`/fixture?torneo=${primera?.id ?? ''}&ronda=${rondaProxima}`}>Ver fixture completo</Btn>
             </div>
           </Panel>
@@ -196,18 +200,24 @@ const linkmas = 'text-[0.8rem] font-bold tracking-[0.05em] text-orange-500 no-un
         Competencias
       </h2>
     </div>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {
         torneos.map((t) => (
           <Panel>
-            <p class="text-[0.72rem] font-extrabold uppercase tracking-[0.18em] text-gold-400">{t.categorias?.nombre}</p>
-            <h3 class="mt-1 font-extrabold leading-tight">{t.nombre}</h3>
-            <p class="mt-2 text-sm text-paper-muted">{t.estado === 'en_curso' ? 'En curso' : t.estado === 'proximo' ? 'Próximo' : 'Finalizado'}</p>
-            <div class="mt-3 flex gap-2">
-              <a href={`/fixture?torneo=${t.id}`} class="rounded-full bg-navy-700 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.08em] no-underline transition-colors hover:bg-navy-900 hover:text-paper">
+            <div class="flex items-center justify-between gap-2">
+              <span class="rounded bg-navy-950/80 px-2 py-0.5 text-xs font-black uppercase tracking-wider text-gold-400 border border-navy-800">
+                {t.categorias?.nombre}
+              </span>
+              <span class="text-xs font-bold uppercase tracking-wider text-paper/70">
+                {t.estado === 'en_curso' ? 'En curso' : t.estado === 'proximo' ? 'Próximo' : 'Finalizado'}
+              </span>
+            </div>
+            <h3 class="mt-2 text-base sm:text-lg font-black leading-tight text-paper">{t.nombre}</h3>
+            <div class="mt-4 flex gap-2">
+              <a href={`/fixture?torneo=${t.id}`} class="flex-1 text-center rounded-lg bg-navy-800/90 border border-navy-700 px-3 py-2 text-xs font-bold uppercase tracking-wider no-underline transition-all hover:border-orange-500 hover:bg-orange-500 hover:text-ink">
                 Fixture
               </a>
-              <a href={`/tabla?torneo=${t.id}`} class="rounded-full bg-navy-700 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.08em] no-underline transition-colors hover:bg-navy-900 hover:text-paper">
+              <a href={`/tabla?torneo=${t.id}`} class="flex-1 text-center rounded-lg bg-navy-800/90 border border-navy-700 px-3 py-2 text-xs font-bold uppercase tracking-wider no-underline transition-all hover:border-gold-400 hover:bg-gold-400 hover:text-ink">
                 Tabla
               </a>
             </div>
@@ -228,9 +238,9 @@ const linkmas = 'text-[0.8rem] font-bold tracking-[0.05em] text-orange-500 no-un
         <div class="grid gap-4 sm:grid-cols-2">
           {
             paginas.map((p) => (
-              <a href={`/${p.slug}`} class="rounded-panel border border-navy-700 bg-navy-800 p-5 no-underline transition-transform duration-200 hover:-translate-y-0.5">
-                <h3 class="m-0 mb-1 text-base font-extrabold">{p.titulo}</h3>
-                <p class="m-0 text-[0.85rem] text-paper-muted">{p.slug === 'reglamento' ? 'Formato del torneo, sistema de puntos y disciplina.' : 'Oficina, horarios y redes de la liga.'}</p>
+              <a href={`/${p.slug}`} class="card-vigor p-5 sm:p-6 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-500/50">
+                <h3 class="m-0 mb-1.5 text-lg font-black text-paper">{p.titulo}</h3>
+                <p class="m-0 text-sm font-medium text-paper/80 leading-relaxed">{p.slug === 'reglamento' ? 'Formato del torneo, sistema de puntos y disciplina.' : 'Oficina, horarios y redes de la liga.'}</p>
               </a>
             ))
           }

@@ -68,18 +68,18 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
     </div>
 
-    <div id="contenedor-jugadores" class="hidden overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900">
-      <table class="w-full text-left text-xs">
+    <div id="contenedor-jugadores" class="hidden overflow-x-auto card-vigor border border-navy-700/80 shadow-xl">
+      <table class="w-full text-left text-sm">
         <thead>
-          <tr class="border-b border-navy-700 text-paper-muted uppercase tracking-wider">
-            <th class="py-3 px-4">Jugador</th>
-            <th class="py-3 px-4">Fecha de Nacimiento</th>
-            <th class="py-3 px-4">Edad</th>
-            <th class="py-3 px-4">Fichas en curso</th>
-            <th class="py-3 px-4 text-right">Acción</th>
+          <tr class="border-b border-navy-700/80 bg-navy-950/80 text-paper/80 text-xs font-black uppercase tracking-wider">
+            <th class="py-3.5 px-4">Jugador</th>
+            <th class="py-3.5 px-4">Fecha de Nacimiento</th>
+            <th class="py-3.5 px-4">Edad</th>
+            <th class="py-3.5 px-4">Fichas en curso</th>
+            <th class="py-3.5 px-4 text-right">Acción</th>
           </tr>
         </thead>
-        <tbody id="tbody-jugadores" class="divide-y divide-navy-800">
+        <tbody id="tbody-jugadores" class="divide-y divide-navy-800/80">
           <!-- Rellenado dinámicamente -->
         </tbody>
       </table>
@@ -266,20 +266,20 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         const edad = calcularEdad(j.fecha_nacimiento);
         const fichasActivas = (j.fichas || []).filter((f: any) => f.estado !== 'baja');
         const fichasTxt = fichasActivas.length > 0
-          ? fichasActivas.map((f: any) => `<span class="rounded bg-navy-950 px-2 py-0.5 text-[0.65rem] font-bold text-paper-muted border border-navy-800">${f.equipos?.nombre_mostrar || 'Equipo'}</span>`).join(' ')
-          : '<span class="text-paper-muted italic">Sin ficha activa</span>';
+          ? fichasActivas.map((f: any) => `<span class="rounded-md bg-navy-950 px-2.5 py-1 text-xs font-black uppercase text-gold-400 border border-navy-800/80">${f.equipos?.nombre_mostrar || 'Equipo'}</span>`).join(' ')
+          : '<span class="text-paper/60 italic text-xs">Sin ficha activa</span>';
 
         return `
-          <tr class="hover:bg-navy-850/50">
-            <td class="py-3 px-4 font-bold text-paper">${j.nombre_completo}</td>
-            <td class="py-3 px-4 text-paper-muted num">${j.fecha_nacimiento}</td>
-            <td class="py-3 px-4 text-paper num">${edad} años</td>
-            <td class="py-3 px-4">${fichasTxt}</td>
-            <td class="py-3 px-4 text-right">
+          <tr class="hover:bg-navy-800/50 transition-colors">
+            <td class="py-3.5 px-4 text-sm sm:text-base font-black text-paper">${j.nombre_completo}</td>
+            <td class="py-3.5 px-4 text-sm font-semibold text-paper/70 num">${j.fecha_nacimiento}</td>
+            <td class="py-3.5 px-4 text-sm font-bold text-paper num">${edad} años</td>
+            <td class="py-3.5 px-4">${fichasTxt}</td>
+            <td class="py-3.5 px-4 text-right">
               <button
                 type="button"
                 data-id="${j.id}"
-                class="btn-editar-jugador text-orange-500 hover:text-orange-400 font-bold"
+                class="btn-editar-jugador rounded-lg border border-navy-700 bg-navy-800/90 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 hover:border-orange-500 transition-colors shadow-sm"
               >
                 Editar
               </button>

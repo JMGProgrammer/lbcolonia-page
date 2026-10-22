@@ -89,31 +89,31 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     <!-- Filtros combinados y búsqueda -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-[14px] border border-navy-700 bg-navy-900/60 p-4">
       <div>
-        <label for="filtro-torneo" class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1">
+        <label for="filtro-torneo" class="block text-xs font-bold uppercase tracking-wider text-paper/80 mb-1.5">
           Torneo
         </label>
         <select
           id="filtro-torneo"
-          class="w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs sm:text-sm text-paper focus:border-orange-500 focus:outline-none"
         >
           <option value="todos">Todos los torneos</option>
         </select>
       </div>
 
       <div>
-        <label for="filtro-club" class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1">
+        <label for="filtro-club" class="block text-xs font-bold uppercase tracking-wider text-paper/80 mb-1.5">
           Club
         </label>
         <select
           id="filtro-club"
-          class="w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500 focus:outline-none"
+          class="w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-xs sm:text-sm text-paper focus:border-orange-500 focus:outline-none"
         >
           <option value="todos">Todos los clubes</option>
         </select>
       </div>
 
       <div>
-        <label for="input-buscar-ficha" class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1">
+        <label for="input-buscar-ficha" class="block text-xs font-bold uppercase tracking-wider text-paper/80 mb-1.5">
           Buscar jugador / dorsal
         </label>
         <div class="relative">
@@ -121,9 +121,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             id="input-buscar-ficha"
             type="search"
             placeholder="Ej: Pérez o dorsal 7..."
-            class="w-full rounded-lg border border-navy-700 bg-navy-950 pl-8 pr-3 py-1.5 text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"
+            class="w-full rounded-lg border border-navy-700 bg-navy-950 pl-9 pr-3 py-2 text-xs sm:text-sm text-paper placeholder:text-paper/40 focus:border-orange-500 focus:outline-none"
           />
-          <svg class="absolute left-2.5 top-2 h-3.5 w-3.5 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="absolute left-3 top-2.5 h-4 w-4 text-paper/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
@@ -585,20 +585,20 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         let badgeEstado = '';
         if (f.estado === 'solicitada') {
           badgeEstado = `
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-amber-400">
-              <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/40 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-400 shadow-sm">
+              <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
               Solicitada
             </span>
           `;
         } else if (f.estado === 'confirmada') {
           badgeEstado = `
-            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-emerald-400">
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 px-3 py-1 text-xs font-black uppercase tracking-wider text-emerald-400 shadow-sm">
               Confirmada
             </span>
           `;
         } else {
           badgeEstado = `
-            <span class="inline-flex items-center gap-1 rounded-full bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted">
+            <span class="inline-flex items-center gap-1 rounded-full bg-navy-800/90 border border-navy-700 px-3 py-1 text-xs font-black uppercase tracking-wider text-paper/70 shadow-sm">
               Baja
             </span>
           `;
@@ -606,8 +606,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
         const dorsalBadge =
           f.dorsal !== null
-            ? `<span class="inline-block rounded bg-navy-800 border border-navy-700 px-2 py-0.5 font-mono font-bold text-orange-400 text-xs">#${f.dorsal}</span>`
-            : `<span class="text-paper-muted">-</span>`;
+            ? `<span class="inline-block rounded-lg bg-navy-950 border border-navy-800 px-2.5 py-1 font-mono font-black text-orange-400 text-sm">#${f.dorsal}</span>`
+            : `<span class="text-paper/50 font-bold">-</span>`;
 
         const vigenciaStr = f.hasta
           ? `${formatearFecha(f.desde)} a ${formatearFecha(f.hasta)}`
@@ -621,7 +621,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               type="button"
               data-accion="confirmar"
               data-id="${f.id}"
-              class="rounded-lg bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500 hover:text-ink transition-colors"
+              class="rounded-lg bg-emerald-500 px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-ink hover:bg-emerald-400 transition-colors shadow-sm"
             >
               Confirmar
             </button>
@@ -630,7 +630,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               data-accion="baja"
               data-id="${f.id}"
               data-confirm="¿Rechazar o dar de baja la solicitud de ficha para este jugador?"
-              class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
+              class="rounded-lg border border-red-500/50 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
             >
               Rechazar
             </button>

@@ -117,9 +117,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       <input type="hidden" id="res-partido-id" />
 
       <!-- Equipos y Marcador Principal -->
-      <div class="grid grid-cols-2 gap-4 rounded-lg bg-navy-950 p-4 border border-navy-800">
+      <div class="grid grid-cols-2 gap-4 rounded-xl bg-navy-950/90 p-4 border border-navy-800">
         <div class="text-center">
-          <p id="res-nombre-local" class="text-xs font-bold uppercase text-paper truncate">Local</p>
+          <p id="res-nombre-local" class="text-sm sm:text-base font-black uppercase text-paper truncate">Local</p>
           <input
             id="res-pts-local"
             type="number"
@@ -127,12 +127,12 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             max="250"
             required
             placeholder="0"
-            class="mt-2 w-20 text-center rounded-lg border border-navy-700 bg-navy-900 py-2 text-xl font-black num text-orange-500 focus:border-orange-500 focus:outline-none"
+            class="mt-2 w-24 text-center rounded-xl border border-navy-700 bg-navy-900 py-2.5 text-2xl font-black num text-orange-500 focus:border-orange-500 focus:outline-none"
           />
         </div>
 
         <div class="text-center">
-          <p id="res-nombre-visita" class="text-xs font-bold uppercase text-paper truncate">Visitante</p>
+          <p id="res-nombre-visita" class="text-sm sm:text-base font-black uppercase text-paper truncate">Visitante</p>
           <input
             id="res-pts-visita"
             type="number"
@@ -140,68 +140,68 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             max="250"
             required
             placeholder="0"
-            class="mt-2 w-20 text-center rounded-lg border border-navy-700 bg-navy-900 py-2 text-xl font-black num text-orange-500 focus:border-orange-500 focus:outline-none"
+            class="mt-2 w-24 text-center rounded-xl border border-navy-700 bg-navy-900 py-2.5 text-2xl font-black num text-orange-500 focus:border-orange-500 focus:outline-none"
           />
         </div>
       </div>
 
       <!-- Parciales por cuarto (opcionales) -->
       <div>
-        <span class="block text-xs font-bold uppercase tracking-wider text-paper-muted mb-1.5">
+        <span class="block text-xs font-black uppercase tracking-wider text-paper/80 mb-2">
           Parciales por cuarto (opcional)
         </span>
-        <div class="grid grid-cols-4 gap-2 text-xs">
-          <input id="res-q1-loc" type="number" placeholder="L-Q1" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
-          <input id="res-q2-loc" type="number" placeholder="L-Q2" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
-          <input id="res-q3-loc" type="number" placeholder="L-Q3" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
-          <input id="res-q4-loc" type="number" placeholder="L-Q4" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+        <div class="grid grid-cols-4 gap-2 text-sm font-bold">
+          <input id="res-q1-loc" type="number" placeholder="L-Q1" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
+          <input id="res-q2-loc" type="number" placeholder="L-Q2" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
+          <input id="res-q3-loc" type="number" placeholder="L-Q3" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
+          <input id="res-q4-loc" type="number" placeholder="L-Q4" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
         </div>
-        <div class="grid grid-cols-4 gap-2 text-xs mt-1.5">
-          <input id="res-q1-vis" type="number" placeholder="V-Q1" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
-          <input id="res-q2-vis" type="number" placeholder="V-Q2" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
-          <input id="res-q3-vis" type="number" placeholder="V-Q3" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
-          <input id="res-q4-vis" type="number" placeholder="V-Q4" class="rounded border border-navy-700 bg-navy-950 p-1.5 text-center text-paper focus:border-orange-500" />
+        <div class="grid grid-cols-4 gap-2 text-sm font-bold mt-2">
+          <input id="res-q1-vis" type="number" placeholder="V-Q1" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
+          <input id="res-q2-vis" type="number" placeholder="V-Q2" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
+          <input id="res-q3-vis" type="number" placeholder="V-Q3" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
+          <input id="res-q4-vis" type="number" placeholder="V-Q4" class="rounded-lg border border-navy-700 bg-navy-950 p-2 text-center text-paper focus:border-orange-500" />
         </div>
       </div>
 
       <!-- Estado especial / Walkover / Postergado -->
-      <div class="space-y-2 border-t border-navy-800 pt-3">
-        <div class="flex items-center gap-2">
-          <input id="res-check-walkover" type="checkbox" class="rounded border-navy-700 text-orange-500 focus:ring-0" />
-          <label for="res-check-walkover" class="text-xs font-semibold text-paper">Declarar Walkover (W.O.)</label>
+      <div class="space-y-3 border-t border-navy-800 pt-3">
+        <div class="flex items-center gap-2.5">
+          <input id="res-check-walkover" type="checkbox" class="h-4 w-4 rounded border-navy-700 text-orange-500 focus:ring-0" />
+          <label for="res-check-walkover" class="text-sm font-bold text-paper cursor-pointer">Declarar Walkover (W.O.)</label>
         </div>
 
         <div id="res-grupo-walkover" class="hidden pl-6">
-          <label for="res-select-wo-ganador" class="block text-[0.7rem] uppercase text-paper-muted">Equipo adjudicado ganador:</label>
-          <select id="res-select-wo-ganador" class="mt-1 w-full rounded border border-navy-700 bg-navy-950 p-1.5 text-xs text-paper">
+          <label for="res-select-wo-ganador" class="block text-xs font-bold uppercase text-paper-muted">Equipo adjudicado ganador:</label>
+          <select id="res-select-wo-ganador" class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 p-2 text-sm text-paper">
             <option value="">Seleccione equipo ganador...</option>
           </select>
         </div>
 
         <div>
-          <label for="res-nota-publica" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">
+          <label for="res-nota-publica" class="block text-xs font-black uppercase tracking-wider text-paper/80">
             Nota pública (opcional):
           </label>
           <input
             id="res-nota-publica"
             type="text"
             placeholder="Ej: Postergado por humedad en el gimnasio"
-            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-1.5 text-xs text-paper focus:border-orange-500"
+            class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper focus:border-orange-500"
           />
         </div>
       </div>
 
-      <div class="flex justify-end gap-2 border-t border-navy-800 pt-4">
+      <div class="flex justify-end gap-2.5 border-t border-navy-800 pt-4">
         <button
           id="modal-resultado-cancelar"
           type="button"
-          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-semibold text-paper hover:bg-navy-700"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2.5 text-xs sm:text-sm font-bold text-paper hover:bg-navy-700"
         >
           Cancelar
         </button>
         <button
           type="submit"
-          class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink hover:bg-orange-700"
+          class="rounded-lg bg-orange-500 px-5 py-2.5 text-xs sm:text-sm font-black uppercase tracking-wider text-ink hover:bg-orange-700 shadow-md transition-all active:scale-[0.98]"
         >
           Guardar resultado
         </button>
@@ -508,19 +508,19 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
         let badgeEstado = '';
         if (p.publicado) {
-          badgeEstado = `<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/30">PUBLICADO</span>`;
+          badgeEstado = `<span class="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-emerald-400 border border-emerald-500/40 shadow-sm">PUBLICADO</span>`;
         } else if (p.estado === 'finalizado') {
-          badgeEstado = `<span class="rounded bg-orange-500/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-orange-400 border border-orange-500/30">FINALIZADO (Sin publicar)</span>`;
+          badgeEstado = `<span class="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-orange-400 border border-orange-500/40 shadow-sm">FINALIZADO (Sin publicar)</span>`;
         } else if (p.estado === 'walkover') {
-          badgeEstado = `<span class="rounded bg-red-500/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-red-400 border border-red-500/30">WALKOVER</span>`;
+          badgeEstado = `<span class="rounded-full bg-red-500/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-400 border border-red-500/40 shadow-sm">WALKOVER</span>`;
         } else {
-          badgeEstado = `<span class="rounded bg-navy-800 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted border border-navy-700">PROGRAMADO</span>`;
+          badgeEstado = `<span class="rounded-full bg-navy-800/90 px-3 py-1 text-xs font-black uppercase tracking-wider text-paper/80 border border-navy-700 shadow-sm">PROGRAMADO</span>`;
         }
 
         const score =
           p.estado === 'finalizado' || p.estado === 'walkover'
-            ? `<div class="text-xl font-black num text-orange-500">${p.puntos_local ?? 0} - ${p.puntos_visitante ?? 0}</div>`
-            : `<div class="text-xs font-bold text-paper-muted">${horaTxt} hs</div>`;
+            ? `<div class="text-2xl sm:text-3xl font-black num text-orange-500 glow-orange">${p.puntos_local ?? 0} - ${p.puntos_visitante ?? 0}</div>`
+            : `<div class="text-sm font-black text-paper/80 bg-navy-950/80 px-3 py-1.5 rounded-lg border border-navy-800">${horaTxt} hs</div>`;
 
         // Botón de publicar solo habilitado para liga_admin
         const puedePublicar = estadoAdmin?.esAdmin ?? false;
@@ -534,7 +534,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
                 data-accion="publicar"
                 data-id="${p.id}"
                 data-confirm="¿Publicar este resultado oficialmente? Impactará inmediatamente en la tabla pública."
-                class="rounded bg-emerald-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-ink hover:bg-emerald-400 transition-colors"
+                class="rounded-lg bg-emerald-500 px-4 py-2 text-xs sm:text-sm font-black uppercase tracking-wider text-ink hover:bg-emerald-400 shadow-md transition-all active:scale-[0.98]"
               >
                 Publicar
               </button>
@@ -545,7 +545,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
                 type="button"
                 disabled
                 title="Solo liga_admin puede publicar oficialmente"
-                class="rounded bg-navy-800 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-paper-muted opacity-50 cursor-not-allowed"
+                class="rounded-lg bg-navy-800 px-3 py-2 text-xs font-bold uppercase tracking-wider text-paper-muted opacity-50 cursor-not-allowed"
               >
                 Publicar (Solo Admin)
               </button>
@@ -558,7 +558,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               data-accion="despublicar"
               data-id="${p.id}"
               data-confirm="¿Desea despublicar este partido? Ocultará el resultado en el sitio público."
-              class="rounded border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
+              class="rounded-lg border border-red-500/50 bg-red-500/10 px-3.5 py-2 text-xs sm:text-sm font-bold text-red-400 hover:bg-red-500 hover:text-paper transition-all"
             >
               Despublicar
             </button>
@@ -566,33 +566,33 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         }
 
         return `
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-4 transition-all hover:border-navy-600">
-            <div class="flex items-center gap-3">
-              <span class="rounded bg-navy-950 px-2 py-1 text-xs font-bold uppercase tracking-wider text-gold-400 border border-navy-800 shrink-0">
+          <div class="card-vigor flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-5 transition-all hover:border-orange-500/40">
+            <div class="flex items-center gap-3.5">
+              <span class="rounded-lg bg-navy-950 px-2.5 py-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-gold-400 border border-navy-800 shrink-0">
                 F${p.ronda}
               </span>
               <div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold uppercase text-paper-muted">${fechaTxt} · ${p.sede ?? 'Sede a confirmar'}</span>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs font-semibold uppercase text-paper/70">${fechaTxt} · ${p.sede ?? 'Sede a confirmar'}</span>
                   ${badgeEstado}
                 </div>
-                <div class="mt-1 flex items-center gap-2 text-sm font-extrabold text-paper">
+                <div class="mt-1.5 flex items-center gap-2.5 text-base sm:text-lg font-black text-paper">
                   <span>${localNombre}</span>
-                  <span class="text-orange-500 font-bold">vs</span>
+                  <span class="text-orange-500 font-black">vs</span>
                   <span>${visitaNombre}</span>
                 </div>
-                ${p.nota_publica ? `<p class="mt-0.5 text-[0.7rem] text-red-400 italic">${p.nota_publica}</p>` : ''}
+                ${p.nota_publica ? `<p class="mt-1 text-xs font-semibold text-red-400 italic">${p.nota_publica}</p>` : ''}
               </div>
             </div>
 
-            <div class="flex items-center justify-between sm:justify-end gap-3 border-t border-navy-800 pt-3 sm:border-0 sm:pt-0">
+            <div class="flex items-center justify-between sm:justify-end gap-3.5 border-t border-navy-800/80 pt-3 sm:border-0 sm:pt-0">
               ${score}
               <div class="flex items-center gap-2">
                 <button
                   type="button"
                   data-accion="resultado"
                   data-id="${p.id}"
-                  class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-paper hover:bg-navy-700 hover:border-navy-600 transition-colors"
+                  class="rounded-lg border border-navy-700 bg-navy-800/90 px-3.5 py-2 text-xs sm:text-sm font-bold text-paper hover:bg-navy-700 hover:border-navy-600 transition-colors shadow-sm"
                 >
                   ${p.estado === 'finalizado' || p.estado === 'walkover' ? 'Editar resultado' : 'Cargar resultado'}
                 </button>

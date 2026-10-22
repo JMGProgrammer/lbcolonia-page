@@ -32,34 +32,34 @@ const tituloFinal = `${title} · Panel LBC`;
     <meta name="robots" content="noindex,nofollow" />
     <link rel="icon" type="image/png" href="/logo-lbc-bgr.png" />
   </head>
-  <body class="flex min-h-dvh flex-col bg-navy-950 font-display pb-24 md:pb-8">
+  <body class="flex min-h-dvh flex-col bg-navy-950 bg-court-overlay bg-fixed font-display pb-28 md:pb-12 text-paper antialiased">
     <!-- Header institucional del panel -->
-    <header class="border-b border-navy-700 bg-navy-900/90 backdrop-blur sticky top-0 z-40">
-      <div class="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-3">
+    <header class="border-b border-navy-700/80 bg-navy-900/90 backdrop-blur-md sticky top-0 z-40 shadow-lg shadow-navy-950/40">
+      <div class="mx-auto flex max-w-[1240px] items-center justify-between px-4 py-3.5">
         <div class="flex items-center gap-3">
-          <a href="/admin" class="flex items-center gap-2.5 focus:outline-none">
-            <img src="/logo-lbc-bgr.png" alt="LBC" class="h-9 w-9 object-contain" />
+          <a href="/admin" class="flex items-center gap-3 focus:outline-none group">
+            <img src="/logo-lbc-bgr.png" alt="LBC" class="h-10 w-10 object-contain drop-shadow" />
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-extrabold uppercase tracking-wider text-paper">LBC · PANEL</span>
-                <span id="badge-rol" class="rounded bg-navy-800 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400 border border-navy-700">
+                <span class="text-base font-black uppercase tracking-wider text-paper group-hover:text-orange-500 transition-colors">LBC · PANEL</span>
+                <span id="badge-rol" class="rounded bg-navy-800/90 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-gold-400 border border-gold-400/30">
                   Verificando...
                 </span>
               </div>
-              <p class="text-[0.7rem] text-paper-muted">Secretaría de la Liga</p>
+              <p class="text-xs text-paper-muted font-medium">Secretaría de la Liga</p>
             </div>
           </a>
         </div>
 
         <!-- Navegación desktop -->
-        <nav class="hidden xl:flex items-center gap-1 text-xs font-semibold">
+        <nav class="hidden xl:flex items-center gap-1.5 text-xs font-bold">
           <a
             href="/admin"
             class:list={[
-              'rounded-lg px-2 py-1.5 transition-colors',
+              'rounded-lg px-2.5 py-1.5 transition-all',
               seccionActiva === 'resumen'
-                ? 'bg-orange-500 font-bold text-ink'
-                : 'text-paper hover:bg-navy-800',
+                ? 'bg-orange-500 font-extrabold text-ink shadow-sm'
+                : 'text-paper hover:bg-navy-800/80 hover:text-white',
             ]}
           >
             Resumen
@@ -67,10 +67,10 @@ const tituloFinal = `${title} · Panel LBC`;
           <a
             href="/admin/fixture"
             class:list={[
-              'rounded-lg px-2 py-1.5 transition-colors',
+              'rounded-lg px-2.5 py-1.5 transition-all',
               seccionActiva === 'fixture' || seccionActiva === 'importar'
-                ? 'bg-orange-500 font-bold text-ink'
-                : 'text-paper hover:bg-navy-800',
+                ? 'bg-orange-500 font-extrabold text-ink shadow-sm'
+                : 'text-paper hover:bg-navy-800/80 hover:text-white',
             ]}
           >
             Fixture

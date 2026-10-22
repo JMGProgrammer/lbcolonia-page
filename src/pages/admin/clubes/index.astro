@@ -305,47 +305,47 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         const iniciales = c.nombre.slice(0, 2).toUpperCase();
 
         const badgeEscudo = c.escudo_url
-          ? `<img src="${c.escudo_url}" alt="${c.nombre}" class="h-10 w-10 object-contain rounded-full" />`
-          : `<div class="h-10 w-10 rounded-full flex items-center justify-center font-black text-xs border" style="background-color: ${c1}; color: ${c2}; border-color: ${c2}40;">${iniciales}</div>`;
+          ? `<img src="${c.escudo_url}" alt="${c.nombre}" class="h-12 w-12 object-contain rounded-xl p-1 bg-navy-950/80 border border-navy-800" />`
+          : `<div class="h-12 w-12 rounded-xl flex items-center justify-center font-black text-sm border shadow-sm" style="background-color: ${c1}; color: ${c2}; border-color: ${c2}40;">${iniciales}</div>`;
 
         const equiposBadges = (c.equipos || [])
           .map((eq: any) => {
             const cat = eq.categorias?.acronimo || eq.categorias?.nombre || 'Cat';
-            return `<span class="rounded bg-navy-950 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-paper-muted border border-navy-800">${cat}</span>`;
+            return `<span class="rounded-md bg-navy-950 px-2.5 py-1 text-xs font-black uppercase text-gold-400 border border-navy-800/80">${cat}</span>`;
           })
           .join('');
 
         return `
-          <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 space-y-4">
+          <div class="card-vigor p-5 sm:p-6 space-y-4 transition-all hover:border-orange-500/40">
             <div class="flex items-start justify-between gap-3">
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3.5">
                 ${badgeEscudo}
                 <div>
-                  <h3 class="text-base font-bold text-paper">${c.nombre}</h3>
-                  <p class="text-xs text-paper-muted">${c.gimnasio || 'Sede no asignada'}</p>
+                  <h3 class="text-base sm:text-lg font-black text-paper">${c.nombre}</h3>
+                  <p class="text-xs sm:text-sm font-medium text-paper/70">${c.gimnasio || 'Sede no asignada'}</p>
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-2">
                 <button
                   type="button"
                   data-id="${c.id}"
-                  class="btn-editar-club rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-paper hover:bg-navy-700 transition-colors"
+                  class="btn-editar-club rounded-lg border border-navy-700 bg-navy-800/90 px-3.5 py-2 text-xs sm:text-sm font-bold text-paper hover:bg-navy-700 transition-colors shadow-sm"
                 >
                   Editar
                 </button>
                 <button
                   type="button"
                   data-id="${c.id}"
-                  class="btn-gestionar-equipos rounded-lg bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-ink transition-colors"
+                  class="btn-gestionar-equipos rounded-lg bg-orange-500/10 border border-orange-500/30 px-3.5 py-2 text-xs sm:text-sm font-black uppercase tracking-wider text-orange-400 hover:bg-orange-500 hover:text-ink transition-colors shadow-sm"
                 >
                   Equipos
                 </button>
               </div>
             </div>
 
-            <div class="border-t border-navy-800 pt-3">
-              <span class="block text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted mb-1.5">
+            <div class="border-t border-navy-800/80 pt-3">
+              <span class="block text-xs font-black uppercase tracking-wider text-paper/80 mb-2">
                 Ramas activas (${c.equipos?.length || 0}):
               </span>
               <div class="flex flex-wrap gap-1.5">

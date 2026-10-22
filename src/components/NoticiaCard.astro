@@ -16,15 +16,29 @@ if (portada && portada.includes('/storage/v1/object/') && !portada.includes('?')
 const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
 ---
 
-<article class="flex flex-col overflow-hidden rounded-panel border border-navy-700 bg-navy-800 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-panel">
-  <a href={`/noticias/${noticia.slug}`} class="flex h-full flex-col no-underline">
-    <div class="grid aspect-video place-items-center bg-navy-700 text-[0.75rem] uppercase tracking-[0.12em] text-paper-muted">
-      {portada ? <img src={portada} alt={`Portada: ${noticia.titulo}`} class="h-full w-full object-cover" loading="lazy" width="768" height="432" /> : 'Noticia de la liga'}
+<article class="card-vigor flex flex-col overflow-hidden rounded-panel transition-all">
+  <a href={`/noticias/${noticia.slug}`} class="group flex h-full flex-col no-underline">
+    <div class="relative aspect-video overflow-hidden bg-navy-950">
+      <img
+        src={portada || '/images/action-hero.jpg'}
+        alt={`Portada: ${noticia.titulo}`}
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        width="768"
+        height="432"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/20 to-transparent"></div>
+      <div class="absolute bottom-2 left-3">
+        <time datetime={fechaIso} class="rounded bg-navy-900/90 border border-gold-400/30 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-gold-400">
+          {fecha ? fechaCorta(fecha) : 'Oficial'}
+        </time>
+      </div>
     </div>
-    <div class="flex flex-1 flex-col gap-1 p-4">
-      <time datetime={fechaIso} class="text-[0.72rem] uppercase tracking-[0.1em] text-gold-400">{fecha ? fechaCorta(fecha) : ''}</time>
-      <h3 class="text-[1.02rem] font-extrabold leading-snug">{noticia.titulo}</h3>
-      {noticia.bajada && <p class="mt-1 text-[0.85rem] leading-relaxed text-paper-muted">{noticia.bajada}</p>}
+    <div class="flex flex-1 flex-col gap-2 p-5">
+      <h3 class="text-base sm:text-lg font-black leading-snug text-paper group-hover:text-orange-500 transition-colors">
+        {noticia.titulo}
+      </h3>
+      {noticia.bajada && <p class="text-xs sm:text-sm leading-relaxed text-paper-muted">{noticia.bajada}</p>}
     </div>
   </a>
 </article>

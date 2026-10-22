@@ -82,7 +82,7 @@ const aria = esFinalizado
             {partido.estado === 'walkover' ? 'W.O.' : `${partido.puntos_local}–${partido.puntos_visitante}`}
           </span>
         </div>
-        <span class={`px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.naranja}`}>
+        <span class={`rounded-full px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.naranja}`}>
           {badge.texto}
         </span>
       </>
@@ -91,8 +91,8 @@ const aria = esFinalizado
         <span class="num text-2xl font-black text-red-500 animate-pulse">
           {partido.puntos_local ?? 0}–{partido.puntos_visitante ?? 0}
         </span>
-        <span class="inline-flex items-center gap-1.5 bg-red-500/20 px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider text-red-400 border border-red-500/40">
-          <span class="h-1.5 w-1.5 bg-red-500 animate-ping"></span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider text-red-400 border border-red-500/40">
+          <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping"></span>
           EN JUEGO
         </span>
       </>
@@ -101,7 +101,7 @@ const aria = esFinalizado
         <span class="num text-xl sm:text-2xl font-black tracking-tight text-paper">
           {horaCorta(partido.fecha_hora)}
         </span>
-        <span class={`px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.gris}`}>
+        <span class={`rounded-full px-2.5 py-0.5 text-[0.68rem] font-bold uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.gris}`}>
           {badge.texto}
         </span>
         {partido.sede && (

@@ -64,7 +64,7 @@ const nombre = 'min-w-0 truncate text-[0.95rem] sm:text-base font-bold';
 
   <!-- estado + sede (en móvil comparten fila) -->
   <div class="flex items-center gap-2 md:justify-center">
-    <span class={`whitespace-nowrap px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.gris}`}>{badge.texto}</span>
+    <span class={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-[0.7rem] font-black uppercase tracking-wider ${tonoBadge[badge.tono] ?? tonoBadge.gris}`}>{badge.texto}</span>
   </div>
   <p class="m-0 min-w-0 text-xs font-medium leading-snug text-paper/70 line-clamp-2 md:text-right">
     {partido.sede ?? 'Sede a confirmar'}

@@ -61,7 +61,7 @@ const sede = primerPartido?.sede ?? 'Sede a confirmar por la liga';
             </div>
             <div class="flex flex-col items-center gap-1 self-center px-1">
               <span class="num text-lg font-black leading-none text-orange-400 sm:text-xl">{horaCorta(estelar.fecha_hora)}</span>
-              <span class="border border-gold-400/30 bg-navy-900 px-1.5 py-0.5 text-[0.62rem] font-black uppercase tracking-widest text-gold-400">vs</span>
+              <span class="border border-gold-400/30 bg-navy-900 rounded-full px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-widest text-gold-400">vs</span>
             </div>
             <div class="flex min-w-0 flex-col items-center gap-2">
               <Escudo club={estelar.visitante?.clubes} tam="lg" />
@@ -97,7 +97,7 @@ const sede = primerPartido?.sede ?? 'Sede a confirmar por la liga';
 
     <a
       href={`/fixture?torneo=${torneoId ?? ''}&ronda=${ronda}`}
-      class="mt-auto block bg-orange-500 py-3 text-center text-xs font-black uppercase tracking-wider text-ink no-underline shadow-lg transition-colors hover:bg-orange-400 active:scale-[0.99] sm:text-sm"
+      class="mt-auto block rounded-full bg-orange-500 py-3 text-center text-xs font-black uppercase tracking-wider text-ink no-underline shadow-[0_4px_16px_rgba(238,107,31,0.35)] transition-all hover:bg-orange-400 active:scale-[0.99] sm:text-sm"
     >
       Ver fixture completo &rarr;
     </a>

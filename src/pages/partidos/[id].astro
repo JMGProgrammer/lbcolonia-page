@@ -95,32 +95,66 @@ const descFicha = hayPartido
         </a>
         <Rotulo>{rotuloFicha}</Rotulo>
 
-        <div class="grid gap-4 md:grid-cols-[1fr_0.8fr_1fr] md:items-center">
-          <div class="rounded-panel border border-navy-700 bg-navy-800 p-6">
-            <div class="flex items-center gap-4">
-              <Escudo club={loc?.clubes} tam="lg" />
-              <div class="min-w-0">
-                <p class={`text-lg font-extrabold ${ganador === loc?.id ? 'text-gold-400' : ''}`}>{loc?.clubes.nombre}</p>
-                {loc?.nombre_mostrar && loc.nombre_mostrar !== loc.clubes.nombre && <p class="text-[0.78rem] text-paper-muted">{loc.nombre_mostrar}</p>}
+        <!-- Marcador horizontal Scoreboard de estadio (unificado móvil y desktop) -->
+        <div class="card-vigor relative overflow-hidden border-t-2 border-t-orange-500 p-4 sm:p-7">
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-900/60 to-navy-950/90" aria-hidden="true"></div>
+
+          <div class="relative z-10 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-6">
+            <!-- Club Local -->
+            <div class="flex min-w-0 flex-col items-center text-center">
+              <div class="transition-transform duration-200 hover:scale-105">
+                <Escudo club={loc?.clubes} tam="lg" />
               </div>
+              <p class={`mt-2 text-xs sm:text-lg font-black leading-tight tracking-tight text-balance ${ganador === loc?.id ? 'text-gold-400' : 'text-paper'}`}>
+                {loc?.clubes.nombre}
+              </p>
+              {loc?.nombre_mostrar && loc.nombre_mostrar !== loc.clubes.nombre && (
+                <span class="mt-0.5 line-clamp-1 text-[0.65rem] sm:text-xs font-semibold text-paper/50">{loc.nombre_mostrar}</span>
+              )}
+            </div>
+
+            <!-- Marcador / Estado central -->
+            <div class="flex flex-col items-center justify-center px-1 text-center sm:px-4">
+              <span class="num text-3xl font-black leading-none text-orange-500 glow-orange sm:text-5xl lg:text-6xl tracking-tight whitespace-nowrap">
+                {esResultado ? (partido!.estado === 'walkover' ? 'W.O.' : `${partido!.puntos_local}–${partido!.puntos_visitante}`) : horaCorta(partido!.fecha_hora)}
+              </span>
+              <span class={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[0.62rem] sm:text-xs font-black uppercase tracking-widest ${tonoBadge[badge!.tono]}`}>
+                {badge!.texto}
+              </span>
+              {partido!.sede && (
+                <p class="mt-2.5 hidden sm:flex items-center gap-1 text-[0.75rem] font-medium text-paper/60 text-center max-w-[220px]">
+                  <svg class="h-3.5 w-3.5 shrink-0 text-orange-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+                  </svg>
+                  <span class="truncate">{partido!.sede}</span>
+                </p>
+              )}
+            </div>
+
+            <!-- Club Visitante -->
+            <div class="flex min-w-0 flex-col items-center text-center">
+              <div class="transition-transform duration-200 hover:scale-105">
+                <Escudo club={vis?.clubes} tam="lg" />
+              </div>
+              <p class={`mt-2 text-xs sm:text-lg font-black leading-tight tracking-tight text-balance ${ganador === vis?.id ? 'text-gold-400' : 'text-paper'}`}>
+                {vis?.clubes.nombre}
+              </p>
+              {vis?.nombre_mostrar && vis.nombre_mostrar !== vis.clubes.nombre && (
+                <span class="mt-0.5 line-clamp-1 text-[0.65rem] sm:text-xs font-semibold text-paper/50">{vis.nombre_mostrar}</span>
+              )}
             </div>
           </div>
-          <div class="rounded-panel border border-navy-700 bg-navy-800 p-6 text-center">
-            <span class="num block text-[2.6rem] font-black leading-none text-orange-500 lg:text-[3.2rem]">
-              {esResultado ? (partido!.estado === 'walkover' ? 'W' : `${partido!.puntos_local}–${partido!.puntos_visitante}`) : horaCorta(partido!.fecha_hora)}
-            </span>
-            <span class={`mt-2 inline-block rounded-full px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] ${tonoBadge[badge!.tono]}`}>{badge!.texto}</span>
-            {partido!.sede && <p class="mt-3 text-[0.8rem] text-paper-muted">{partido!.sede}</p>}
-          </div>
-          <div class="rounded-panel border border-navy-700 bg-navy-800 p-6">
-            <div class="flex items-center gap-4 md:flex-row-reverse">
-              <Escudo club={vis?.clubes} tam="lg" />
-              <div class="min-w-0 text-right md:text-left">
-                <p class={`text-lg font-extrabold ${ganador === vis?.id ? 'text-gold-400' : ''}`}>{vis?.clubes.nombre}</p>
-                {vis?.nombre_mostrar && vis.nombre_mostrar !== vis.clubes.nombre && <p class="text-[0.78rem] text-paper-muted">{vis.nombre_mostrar}</p>}
-              </div>
+
+          {partido!.sede && (
+            <div class="relative z-10 mt-3 border-t border-navy-800/80 pt-2.5 sm:hidden text-center">
+              <p class="m-0 flex items-center justify-center gap-1.5 text-[0.7rem] font-medium text-paper/60">
+                <svg class="h-3 w-3 shrink-0 text-orange-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+                </svg>
+                <span>{partido!.sede}</span>
+              </p>
             </div>
-          </div>
+          )}
         </div>
 
         {

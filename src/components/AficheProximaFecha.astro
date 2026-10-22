@@ -19,12 +19,24 @@ const fechaIso = primerPartido?.fecha_hora ?? '';
 // el partido de cierre de la jornada (horario central) es el estelar
 const estelar = partidos[partidos.length - 1] ?? primerPartido;
 const sede = primerPartido?.sede ?? 'Sede a confirmar por la liga';
+
+// Mapeo dinámico del jugador según el club protagonista del partido estelar
+const FOTOS_JUGADORES: Record<string, string> = {
+  'juventud-caj': '/images/jugadores/jugador-juventud.webp',
+  'estudiantes-el-colla': '/images/jugadores/jugador-ceec-1.webp',
+  'colonia-rowing': '/images/jugadores/jugador-rowing.webp',
+  'plaza-colonia': '/images/jugadores/jugador-plaza-verde.webp',
+  'cac-valdense': '/images/jugadores/jugador-cacvaldense.webp',
+};
+const slugLocal = estelar?.local?.clubes?.slug ?? '';
+const slugVisita = estelar?.visitante?.clubes?.slug ?? '';
+const fotoJugador = FOTOS_JUGADORES[slugLocal] || FOTOS_JUGADORES[slugVisita] || '/images/jugadores/jugador-juventud.webp';
 ---
 
 <article class="card-vigor relative flex h-full flex-col overflow-hidden border-t-2 border-t-gold-400" aria-labelledby="afiche-titulo">
-  <!-- jugador recortado: ocupa la mitad derecha, detrás del contenido -->
+  <!-- jugador recortado del club protagonista: ocupa la mitad derecha, detrás del contenido -->
   <img
-    src="/images/jugadores/jugador-plaza-verde.webp"
+    src={fotoJugador}
     alt=""
     aria-hidden="true"
     loading="lazy"

@@ -1,44 +1,132 @@
 ---
-// Card de noticia para la home/el listado. Portada con transform del CDN si existe.
+// Card de noticia para la home y listados: diseño editorial tipo Sports Magazine.
 import type { NoticiaPublica } from '../lib/data';
 import { fechaCorta } from '../lib/fmt';
 
 interface Props {
   noticia: NoticiaPublica;
+  variante?: 'destacada' | 'horizontal' | 'estandar';
 }
-const { noticia } = Astro.props;
+const { noticia, variante = 'estandar' } = Astro.props;
 
 const fecha = noticia.publicado_at ?? '';
 let portada = noticia.portada_url ?? null;
+
+if (!portada) {
+  if (noticia.slug?.includes('fixture')) {
+    portada = '/images/afiche-1era-lbc-fixture.jpg';
+  } else if (noticia.slug?.includes('arranco') || noticia.slug?.includes('primera')) {
+    portada = '/images/afiche-1era-lbc.jpg';
+  } else {
+    portada = '/images/action-hero.jpg';
+  }
+}
+
 if (portada && portada.includes('/storage/v1/object/') && !portada.includes('?')) {
   portada = `${portada}?width=768&quality=75&format=webp`;
 }
 const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
 ---
 
-<article class="card-vigor flex flex-col overflow-hidden rounded-panel transition-all">
-  <a href={`/noticias/${noticia.slug}`} class="group flex h-full flex-col no-underline">
-    <div class="relative aspect-video overflow-hidden bg-navy-950">
-      <img
-        src={portada || '/images/action-hero.jpg'}
-        alt={`Portada: ${noticia.titulo}`}
-        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy"
-        width="768"
-        height="432"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/20 to-transparent"></div>
-      <div class="absolute bottom-2 left-3">
-        <time datetime={fechaIso} class="rounded bg-navy-900/90 border border-gold-400/30 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-gold-400">
-          {fecha ? fechaCorta(fecha) : 'Oficial'}
-        </time>
+{
+  variante === 'destacada' ? (
+    <article class="card-vigor group relative overflow-hidden transition-all duration-300 hover:border-orange-500/50 hover:shadow-2xl md:grid md:grid-cols-12 md:items-stretch">
+      <a href={`/noticias/${noticia.slug}`} class="block h-full md:col-span-7 relative overflow-hidden bg-navy-950">
+        <img
+          src={portada}
+          alt={`Portada: ${noticia.titulo}`}
+          class="h-64 sm:h-80 md:h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          loading="lazy"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/40 to-transparent md:bg-gradient-to-r md:from-transparent md:to-navy-950/80"></div>
+        <div class="absolute top-4 left-4">
+          <span class="rounded-full bg-orange-500 px-3 py-1 text-xs font-black uppercase tracking-wider text-ink shadow-lg">
+            Destacado
+          </span>
+        </div>
+      </a>
+      <div class="p-6 sm:p-8 md:col-span-5 flex flex-col justify-between gap-4">
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <time datetime={fechaIso} class="text-xs font-black uppercase tracking-wider text-gold-400">
+              {fecha ? fechaCorta(fecha) : 'Oficial LBC'}
+            </time>
+            <span class="text-paper/40">·</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-paper/60">Básquetbol Colonia</span>
+          </div>
+          <a href={`/noticias/${noticia.slug}`} class="block no-underline">
+            <h3 class="text-xl sm:text-2xl font-black leading-tight text-paper group-hover:text-orange-400 transition-colors">
+              {noticia.titulo}
+            </h3>
+          </a>
+          {noticia.bajada && (
+            <p class="text-sm font-medium leading-relaxed text-paper/80 line-clamp-3">
+              {noticia.bajada}
+            </p>
+          )}
+        </div>
+        <div class="pt-2">
+          <a
+            href={`/noticias/${noticia.slug}`}
+            class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-orange-500 hover:text-orange-400 no-underline transition-colors"
+          >
+            Leer comunicado oficial &rarr;
+          </a>
+        </div>
       </div>
-    </div>
-    <div class="flex flex-1 flex-col gap-2 p-5">
-      <h3 class="text-base sm:text-lg font-black leading-snug text-paper group-hover:text-orange-500 transition-colors">
-        {noticia.titulo}
-      </h3>
-      {noticia.bajada && <p class="text-xs sm:text-sm leading-relaxed text-paper-muted">{noticia.bajada}</p>}
-    </div>
-  </a>
-</article>
+    </article>
+  ) : variante === 'horizontal' ? (
+    <article class="card-vigor group relative overflow-hidden p-3.5 transition-all duration-200 hover:border-orange-500/50 hover:shadow-xl">
+      <a href={`/noticias/${noticia.slug}`} class="flex items-center gap-4 no-underline">
+        <div class="relative h-20 w-24 sm:h-24 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-navy-950">
+          <img
+            src={portada}
+            alt={`Portada: ${noticia.titulo}`}
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        </div>
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
+          <time datetime={fechaIso} class="text-[0.7rem] font-black uppercase tracking-wider text-gold-400">
+            {fecha ? fechaCorta(fecha) : 'Oficial'}
+          </time>
+          <h4 class="text-sm sm:text-base font-black leading-snug text-paper group-hover:text-orange-400 transition-colors line-clamp-2">
+            {noticia.titulo}
+          </h4>
+          {noticia.bajada && (
+            <p class="text-xs text-paper/70 line-clamp-1">
+              {noticia.bajada}
+            </p>
+          )}
+        </div>
+      </a>
+    </article>
+  ) : (
+    <article class="card-vigor group flex flex-col overflow-hidden transition-all duration-300 hover:border-orange-500/50 hover:shadow-2xl">
+      <a href={`/noticias/${noticia.slug}`} class="flex h-full flex-col no-underline">
+        <div class="relative aspect-video overflow-hidden bg-navy-950">
+          <img
+            src={portada}
+            alt={`Portada: ${noticia.titulo}`}
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            width="768"
+            height="432"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/20 to-transparent"></div>
+          <div class="absolute bottom-2.5 left-3">
+            <time datetime={fechaIso} class="rounded bg-navy-900/90 border border-gold-400/40 px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-gold-400 shadow-md">
+              {fecha ? fechaCorta(fecha) : 'Oficial'}
+            </time>
+          </div>
+        </div>
+        <div class="flex flex-1 flex-col gap-2 p-5">
+          <h3 class="text-base sm:text-lg font-black leading-snug text-paper group-hover:text-orange-400 transition-colors">
+            {noticia.titulo}
+          </h3>
+          {noticia.bajada && <p class="text-xs sm:text-sm leading-relaxed text-paper/80 line-clamp-2">{noticia.bajada}</p>}
+        </div>
+      </a>
+    </article>
+  )
+}

@@ -1,19 +1,56 @@
 ---
-// Escudo de club: imagen con transform del CDN de Storage si hay URL;
-// placeholder con iniciales y colores del club si no (Docs/04 §4).
+// Escudo de club: prioridad escudo local optimizado, luego CDN de Storage, luego iniciales.
 interface Props {
   club?: { nombre: string; slug: string; escudo_url: string | null; color1: string | null; color2: string | null };
-  tam?: 'xs' | 'sm' | 'md' | 'lg';
+  tam?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 const { club, tam = 'md' } = Astro.props;
 
 const medidas: Record<string, string> = {
-  xs: 'h-7 w-7 text-[0.55rem]',
-  sm: 'h-8 w-8 text-xs',
-  md: 'h-9 w-9 text-[0.7rem]',
-  lg: 'h-16 w-16 text-lg',
+  xs: 'h-6 w-6',
+  sm: 'h-8 w-8',
+  md: 'h-11 w-11',
+  lg: 'h-16 w-16',
+  xl: 'h-20 w-20',
 };
 const clase = medidas[tam] ?? medidas.md;
+
+const ESCUDOS_MAP: Record<string, string> = {
+  'plaza-colonia': '/escudos/plaza-colonia-rbg-logo.webp',
+  'colonia-rowing': '/escudos/colonia-rowing-rbg-logo.webp',
+  'estudiantes-el-colla': '/escudos/ceec-rbg-logo.webp',
+  'ceec': '/escudos/ceec-rbg-logo.webp',
+  'juventud-caj': '/escudos/juventud-rbg-logo.webp',
+  'juventud': '/escudos/juventud-rbg-logo.webp',
+  'cac-valdense': '/escudos/cac-valdense-rbg-logo.webp',
+  'valdense': '/escudos/cac-valdense-rbg-logo.webp',
+  'independiente-jl': '/escudos/independiente-jl-rbg-logo.webp',
+  'independiente': '/escudos/independiente-jl-rbg-logo.webp',
+};
+
+// Normalizar slug o nombre
+const slugBuscado = (club?.slug ?? '')
+  .toLowerCase()
+  .replace(/\s+/g, '-');
+const nombreNormalizado = (club?.nombre ?? '')
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '');
+
+let urlLocal = ESCUDOS_MAP[slugBuscado] ?? null;
+if (!urlLocal) {
+  if (nombreNormalizado.includes('plaza')) urlLocal = ESCUDOS_MAP['plaza-colonia'];
+  else if (nombreNormalizado.includes('rowing')) urlLocal = ESCUDOS_MAP['colonia-rowing'];
+  else if (nombreNormalizado.includes('colla') || nombreNormalizado.includes('estudiantes')) urlLocal = ESCUDOS_MAP['estudiantes-el-colla'];
+  else if (nombreNormalizado.includes('juventud')) urlLocal = ESCUDOS_MAP['juventud'];
+  else if (nombreNormalizado.includes('valdense')) urlLocal = ESCUDOS_MAP['cac-valdense'];
+  else if (nombreNormalizado.includes('independiente')) urlLocal = ESCUDOS_MAP['independiente-jl'];
+}
+
+let url = urlLocal ?? club?.escudo_url ?? null;
+if (url && url.includes('/storage/v1/object/') && !url.includes('?')) {
+  url = `${url}?width=256&quality=80&format=webp`;
+}
 
 const iniciales =
   (club?.nombre ?? '')
@@ -24,13 +61,8 @@ const iniciales =
     .join('')
     .slice(0, 3) || '·';
 
-const fundido = club?.color1 ?? '#2e4484';
+const fundido = club?.color1 ?? '#1c2b56';
 const texto = club?.color2 ?? '#f4f1ea';
-
-let url = club?.escudo_url ?? null;
-if (url && url.includes('/storage/v1/object/') && !url.includes('?')) {
-  url = `${url}?width=256&quality=80&format=webp`; // transform del CDN (Docs/04 §4)
-}
 ---
 
 {
@@ -38,16 +70,14 @@ if (url && url.includes('/storage/v1/object/') && !url.includes('?')) {
     <img
       src={url}
       alt={`Escudo de ${club?.nombre ?? 'club'}`}
-      width="80"
-      height="80"
       loading="lazy"
-      class={`rounded-full object-cover ${clase}`}
+      class={`object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] ${clase}`}
     />
   ) : (
     <span
-      class={`flex shrink-0 place-items-center rounded-full font-extrabold ${clase}`}
-      style={`background:${fundido};color:${texto}`}
-      aria-label={`Escudo provisional de ${club?.nombre ?? 'club'}`}
+      class={`flex shrink-0 place-items-center justify-center rounded-lg font-black text-xs shadow-sm ${clase}`}
+      style={`background:${fundido};color:${texto};border:1px solid ${texto}30`}
+      aria-label={`Escudo de ${club?.nombre ?? 'club'}`}
     >
       {iniciales}
     </span>

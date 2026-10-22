@@ -103,7 +103,7 @@ button.card-vigor:hover,
 }
 
 .glow-orange {
-  box-shadow: 0 0 20px rgba(243, 156, 45, 0.35);
+  text-shadow: 0 0 16px rgba(243, 156, 45, 0.45);
 }
 
 .text-gradient-gold {

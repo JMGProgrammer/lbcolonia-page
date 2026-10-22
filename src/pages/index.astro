@@ -10,6 +10,7 @@ import PartidoFila from '../components/PartidoFila.astro';
 import TablaPosiciones from '../components/TablaPosiciones.astro';
 import NoticiaCard from '../components/NoticiaCard.astro';
 import AuspicianteTile from '../components/AuspicianteTile.astro';
+import Escudo from '../components/Escudo.astro';
 import {
   listarTorneos,
   listarPartidosDeTorneo,
@@ -17,16 +18,18 @@ import {
   listarNoticias,
   listarAuspiciantes,
   listarPaginas,
+  listarClubes,
   torneoPorDefecto,
 } from '../lib/data';
 import type { PartidoVista } from '../lib/data';
 import { fechaCorta, horaCorta, rondaLabel } from '../lib/fmt';
 
-const [torneos, noticias, auspiciantes, paginas] = await Promise.all([
+const [torneos, noticias, auspiciantes, paginas, clubes] = await Promise.all([
   listarTorneos(),
-  listarNoticias(3),
+  listarNoticias(4),
   listarAuspiciantes(),
   listarPaginas(),
+  listarClubes(),
 ]);
 
 const primera = torneoPorDefecto(torneos);
@@ -132,18 +135,61 @@ const linkmas = 'text-xs sm:text-sm font-black uppercase tracking-wider text-ora
 
   {
     noticias.length > 0 && (
-      <section class="pb-10 pt-0" aria-labelledby="t-noticias">
+      <section class="pb-12 pt-2" aria-labelledby="t-noticias">
         <div class={cabeceraNoticias}>
-          <h2 id="t-noticias" class={h2seccion}>
-            Últimas noticias
-          </h2>
+          <div class="flex items-center gap-3">
+            <span class="inline-block h-2 w-2 rounded-full bg-orange-500"></span>
+            <h2 id="t-noticias" class={h2seccion}>
+              Actualidad y Noticias
+            </h2>
+          </div>
           <a href="/noticias" class={linkmas}>
-            Ver todas →
+            Ver todas las noticias &rarr;
           </a>
         </div>
-        <div class="grid gap-4 md:grid-cols-2">
-          {noticias.slice(0, 2).map((n) => (
-            <NoticiaCard noticia={n} />
+
+        <div class="space-y-4">
+          <NoticiaCard noticia={noticias[0]} variante="destacada" />
+
+          {noticias.length > 1 && (
+            <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+              {noticias.slice(1, 4).map((n) => (
+                <NoticiaCard noticia={n} variante="horizontal" />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    clubes.length > 0 && (
+      <section class="pb-12" aria-labelledby="t-clubes-liga">
+        <div class={cabeceraNoticias}>
+          <div class="flex items-center gap-3">
+            <span class="inline-block h-2 w-2 rounded-full bg-gold-400"></span>
+            <h2 id="t-clubes-liga" class={h2seccion}>
+              Clubes Afiliados
+            </h2>
+          </div>
+          <a href="/clubes" class={linkmas}>
+            Ver todos los clubes &rarr;
+          </a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {clubes.map((c) => (
+            <a
+              href={`/clubes/${c.slug}`}
+              class="card-vigor group flex flex-col items-center justify-center p-4 text-center no-underline transition-all duration-200 hover:border-orange-500/60 hover:-translate-y-1 hover:shadow-xl"
+            >
+              <div class="flex h-16 w-16 items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                <Escudo club={c} tam="lg" />
+              </div>
+              <span class="mt-2.5 line-clamp-1 text-xs font-black uppercase tracking-wider text-paper group-hover:text-orange-400 transition-colors">
+                {c.nombre}
+              </span>
+            </a>
           ))}
         </div>
       </section>

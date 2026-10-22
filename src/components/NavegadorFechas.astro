@@ -1,0 +1,245 @@
+---
+// Navegador interactivo de partidos por fecha para colocar debajo de las tablas de posiciones.
+// Permite avanzar y retroceder entre jornadas con flechas (← y →) y chips directos.
+import PartidoFila from './PartidoFila.astro';
+import type { PartidoVista } from '../lib/data';
+import { rondaLabel } from '../lib/fmt';
+
+interface Props {
+  partidos: PartidoVista[];
+  torneoNombre?: string;
+  torneoId?: string;
+}
+
+const { partidos, torneoNombre, torneoId } = Astro.props;
+
+// Agrupar partidos por ronda / fecha
+const partidosPorRonda = new Map<string, PartidoVista[]>();
+for (const p of partidos) {
+  const r = p.ronda || 'Fecha Única';
+  const lista = partidosPorRonda.get(r) ?? [];
+  lista.push(p);
+  partidosPorRonda.set(r, lista);
+}
+
+// Extraer rondas ordenadas
+const rondas = [...partidosPorRonda.keys()].sort((a, b) => {
+  const numA = parseInt(a.replace(/\D+/g, ''), 10);
+  const numB = parseInt(b.replace(/\D+/g, ''), 10);
+  if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+  return a.localeCompare(b);
+});
+
+// Determinar la fecha inicial más relevante (próxima o en juego, sino la última jugada)
+let indexInicial = 0;
+if (rondas.length > 0) {
+  const idxProxima = rondas.findIndex((r) =>
+    (partidosPorRonda.get(r) ?? []).some((p) => p.estado === 'programado' || p.estado === 'en_juego')
+  );
+  if (idxProxima !== -1) {
+    indexInicial = idxProxima;
+  } else {
+    // Si ya finalizaron todas, posicionar en la última
+    indexInicial = rondas.length - 1;
+  }
+}
+
+const componenteId = `nav-fechas-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+{
+  rondas.length > 0 && (
+    <section
+      id={componenteId}
+      class="nav-fechas-component card-vigor overflow-hidden border border-navy-700/80 bg-navy-950/70 p-4 sm:p-6 space-y-5 shadow-2xl"
+      data-total-rondas={rondas.length}
+      data-ronda-activa={indexInicial}
+    >
+      <!-- Cabecera del Visor: Título + Navegador Flechas ← → -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-navy-800">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-block h-2.5 w-2.5 bg-orange-500"></span>
+          <div>
+            <h3 class="m-0 text-base sm:text-lg font-black uppercase tracking-wide text-paper">
+              Partidos por Fecha
+            </h3>
+            <p class="m-0 text-xs text-paper/60">
+              {torneoNombre ? `${torneoNombre} · Navegación de jornadas` : 'Resultados y partidos programados'}
+            </p>
+          </div>
+        </div>
+
+        <!-- Controles de Flechas ← y → con indicador de fecha -->
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            class="btn-prev-fecha flex h-9 w-9 items-center justify-center rounded-lg border border-navy-700 bg-navy-900/90 text-paper transition-all hover:border-orange-500 hover:bg-navy-800 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            aria-label="Fecha anterior"
+            title="Ir a la fecha anterior"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <!-- Título dinámico de la fecha activa -->
+          <div class="min-w-[140px] sm:min-w-[160px] text-center px-3 py-1 rounded-lg bg-navy-900/70 border border-navy-800">
+            <span class="lbl-fecha-activa block text-xs sm:text-sm font-black uppercase tracking-wider text-gold-400">
+              {rondaLabel(rondas[indexInicial])}
+            </span>
+            <span class="lbl-contador-fecha text-[0.65rem] font-bold uppercase tracking-wider text-paper/50">
+              Jornada {indexInicial + 1} de {rondas.length}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn-next-fecha flex h-9 w-9 items-center justify-center rounded-lg border border-navy-700 bg-navy-900/90 text-paper transition-all hover:border-orange-500 hover:bg-navy-800 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            aria-label="Fecha siguiente"
+            title="Ir a la fecha siguiente"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de acceso rápido por Chips de Fecha -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar" role="tablist">
+        {rondas.map((r, idx) => {
+          const esActiva = idx === indexInicial;
+          return (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={esActiva ? 'true' : 'false'}
+              data-index={idx}
+              class={`chip-fecha shrink-0 rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                esActiva
+                  ? 'border-orange-500 bg-orange-500 text-ink shadow-[0_2px_10px_rgba(238,107,31,0.3)]'
+                  : 'border-navy-700 bg-navy-900/50 text-paper/70 hover:border-orange-500/70 hover:text-paper'
+              }`}
+            >
+              {rondaLabel(r)}
+            </button>
+          );
+        })}
+      </div>
+
+      <!-- Paneles de Partidos por Fecha -->
+      <div class="paneles-fechas space-y-2.5 min-h-[140px]">
+        {rondas.map((r, idx) => {
+          const partidosRonda = partidosPorRonda.get(r) ?? [];
+          const esActiva = idx === indexInicial;
+
+          return (
+            <div
+              data-panel-index={idx}
+              class={`panel-fecha ${esActiva ? 'flex flex-col gap-2.5' : 'hidden'}`}
+              role="tabpanel"
+            >
+              {partidosRonda.length === 0 ? (
+                <p class="py-8 text-center text-xs sm:text-sm font-semibold text-paper/60 italic">
+                  No hay partidos registrados en esta fecha.
+                </p>
+              ) : (
+                partidosRonda.map((p) => <PartidoFila partido={p} />)
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <!-- Footer del Visor con link al fixture completo -->
+      <div class="flex items-center justify-between pt-2 border-t border-navy-800/80 text-xs">
+        <span class="text-paper/50">
+          Usa las flechas &larr; / &rarr; para explorar todas las fechas
+        </span>
+        {torneoId && (
+          <a
+            href={`/fixture?torneo=${torneoId}`}
+            class="font-black uppercase tracking-wider text-orange-500 hover:text-orange-400 no-underline transition-colors flex items-center gap-1"
+          >
+            <span>Ver fixture completo</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        )}
+      </div>
+    </section>
+  )
+}
+
+<script is:inline define:vars={{ componenteId, rondas }}>
+  (function () {
+    const root = document.getElementById(componenteId);
+    if (!root) return;
+
+    const btnPrev = root.querySelector('.btn-prev-fecha');
+    const btnNext = root.querySelector('.btn-next-fecha');
+    const lblFecha = root.querySelector('.lbl-fecha-activa');
+    const lblContador = root.querySelector('.lbl-contador-fecha');
+    const chips = root.querySelectorAll('.chip-fecha');
+    const paneles = root.querySelectorAll('.panel-fecha');
+
+    let activa = parseInt(root.getAttribute('data-ronda-activa') || '0', 10);
+    const total = rondas.length;
+
+    function actualizarVista(nuevoIdx) {
+      if (nuevoIdx < 0 || nuevoIdx >= total) return;
+      activa = nuevoIdx;
+      root.setAttribute('data-ronda-activa', String(activa));
+
+      // Actualizar texto e indicador
+      if (lblFecha) lblFecha.textContent = rondas[activa] || `Fecha ${activa + 1}`;
+      if (lblContador) lblContador.textContent = `Jornada ${activa + 1} de ${total}`;
+
+      // Botones flecha
+      if (btnPrev) btnPrev.disabled = activa === 0;
+      if (btnNext) btnNext.disabled = activa === total - 1;
+
+      // Chips
+      chips.forEach((c, idx) => {
+        if (idx === activa) {
+          c.setAttribute('aria-selected', 'true');
+          c.className =
+            'chip-fecha shrink-0 rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-orange-500 bg-orange-500 text-ink shadow-[0_2px_10px_rgba(238,107,31,0.3)]';
+        } else {
+          c.setAttribute('aria-selected', 'false');
+          c.className =
+            'chip-fecha shrink-0 rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-navy-700 bg-navy-900/50 text-paper/70 hover:border-orange-500/70 hover:text-paper';
+        }
+      });
+
+      // Paneles
+      paneles.forEach((p, idx) => {
+        if (idx === activa) {
+          p.classList.remove('hidden');
+          p.classList.add('flex', 'flex-col', 'gap-2.5');
+        } else {
+          p.classList.add('hidden');
+          p.classList.remove('flex', 'flex-col', 'gap-2.5');
+        }
+      });
+    }
+
+    // Inicializar estado de botones
+    if (btnPrev) btnPrev.disabled = activa === 0;
+    if (btnNext) btnNext.disabled = activa === total - 1;
+
+    // Event listeners
+    if (btnPrev) {
+      btnPrev.addEventListener('click', () => actualizarVista(activa - 1));
+    }
+    if (btnNext) {
+      btnNext.addEventListener('click', () => actualizarVista(activa + 1));
+    }
+
+    chips.forEach((c) => {
+      c.addEventListener('click', () => {
+        const idx = parseInt(c.getAttribute('data-index') || '0', 10);
+        actualizarVista(idx);
+      });
+    });
+  })();
+</script>

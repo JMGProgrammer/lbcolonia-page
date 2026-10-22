@@ -5,8 +5,8 @@ import Base from '../layouts/Base.astro';
 import Rotulo from '../components/Rotulo.astro';
 import Panel from '../components/Panel.astro';
 import ResultCard from '../components/ResultCard.astro';
-import PartidoFila from '../components/PartidoFila.astro';
 import TablaPosiciones from '../components/TablaPosiciones.astro';
+import NavegadorFechas from '../components/NavegadorFechas.astro';
 import NoticiaCard from '../components/NoticiaCard.astro';
 import AuspicianteTile from '../components/AuspicianteTile.astro';
 import Escudo from '../components/Escudo.astro';
@@ -50,9 +50,6 @@ programados.sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_h
 
 const rondaProxima = programados[0]?.ronda ?? null;
 const fechaProxima = partidos.filter((p) => p.ronda === rondaProxima).sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
-
-const rondasListadas = [...new Set(programados.map((p) => p.ronda))].slice(0, 2);
-const proximosListado = programados.filter((p) => rondasListadas.includes(p.ronda));
 
 /* JSON-LD: SportsEvent por partido con sede y equipos (Docs/04 §3) */
 const eventosLd = [...publicados, ...fechaProxima]
@@ -260,39 +257,13 @@ const btnComp =
       </a>
     </div>
     <TablaPosiciones filas={tabla} caption={`Posiciones de ${primera?.nombre ?? 'la competencia'}`} />
-  </section>
 
-  {
-    rondasListadas.length > 0 && (
-      <section class="pb-10" aria-labelledby="t-fixture">
-        <div class={cabeceraNoticias}>
-          <h2 id="t-fixture" class={h2seccion}>
-            Próximos partidos
-          </h2>
-          <a href={primera ? `/fixture?torneo=${primera.id}` : '/fixture'} class={linkmas}>
-            Fixture completo →
-          </a>
-        </div>
-        <div class="flex flex-wrap gap-2.5 pb-4">
-          {
-            rondasListadas.map((r) => (
-              <a
-                href={`/fixture?torneo=${primera?.id ?? ''}&ronda=${r}`}
-                class="rounded-full border border-navy-700 bg-navy-950/60 px-4 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.09em] text-paper-muted no-underline transition-all hover:border-orange-500 hover:text-paper"
-              >
-                {rondaLabel(r)}
-              </a>
-            ))
-          }
-        </div>
-        <div class="grid gap-3">
-          {proximosListado.map((p) => (
-            <PartidoFila partido={p} />
-          ))}
-        </div>
-      </section>
-    )
-  }
+    {partidos.length > 0 && (
+      <div class="mt-8">
+        <NavegadorFechas partidos={partidos} torneoNombre={primera?.nombre} torneoId={primera?.id} />
+      </div>
+    )}
+  </section>
 
   <section class="pb-10" aria-labelledby="t-competencias">
     <div class={cabeceraNoticias}>

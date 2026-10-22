@@ -1,7 +1,7 @@
 // Capa de datos del sitio público. Todo se consulta con el cliente anon (RLS es la
 // única barrera); las funciones devuelven [] / null en lugar de lanzar, y loguean
-// el error: una página pública jamás rompe por un fallo puntual de la Data API.
 import { supabase } from './supabase';
+import type { Database } from './db-types';
 
 /* ------------------------------- tipos de vista ------------------------------ */
 
@@ -372,6 +372,43 @@ export function rosterDeEquipos(equipoIds: string[]): Promise<FichaRoster[]> {
   );
 }
 
+/* --------------------------- perfiles de jugador (0005) ---------------------------- */
+
+export type JugadorPublico = Database['public']['Views']['v_jugadores_publico']['Row'];
+export type JugadorTotales = Database['public']['Views']['v_jugador_totales_temporada']['Row'];
+export type JugadorPartidoLog = Database['public']['Views']['v_jugador_partidos_log']['Row'];
+
+/** Datos bio y club de un jugador por su slug amigable o su UUID. */
+export async function jugadorPorSlugOId(slugOId: string): Promise<JugadorPublico | null> {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOId);
+  const q = supabase.from('v_jugadores_publico').select('*');
+  const res = esUuid ? await q.eq('jugador_id', slugOId).limit(1) : await q.eq('slug', slugOId).limit(1);
+  return (res.data?.[0] as JugadorPublico) ?? null;
+}
+
+/** Totales y promedios por temporada/torneo de un jugador. */
+export function totalesJugador(jugadorId: string): Promise<JugadorTotales[]> {
+  return filas(
+    supabase
+      .from('v_jugador_totales_temporada')
+      .select('*')
+      .eq('jugador_id', jugadorId)
+      .returns<JugadorTotales[]>()
+  );
+}
+
+/** Historial cronológico (game log) de partidos jugados con planilla verificada. */
+export function partidosJugadorLog(jugadorId: string): Promise<JugadorPartidoLog[]> {
+  return filas(
+    supabase
+      .from('v_jugador_partidos_log')
+      .select('*')
+      .eq('jugador_id', jugadorId)
+      .order('fecha_hora', { ascending: false })
+      .returns<JugadorPartidoLog[]>()
+  );
+}
+
 /* --------------------------- derives útiles de UI ---------------------------- */
 
 /** Filas agrupadas por ronda, en el orden en que llegan (fecha_hora asc). */
@@ -384,3 +421,4 @@ export function agruparPorRonda(partidos: PartidoVista[]): Map<string, PartidoVi
   }
   return grupos;
 }
+

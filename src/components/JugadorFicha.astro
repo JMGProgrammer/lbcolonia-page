@@ -23,9 +23,13 @@ if (j?.fecha_nacimiento) {
     // fallback
   }
 }
+const hrefJugador = j?.id ? `/jugadores/${j.id}` : '#';
 ---
 
-<div class="card-vigor group relative flex flex-col overflow-hidden border border-navy-700/80 bg-navy-950/70 p-3 transition-all duration-200 hover:border-orange-500/60 hover:-translate-y-1 hover:shadow-xl">
+<a
+  href={hrefJugador}
+  class="card-vigor group relative flex flex-col overflow-hidden border border-navy-700/80 bg-navy-950/70 p-3 no-underline transition-all duration-200 hover:border-orange-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
+>
   <!-- Cabecera de la ficha: categoría e indicador de estado ante la liga (círculo verde o rojo) -->
   <div class="flex items-center justify-between pb-2 border-b border-navy-800/70">
     <span class="text-[0.65rem] font-bold uppercase tracking-wider text-paper/60 truncate">
@@ -63,8 +67,8 @@ if (j?.fecha_nacimiento) {
       </h4>
     </div>
     <div class="flex items-center justify-between text-[0.68rem] text-paper/60 pt-0.5 border-t border-navy-900">
-      <span class="font-medium text-paper/50 uppercase tracking-wider">
-        Liga de Colonia
+      <span class="font-medium text-paper/50 uppercase tracking-wider group-hover:text-orange-400 transition-colors">
+        Ver perfil &rarr;
       </span>
       {nacimientoAnio && (
         <span class="num font-bold text-gold-400/90">
@@ -73,4 +77,4 @@ if (j?.fecha_nacimiento) {
       )}
     </div>
   </div>
-</div>
+</a>

@@ -1,0 +1,362 @@
+---
+// Perfil oficial de jugador de la LBC (Primera y Formativas).
+// Incluye bio, bento de promedios, gráficos de rendimiento e historial de partidos (game log).
+import Base from '../../layouts/Base.astro';
+import Escudo from '../../components/Escudo.astro';
+import {
+  jugadorPorSlugOId,
+  totalesJugador,
+  partidosJugadorLog,
+} from '../../lib/data';
+import { fechaCorta, rondaLabel } from '../../lib/fmt';
+
+const { slug } = Astro.params;
+
+let jugador = null;
+let totales: any[] = [];
+let partidos: any[] = [];
+
+if (slug) {
+  jugador = await jugadorPorSlugOId(slug);
+  if (jugador && jugador.jugador_id) {
+    [totales, partidos] = await Promise.all([
+      totalesJugador(jugador.jugador_id),
+      partidosJugadorLog(jugador.jugador_id),
+    ]);
+  }
+}
+
+if (!jugador) {
+  Astro.response.status = 404;
+}
+
+// Calcular edad si tiene fecha_nacimiento
+let edadTexto = '';
+if (jugador?.fecha_nacimiento) {
+  const nac = new Date(jugador.fecha_nacimiento);
+  const diffMs = Date.now() - nac.getTime();
+  const anios = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365.25));
+  if (anios > 5 && anios < 90) {
+    edadTexto = `${anios} años`;
+  }
+}
+
+const totalActivo = totales[0] ?? null;
+const pj = totalActivo?.pj ?? partidos.length;
+const ppg = totalActivo?.ppg ?? (pj > 0 ? (partidos.reduce((acc: number, p: any) => acc + (p.puntos ?? 0), 0) / pj).toFixed(1) : '—');
+const rpg = totalActivo?.rpg ?? (pj > 0 ? (partidos.reduce((acc: number, p: any) => acc + (p.rebotes ?? 0), 0) / pj).toFixed(1) : '—');
+const apg = totalActivo?.apg ?? (pj > 0 ? (partidos.reduce((acc: number, p: any) => acc + (p.asistencias ?? 0), 0) / pj).toFixed(1) : '—');
+const maxPuntos = totalActivo?.max_puntos ?? (partidos.length > 0 ? Math.max(...partidos.map((p: any) => p.puntos ?? 0)) : 0);
+
+// Eficiencia aproximada: (PTS + REB + AST + ROB + TAP) - (FAL)
+const eff = pj > 0
+  ? (
+      partidos.reduce((acc: number, p: any) => {
+        return acc + (p.puntos ?? 0) + (p.rebotes ?? 0) + (p.asistencias ?? 0) + (p.robos ?? 0) + (p.tapas ?? 0) - (p.faltas ?? 0);
+      }, 0) / pj
+    ).toFixed(1)
+  : '—';
+
+const titulo = jugador ? `${jugador.nombre_completo} · Perfil Oficial LBC` : 'Jugador no encontrado';
+const desc = jugador
+  ? `${jugador.nombre_completo} (${jugador.posicion ?? 'Jugador'}), ${jugador.club_nombre ?? 'LBC'}. Estadísticas oficiales, promedios e historial de partidos.`
+  : 'Ficha de jugador de la Liga de Básquetbol de Colonia.';
+
+const clubClubObj = jugador?.club_slug
+  ? { id: jugador.club_id ?? '', nombre: jugador.club_nombre ?? '', slug: jugador.club_slug, escudo_url: null, color1: null, color2: null, gimnasio: null, activo: true }
+  : undefined;
+---
+
+<Base title={titulo} description={desc}>
+  {
+    !jugador ? (
+      <section class="py-20 text-center">
+        <h1 class="text-2xl font-black uppercase tracking-wide text-paper">Jugador no encontrado</h1>
+        <p class="mt-2 text-sm text-paper-muted">No existe ese jugador registrado en las competencias activas de la liga.</p>
+        <a href="/clubes" class="mt-6 inline-block rounded-full bg-orange-500 px-6 py-2.5 text-xs font-black uppercase tracking-wider text-ink no-underline hover:bg-orange-400">
+          Ver clubes y planteles &rarr;
+        </a>
+      </section>
+    ) : (
+      <div class="py-6 sm:py-10">
+        <!-- Breadcrumb / Volver -->
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <a
+            href={jugador.club_slug ? `/clubes/${jugador.club_slug}` : '/clubes'}
+            class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-400 no-underline transition-colors hover:text-orange-300"
+          >
+            &larr; Volver a {jugador.club_nombre ?? 'Clubes'}
+          </a>
+          <span class="rounded-full bg-navy-800 border border-navy-700 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper/70">
+            Ficha Oficial LBC
+          </span>
+        </div>
+
+        <!-- HERO CARD DEL JUGADOR -->
+        <article class="card-vigor relative overflow-hidden border-t-2 border-t-gold-400 p-5 sm:p-8">
+          <!-- Dorsal gigante de fondo -->
+          {jugador.dorsal != null && (
+            <span
+              class="pointer-events-none select-none absolute -right-4 -bottom-6 num font-black text-[9rem] sm:text-[14rem] leading-none text-navy-800/40"
+              aria-hidden="true"
+            >
+              #{jugador.dorsal}
+            </span>
+          )}
+
+          <div class="relative z-10 grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
+            <!-- Foto de perfil oficial con halo -->
+            <div class="relative mx-auto flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold-400/60 bg-navy-950 p-2 shadow-2xl">
+              <img
+                src={jugador.foto_url || '/images/without-photo.webp'}
+                alt={jugador.nombre_completo ?? 'Foto de jugador'}
+                class="h-full w-full object-cover rounded-full"
+                loading="eager"
+              />
+              {jugador.dorsal != null && (
+                <span class="absolute bottom-1 right-2 rounded-full bg-orange-500 px-2.5 py-0.5 num text-xs font-black text-ink shadow-md">
+                  #{jugador.dorsal}
+                </span>
+              )}
+            </div>
+
+            <!-- Datos principales bio -->
+            <div class="flex flex-col gap-2 text-center md:text-left">
+              <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                {jugador.club_slug && clubClubObj && (
+                  <a
+                    href={`/clubes/${jugador.club_slug}`}
+                    class="group inline-flex items-center gap-2 rounded-full border border-navy-700 bg-navy-950/80 px-3 py-1 no-underline transition-all hover:border-gold-400"
+                  >
+                    <Escudo club={clubClubObj} tam="sm" />
+                    <span class="text-xs font-black uppercase tracking-wider text-paper group-hover:text-gold-400 transition-colors">
+                      {jugador.club_nombre}
+                    </span>
+                  </a>
+                )}
+                {jugador.categoria_nombre && (
+                  <span class="rounded-full bg-navy-800 border border-navy-700 px-3 py-1 text-xs font-bold uppercase tracking-wider text-paper/80">
+                    {jugador.categoria_nombre}
+                  </span>
+                )}
+                {jugador.posicion && (
+                  <span class="rounded-full bg-orange-500/20 border border-orange-500/40 px-3 py-1 text-xs font-black uppercase tracking-wider text-orange-400">
+                    {jugador.posicion}
+                  </span>
+                )}
+              </div>
+
+              <h1 class="m-0 text-3xl font-black uppercase tracking-tight text-paper sm:text-4xl lg:text-5xl">
+                {jugador.nombre_completo}
+              </h1>
+
+              <!-- Pills de atributos físicos -->
+              <div class="mt-2 flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs font-semibold text-paper/70">
+                {jugador.altura_cm && (
+                  <span class="flex items-center gap-1">
+                    <span class="text-paper/40">Altura:</span>
+                    <strong class="text-paper">{(jugador.altura_cm / 100).toFixed(2)} m</strong>
+                  </span>
+                )}
+                {edadTexto && (
+                  <span class="flex items-center gap-1">
+                    <span class="text-paper/40">Edad:</span>
+                    <strong class="text-paper">{edadTexto}</strong>
+                  </span>
+                )}
+                {jugador.ciudad_origen && (
+                  <span class="flex items-center gap-1">
+                    <span class="text-paper/40">Origen:</span>
+                    <strong class="text-paper">{jugador.ciudad_origen}</strong>
+                  </span>
+                )}
+                {jugador.mano_habil && (
+                  <span class="flex items-center gap-1">
+                    <span class="text-paper/40">Mano hábil:</span>
+                    <strong class="text-paper">{jugador.mano_habil}</strong>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- BENTO DE PROMEDIOS DE TEMPORADA -->
+        <section class="mt-8" aria-labelledby="t-promedios">
+          <div class="mb-4 flex items-center justify-between gap-3 border-b border-navy-700/60 pb-2.5">
+            <h2 id="t-promedios" class="m-0 text-lg sm:text-xl font-black uppercase tracking-wide text-paper flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-orange-500"></span>
+              Promedios y Rendimiento {totalActivo?.torneo_nombre ? `· ${totalActivo.torneo_nombre}` : ''}
+            </h2>
+            <span class="num text-xs font-bold uppercase tracking-wider text-paper/60">
+              {pj} {pj === 1 ? 'partido jugado' : 'partidos jugados'}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+            <!-- Puntos por partido -->
+            <div class="card-vigor flex flex-col justify-between border-t-2 border-t-orange-500 p-4">
+              <span class="text-[0.68rem] font-black uppercase tracking-widest text-paper/60">Puntos / Partido</span>
+              <div class="my-2 flex items-baseline gap-2">
+                <span class="num text-3xl sm:text-4xl font-black leading-none text-orange-500 glow-orange">{ppg}</span>
+                <span class="text-[0.7rem] font-bold text-paper/50 uppercase">PPG</span>
+              </div>
+              <span class="text-[0.68rem] font-semibold text-paper/50">Récord: <strong class="text-gold-400">{maxPuntos} pts</strong></span>
+            </div>
+
+            <!-- Rebotes por partido -->
+            <div class="card-vigor flex flex-col justify-between border-t-2 border-t-gold-400 p-4">
+              <span class="text-[0.68rem] font-black uppercase tracking-widest text-paper/60">Rebotes / Partido</span>
+              <div class="my-2 flex items-baseline gap-2">
+                <span class="num text-3xl sm:text-4xl font-black leading-none text-gold-400">{rpg}</span>
+                <span class="text-[0.7rem] font-bold text-paper/50 uppercase">RPG</span>
+              </div>
+              <span class="text-[0.68rem] font-semibold text-paper/50">Total: <strong class="text-paper">{totalActivo?.rebotes_totales ?? 0}</strong></span>
+            </div>
+
+            <!-- Asistencias por partido -->
+            <div class="card-vigor flex flex-col justify-between border-t-2 border-t-blue-400 p-4">
+              <span class="text-[0.68rem] font-black uppercase tracking-widest text-paper/60">Asistencias / Partido</span>
+              <div class="my-2 flex items-baseline gap-2">
+                <span class="num text-3xl sm:text-4xl font-black leading-none text-blue-400">{apg}</span>
+                <span class="text-[0.7rem] font-bold text-paper/50 uppercase">APG</span>
+              </div>
+              <span class="text-[0.68rem] font-semibold text-paper/50">Total: <strong class="text-paper">{totalActivo?.asistencias_totales ?? 0}</strong></span>
+            </div>
+
+            <!-- Valoración / Impacto -->
+            <div class="card-vigor flex flex-col justify-between border-t-2 border-t-emerald-400 p-4">
+              <span class="text-[0.68rem] font-black uppercase tracking-widest text-paper/60">Impacto / Eficiencia</span>
+              <div class="my-2 flex items-baseline gap-2">
+                <span class="num text-3xl sm:text-4xl font-black leading-none text-emerald-400">+{eff}</span>
+                <span class="text-[0.7rem] font-bold text-paper/50 uppercase">VAL</span>
+              </div>
+              <span class="text-[0.68rem] font-semibold text-paper/50">Promedio por juego</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- GRÁFICO DE EVOLUCIÓN DE PUNTOS FECHA A FECHA -->
+        {
+          partidos.length > 0 && (
+            <section class="mt-8" aria-labelledby="t-grafico">
+              <div class="mb-4 flex items-center justify-between gap-3 border-b border-navy-700/60 pb-2.5">
+                <h2 id="t-grafico" class="m-0 text-lg sm:text-xl font-black uppercase tracking-wide text-paper flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-gold-400"></span>
+                  Evolución de Anotación por Partido
+                </h2>
+                <span class="text-[0.7rem] font-bold uppercase tracking-wider text-paper/50">Boxscore oficial</span>
+              </div>
+
+              <div class="card-vigor p-5 sm:p-6">
+                <!-- Gráfico de barras SVG nativo reactivo -->
+                <div class="space-y-3">
+                  {partidos.map((p: any) => {
+                    const pts = p.puntos ?? 0;
+                    const maxReferencia = Math.max(25, maxPuntos || 20);
+                    const pct = Math.min(100, Math.round((pts / maxReferencia) * 100));
+                    const esVictoria = p.resultado === 'W';
+                    return (
+                      <div class="grid grid-cols-[100px_1fr_45px] items-center gap-3 text-xs">
+                        <span class="font-bold text-paper/70 truncate">{p.torneo_nombre?.split(' ')[0]} {rondaLabel(p.ronda)}</span>
+                        <div class="h-6 w-full rounded-sm bg-navy-950 overflow-hidden border border-navy-800 flex items-center">
+                          <div
+                            class={`h-full transition-all duration-500 rounded-sm ${
+                              pts === maxPuntos ? 'bg-gradient-to-r from-orange-500 to-gold-400' : esVictoria ? 'bg-orange-500/90' : 'bg-navy-600'
+                            }`}
+                            style={`width: ${Math.max(8, pct)}%`}
+                          ></div>
+                        </div>
+                        <span class="num text-right font-black text-sm text-paper">{pts} pts</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div class="mt-4 flex items-center justify-between border-t border-navy-800 pt-3 text-[0.7rem] text-paper/50">
+                  <span>0 pts</span>
+                  <span>Escala máx: {Math.max(25, maxPuntos || 20)} pts</span>
+                </div>
+              </div>
+            </section>
+          )
+        }
+
+        <!-- HISTORIAL DE PARTIDOS (GAME LOG) -->
+        <section class="mt-8" aria-labelledby="t-gamelog">
+          <div class="mb-4 flex items-center justify-between gap-3 border-b border-navy-700/60 pb-2.5">
+            <h2 id="t-gamelog" class="m-0 text-lg sm:text-xl font-black uppercase tracking-wide text-paper flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-blue-400"></span>
+              Historial de Partidos (Game Log)
+            </h2>
+            <span class="text-[0.7rem] font-bold uppercase tracking-wider text-paper/50">Planillas verificadas</span>
+          </div>
+
+          {partidos.length === 0 ? (
+            <div class="card-vigor p-8 text-center text-sm font-semibold text-paper/60">
+              Aún no hay planillas oficiales verificadas con la participación de este jugador.
+            </div>
+          ) : (
+            <div class="overflow-x-auto rounded-none border border-navy-700/80 bg-navy-900/90">
+              <table class="num w-full min-w-[560px] border-collapse text-center">
+                <thead>
+                  <tr class="bg-navy-950/80 border-b border-navy-700/80">
+                    <th scope="col" class="px-3 py-2.5 text-left text-[0.65rem] font-black uppercase tracking-wider text-paper/70">Fecha</th>
+                    <th scope="col" class="px-3 py-2.5 text-left text-[0.65rem] font-black uppercase tracking-wider text-paper/70">Rival</th>
+                    <th scope="col" class="px-2 py-2.5 text-center text-[0.65rem] font-black uppercase tracking-wider text-paper/70">Res</th>
+                    <th scope="col" class="px-2 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-paper/70">MIN</th>
+                    <th scope="col" class="px-3 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-orange-400">PTS</th>
+                    <th scope="col" class="px-2 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-paper/70">REB</th>
+                    <th scope="col" class="px-2 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-paper/70">AS</th>
+                    <th scope="col" class="px-2 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-paper/70">RO</th>
+                    <th scope="col" class="px-2 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-paper/70">TA</th>
+                    <th scope="col" class="px-2 py-2.5 text-right text-[0.65rem] font-black uppercase tracking-wider text-paper/70">FR</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-navy-800/80">
+                  {partidos.map((p: any) => {
+                    const esVictoria = p.resultado === 'W';
+                    const rivalClubObj = p.rival_slug
+                      ? { id: p.rival_equipo_id, nombre: p.rival_nombre, slug: p.rival_slug, escudo_url: null, color1: null, color2: null, gimnasio: null, activo: true }
+                      : undefined;
+                    return (
+                      <tr class="hover:bg-navy-800/60 transition-colors">
+                        <td class="px-3 py-2.5 text-left text-xs font-semibold text-paper/75 whitespace-nowrap">
+                          {p.fecha_hora ? fechaCorta(p.fecha_hora) : '—'}
+                        </td>
+                        <td class="px-3 py-2.5 text-left text-xs font-bold text-paper whitespace-nowrap">
+                          <a href={`/partidos/${p.partido_id}`} class="group flex items-center gap-2 no-underline text-paper hover:text-orange-400">
+                            <span class="text-[0.68rem] font-semibold text-paper/50">{p.es_local ? 'vs' : '@'}</span>
+                            {rivalClubObj && <Escudo club={rivalClubObj} tam="sm" />}
+                            <span class="group-hover:underline">{p.rival_nombre}</span>
+                          </a>
+                        </td>
+                        <td class="px-2 py-2.5 text-center whitespace-nowrap">
+                          <a href={`/partidos/${p.partido_id}`} class="no-underline">
+                            <span
+                              class={`inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-black uppercase ${
+                                esVictoria ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                              }`}
+                            >
+                              {p.resultado ?? '—'} {p.puntos_local}–{p.puntos_visitante}
+                            </span>
+                          </a>
+                        </td>
+                        <td class="px-2 py-2.5 text-right text-xs font-bold text-paper/60">{p.minutos ?? '—'}</td>
+                        <td class="px-3 py-2.5 text-right text-sm font-black text-orange-400">{p.puntos ?? 0}</td>
+                        <td class="px-2 py-2.5 text-right text-xs font-bold text-paper/80">{p.rebotes ?? 0}</td>
+                        <td class="px-2 py-2.5 text-right text-xs font-bold text-paper/80">{p.asistencias ?? 0}</td>
+                        <td class="px-2 py-2.5 text-right text-xs font-bold text-paper/80">{p.robos ?? 0}</td>
+                        <td class="px-2 py-2.5 text-right text-xs font-bold text-paper/80">{p.tapas ?? 0}</td>
+                        <td class="px-2 py-2.5 text-right text-xs font-bold text-paper/80">{p.faltas ?? 0}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    )
+  }
+</Base>

@@ -214,15 +214,28 @@ const descFicha = hayPartido
                         </thead>
                         <tbody>
                           {bloque.filas.map((s) => (
-                            <tr class="border-t border-navy-700">
-                              <td class="num px-2.5 py-2 text-paper-muted">{s.dorsal ?? '—'}</td>
-                              <td class="px-2.5 py-2 text-[0.9rem] font-bold">{s.nombre_completo}</td>
-                              <td class="num px-2.5 py-2 text-right font-black text-orange-500">{s.puntos}</td>
-                              <td class="num px-2.5 py-2 text-right">{s.rebotes ?? 0}</td>
-                              <td class="num px-2.5 py-2 text-right">{s.asistencias ?? 0}</td>
-                              <td class="num px-2.5 py-2 text-right">{s.robos ?? 0}</td>
-                              <td class="num px-2.5 py-2 text-right">{s.tapas ?? 0}</td>
-                              <td class="num px-2.5 py-2 text-right">{s.faltas}</td>
+                            <tr class="border-t border-navy-700/80 hover:bg-navy-700/60 transition-colors group">
+                              <td class="num px-2.5 py-2.5 text-paper-muted">{s.dorsal ?? '—'}</td>
+                              <td class="px-2.5 py-2.5 text-[0.9rem] font-bold">
+                                {s.jugador_id ? (
+                                  <a
+                                    href={`/jugadores/${s.jugador_id}`}
+                                    class="inline-flex items-center gap-1.5 text-paper no-underline transition-colors group-hover:text-orange-400 group-hover:underline"
+                                    title={`Ver perfil y estadísticas de ${s.nombre_completo}`}
+                                  >
+                                    <span>{s.nombre_completo}</span>
+                                    <span class="text-[0.65rem] text-orange-400/0 group-hover:text-orange-400 transition-all">&rarr;</span>
+                                  </a>
+                                ) : (
+                                  <span>{s.nombre_completo}</span>
+                                )}
+                              </td>
+                              <td class="num px-2.5 py-2.5 text-right font-black text-orange-500 glow-orange">{s.puntos}</td>
+                              <td class="num px-2.5 py-2.5 text-right">{s.rebotes ?? 0}</td>
+                              <td class="num px-2.5 py-2.5 text-right">{s.asistencias ?? 0}</td>
+                              <td class="num px-2.5 py-2.5 text-right">{s.robos ?? 0}</td>
+                              <td class="num px-2.5 py-2.5 text-right">{s.tapas ?? 0}</td>
+                              <td class="num px-2.5 py-2.5 text-right">{s.faltas}</td>
                             </tr>
                           ))}
                         </tbody>

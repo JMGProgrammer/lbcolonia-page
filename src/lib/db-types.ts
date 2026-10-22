@@ -127,6 +127,18 @@ isOneToOne: false
       foreignKeyName: "equipos_club_id_fkey"
       columns: ["club_id"]
 isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "equipos_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "equipos_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
       referencedRelation: "v_sanciones_activas"
       referencedColumns: ["club_id"]
     },{
@@ -174,6 +186,24 @@ isOneToOne: false
       referencedRelation: "jugadores"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_partidos_log"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["jugador_id"]
+    },{
       foreignKeyName: "fichas_org_id_fkey"
       columns: ["org_id"]
 isOneToOne: false
@@ -189,20 +219,26 @@ isOneToOne: false
       foreignKeyName: "fichas_torneo_id_fkey"
       columns: ["torneo_id"]
 isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "fichas_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
       referencedRelation: "v_tabla"
       referencedColumns: ["torneo_id"]
     }
                   ]
                 },"jugadores": {
                   Row: {
-                    "created_at": string,"fecha_nacimiento": string | null,"foto_url": string | null,"id": string,"nombre_completo": string,"notas": string | null,"org_id": string
+                    "altura_cm": number | null,"ciudad_origen": string | null,"created_at": string,"fecha_nacimiento": string | null,"foto_url": string | null,"id": string,"mano_habil": string | null,"nombre_completo": string,"notas": string | null,"org_id": string,"posicion": string | null,"slug": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"fecha_nacimiento"?: string | null,"foto_url"?: string | null,"id"?: string,"nombre_completo": string,"notas"?: string | null,"org_id": string
+                    "altura_cm"?: number | null,"ciudad_origen"?: string | null,"created_at"?: string,"fecha_nacimiento"?: string | null,"foto_url"?: string | null,"id"?: string,"mano_habil"?: string | null,"nombre_completo": string,"notas"?: string | null,"org_id": string,"posicion"?: string | null,"slug"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"fecha_nacimiento"?: string | null,"foto_url"?: string | null,"id"?: string,"nombre_completo"?: string,"notas"?: string | null,"org_id"?: string
+                    "altura_cm"?: number | null,"ciudad_origen"?: string | null,"created_at"?: string,"fecha_nacimiento"?: string | null,"foto_url"?: string | null,"id"?: string,"mano_habil"?: string | null,"nombre_completo"?: string,"notas"?: string | null,"org_id"?: string,"posicion"?: string | null,"slug"?: string | null
                   }
                   Relationships: [
                     {
@@ -251,6 +287,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clubes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "org_members_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "org_members_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["club_id"]
     },{
       foreignKeyName: "org_members_club_id_fkey"
       columns: ["club_id"]
@@ -369,6 +417,12 @@ isOneToOne: false
       foreignKeyName: "partidos_torneo_id_fkey"
       columns: ["torneo_id"]
 isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
       referencedRelation: "v_tabla"
       referencedColumns: ["torneo_id"]
     },{
@@ -393,14 +447,14 @@ isOneToOne: false
                   ]
                 },"planilla_stats": {
                   Row: {
-                    "asistencias": number | null,"created_at": string,"dorsal": number | null,"faltas": number,"ficha_id": string,"id": string,"minutos": number | null,"org_id": string,"planilla_id": string,"puntos": number,"rebotes": number | null,"robos": number | null,"tapas": number | null
+                    "asistencias": number | null,"created_at": string,"dorsal": number | null,"faltas": number,"ficha_id": string,"id": string,"minutos": number | null,"org_id": string,"planilla_id": string,"puntos": number,"rebotes": number | null,"robos": number | null,"t3_convertidos": number | null,"t3_intentados": number | null,"tapas": number | null,"tc_convertidos": number | null,"tc_intentados": number | null,"tl_convertidos": number | null,"tl_intentados": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "asistencias"?: number | null,"created_at"?: string,"dorsal"?: number | null,"faltas"?: number,"ficha_id": string,"id"?: string,"minutos"?: number | null,"org_id": string,"planilla_id": string,"puntos"?: number,"rebotes"?: number | null,"robos"?: number | null,"tapas"?: number | null
+                    "asistencias"?: number | null,"created_at"?: string,"dorsal"?: number | null,"faltas"?: number,"ficha_id": string,"id"?: string,"minutos"?: number | null,"org_id": string,"planilla_id": string,"puntos"?: number,"rebotes"?: number | null,"robos"?: number | null,"t3_convertidos"?: number | null,"t3_intentados"?: number | null,"tapas"?: number | null,"tc_convertidos"?: number | null,"tc_intentados"?: number | null,"tl_convertidos"?: number | null,"tl_intentados"?: number | null
                   }
                   Update: {
-                    "asistencias"?: number | null,"created_at"?: string,"dorsal"?: number | null,"faltas"?: number,"ficha_id"?: string,"id"?: string,"minutos"?: number | null,"org_id"?: string,"planilla_id"?: string,"puntos"?: number,"rebotes"?: number | null,"robos"?: number | null,"tapas"?: number | null
+                    "asistencias"?: number | null,"created_at"?: string,"dorsal"?: number | null,"faltas"?: number,"ficha_id"?: string,"id"?: string,"minutos"?: number | null,"org_id"?: string,"planilla_id"?: string,"puntos"?: number,"rebotes"?: number | null,"robos"?: number | null,"t3_convertidos"?: number | null,"t3_intentados"?: number | null,"tapas"?: number | null,"tc_convertidos"?: number | null,"tc_intentados"?: number | null,"tl_convertidos"?: number | null,"tl_intentados"?: number | null
                   }
                   Relationships: [
                     {
@@ -451,6 +505,18 @@ isOneToOne: false
       foreignKeyName: "planillas_disputada_por_club_fkey"
       columns: ["disputada_por_club"]
 isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "planillas_disputada_por_club_fkey"
+      columns: ["disputada_por_club"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "planillas_disputada_por_club_fkey"
+      columns: ["disputada_por_club"]
+isOneToOne: false
       referencedRelation: "v_sanciones_activas"
       referencedColumns: ["club_id"]
     },{
@@ -470,6 +536,12 @@ isOneToOne: true
       columns: ["partido_id"]
 isOneToOne: true
       referencedRelation: "v_detalle_publico"
+      referencedColumns: ["partido_id"]
+    },{
+      foreignKeyName: "planillas_partido_id_fkey"
+      columns: ["partido_id"]
+isOneToOne: true
+      referencedRelation: "v_jugador_partidos_log"
       referencedColumns: ["partido_id"]
     },{
       foreignKeyName: "planillas_verificada_por_fkey"
@@ -515,6 +587,18 @@ isOneToOne: false
       foreignKeyName: "sanciones_club_id_fkey"
       columns: ["club_id"]
 isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "sanciones_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "sanciones_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
       referencedRelation: "v_sanciones_activas"
       referencedColumns: ["club_id"]
     },{
@@ -523,6 +607,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "jugadores"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sanciones_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_partidos_log"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "sanciones_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "sanciones_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["jugador_id"]
     },{
       foreignKeyName: "sanciones_org_id_fkey"
       columns: ["org_id"]
@@ -591,6 +693,24 @@ isOneToOne: false
       referencedRelation: "jugadores"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_partidos_log"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["jugador_id"]
+    },{
       foreignKeyName: "partidos_org_id_fkey"
       columns: ["org_id"]
 isOneToOne: false
@@ -606,6 +726,12 @@ isOneToOne: false
       foreignKeyName: "partidos_torneo_id_fkey"
       columns: ["torneo_id"]
 isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
       referencedRelation: "v_tabla"
       referencedColumns: ["torneo_id"]
     },{
@@ -613,6 +739,144 @@ isOneToOne: false
       columns: ["ficha_id"]
 isOneToOne: false
       referencedRelation: "fichas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_jugador_partidos_log": {
+                  Row: {
+                    "asistencias": number | null,"dorsal": number | null,"equipo_id": string | null,"es_local": boolean | null,"faltas": number | null,"fecha_hora": string | null,"jugador_id": string | null,"jugador_slug": string | null,"mi_club_id": string | null,"mi_club_nombre": string | null,"mi_club_slug": string | null,"minutos": number | null,"nombre_completo": string | null,"org_id": string | null,"partido_estado": Database["public"]['Enums']["estado_partido"] | null,"partido_id": string | null,"puntos": number | null,"puntos_local": number | null,"puntos_visitante": number | null,"rebotes": number | null,"resultado": string | null,"rival_equipo_id": string | null,"rival_nombre": string | null,"rival_slug": string | null,"robos": number | null,"ronda": string | null,"sede": string | null,"t3_convertidos": number | null,"t3_intentados": number | null,"tapas": number | null,"tc_convertidos": number | null,"tc_intentados": number | null,"tl_convertidos": number | null,"tl_intentados": number | null,"torneo_id": string | null,"torneo_nombre": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "equipos_club_id_fkey"
+      columns: ["mi_club_id"]
+isOneToOne: false
+      referencedRelation: "clubes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "equipos_club_id_fkey"
+      columns: ["mi_club_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "equipos_club_id_fkey"
+      columns: ["mi_club_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "equipos_club_id_fkey"
+      columns: ["mi_club_id"]
+isOneToOne: false
+      referencedRelation: "v_sanciones_activas"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "equipos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "v_lideres"
+      referencedColumns: ["equipo_id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "v_tabla"
+      referencedColumns: ["equipo_id"]
+    },{
+      foreignKeyName: "partidos_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "torneos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "v_tabla"
+      referencedColumns: ["torneo_id"]
+    }
+                  ]
+                },"v_jugador_totales_temporada": {
+                  Row: {
+                    "apg": number | null,"asistencias_totales": number | null,"bpg": number | null,"club_id": string | null,"club_nombre": string | null,"club_slug": string | null,"faltas_totales": number | null,"fpg": number | null,"jugador_id": string | null,"max_asistencias": number | null,"max_puntos": number | null,"max_rebotes": number | null,"org_id": string | null,"pj": number | null,"ppg": number | null,"puntos_totales": number | null,"rebotes_totales": number | null,"robos_totales": number | null,"rpg": number | null,"spg": number | null,"tapas_totales": number | null,"torneo_id": string | null,"torneo_nombre": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "jugadores_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_jugadores_publico": {
+                  Row: {
+                    "altura_cm": number | null,"categoria_nombre": string | null,"ciudad_origen": string | null,"club_id": string | null,"club_nombre": string | null,"club_slug": string | null,"dorsal": number | null,"equipo_id": string | null,"fecha_nacimiento": string | null,"foto_url": string | null,"jugador_id": string | null,"mano_habil": string | null,"nombre_completo": string | null,"org_id": string | null,"posicion": string | null,"slug": string | null,"torneo_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "equipos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "v_lideres"
+      referencedColumns: ["equipo_id"]
+    },{
+      foreignKeyName: "fichas_equipo_id_fkey"
+      columns: ["equipo_id"]
+isOneToOne: false
+      referencedRelation: "v_tabla"
+      referencedColumns: ["equipo_id"]
+    },{
+      foreignKeyName: "fichas_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "torneos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fichas_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "fichas_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "v_tabla"
+      referencedColumns: ["torneo_id"]
+    },{
+      foreignKeyName: "jugadores_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
       referencedColumns: ["id"]
     }
                   ]
@@ -629,6 +893,24 @@ isOneToOne: false
       referencedRelation: "jugadores"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_partidos_log"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "fichas_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["jugador_id"]
+    },{
       foreignKeyName: "partidos_org_id_fkey"
       columns: ["org_id"]
 isOneToOne: false
@@ -640,6 +922,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "torneos"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partidos_torneo_id_fkey"
+      columns: ["torneo_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["torneo_id"]
     },{
       foreignKeyName: "partidos_torneo_id_fkey"
       columns: ["torneo_id"]
@@ -660,6 +948,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "jugadores"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sanciones_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_partidos_log"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "sanciones_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugador_totales_temporada"
+      referencedColumns: ["jugador_id"]
+    },{
+      foreignKeyName: "sanciones_jugador_id_fkey"
+      columns: ["jugador_id"]
+isOneToOne: false
+      referencedRelation: "v_jugadores_publico"
+      referencedColumns: ["jugador_id"]
     },{
       foreignKeyName: "sanciones_org_id_fkey"
       columns: ["org_id"]

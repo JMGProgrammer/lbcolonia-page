@@ -17,3 +17,7 @@ dist/
 
 # datos locales
 supabase/.temp
+
+# medios pesados locales
+*.mp4
+assets/videos/

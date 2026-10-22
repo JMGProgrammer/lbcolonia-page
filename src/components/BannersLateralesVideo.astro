@@ -1,0 +1,103 @@
+---
+// Banners laterales de video fijos en los costados de la pantalla.
+// Arrancan en 1.0s (para saltar el corte inicial defectuoso) y ciclan en loop smooth.
+// Visibles en pantallas amplias (xl/2xl) sin obstaculizar el contenido central.
+interface Props {
+  src?: string;
+}
+
+const { src = '/videos/banner-video-lbc.mp4' } = Astro.props;
+const bannerId = `banner-laterales-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<aside id={bannerId} class="pointer-events-none fixed inset-y-0 inset-x-0 z-0 hidden xl:block overflow-hidden" aria-hidden="true">
+  <!-- Banner Lateral Izquierdo -->
+  <div class="banner-lateral-col absolute left-0 top-0 bottom-0 w-24 2xl:w-36 overflow-hidden border-r border-navy-800/60 shadow-2xl">
+    <video
+      class="banner-video h-full w-full object-cover filter brightness-[0.85] contrast-105"
+      src={src}
+      muted
+      playsinline
+      autoplay
+      preload="auto"
+    ></video>
+    <!-- Filtros de integración: degradado hacia el contenido central para una fusión cinematográfica suave -->
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/30 via-navy-950/50 to-navy-950"></div>
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-950 via-transparent to-navy-950"></div>
+    <!-- Ribete dorado deportivo sutil -->
+    <div class="absolute right-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-gold-400/40 to-transparent"></div>
+  </div>
+
+  <!-- Banner Lateral Derecho -->
+  <div class="banner-lateral-col absolute right-0 top-0 bottom-0 w-24 2xl:w-36 overflow-hidden border-l border-navy-800/60 shadow-2xl">
+    <video
+      class="banner-video h-full w-full object-cover filter brightness-[0.85] contrast-105"
+      src={src}
+      muted
+      playsinline
+      autoplay
+      preload="auto"
+    ></video>
+    <!-- Filtros de integración: degradado hacia el contenido central -->
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-l from-navy-950/30 via-navy-950/50 to-navy-950"></div>
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-950 via-transparent to-navy-950"></div>
+    <!-- Ribete naranja deportivo sutil -->
+    <div class="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-orange-500/40 to-transparent"></div>
+  </div>
+</aside>
+
+<script is:inline define:vars={{ bannerId }}>
+  (function () {
+    const root = document.getElementById(bannerId);
+    if (!root) return;
+
+    const videos = root.querySelectorAll('.banner-video');
+    const START_TIME = 1.0; // Arranca 1 segundo después para omitir el corte inicial
+
+    videos.forEach((video) => {
+      // Al cargar metadatos, posicionar en 1.0s
+      video.addEventListener('loadedmetadata', () => {
+        try {
+          video.currentTime = START_TIME;
+        } catch (_) {}
+      });
+
+      // Loop suave: cuando se acerca al final, reiniciar suavemente a START_TIME
+      video.addEventListener('timeupdate', () => {
+        if (video.duration && video.currentTime >= video.duration - 0.25) {
+          video.currentTime = START_TIME;
+          video.play().catch(() => {});
+        }
+      });
+
+      // Si por alguna razón salta al evento ended
+      video.addEventListener('ended', () => {
+        video.currentTime = START_TIME;
+        video.play().catch(() => {});
+      });
+
+      // Si el video se reinicia al inicio (0s), corregir a START_TIME
+      video.addEventListener('seeking', () => {
+        if (video.currentTime < START_TIME) {
+          video.currentTime = START_TIME;
+        }
+      });
+
+      // Intentar reproducir si el navegador lo pausó por autoplay policy
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Si falló autoplay, reintentar al primer scroll o interacción
+          const onUserGesture = () => {
+            video.currentTime = START_TIME;
+            video.play();
+            window.removeEventListener('scroll', onUserGesture);
+            window.removeEventListener('click', onUserGesture);
+          };
+          window.addEventListener('scroll', onUserGesture, { once: true });
+          window.addEventListener('click', onUserGesture, { once: true });
+        });
+      }
+    });
+  })();
+</script>

@@ -3,6 +3,7 @@
 // Cada página aporta título, descripción y (opcional) JSON-LD extra.
 import TopBar from '../components/TopBar.astro';
 import Footer from '../components/Footer.astro';
+import BannersLateralesVideo from '../components/BannersLateralesVideo.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -80,8 +81,9 @@ const ldFinal = [ligaLd, ...jsonLd];
         </p>
       )
     }
+    <BannersLateralesVideo />
     <TopBar />
-    <main id="contenido" class="mx-auto w-full max-w-[1200px] flex-1 px-4">
+    <main id="contenido" class="relative z-10 mx-auto w-full max-w-[1200px] flex-1 px-4">
       <slot />
     </main>
     <Footer />

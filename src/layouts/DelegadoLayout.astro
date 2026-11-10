@@ -41,6 +41,37 @@ const tituloFinal = `${title} · Panel LBC`;
           </a>
         </div>
 
+        <!-- Navegación desktop: la cara delegado no debe depender de la cinta móvil -->
+        <nav class="hidden items-center gap-1 rounded-lg border border-navy-700 bg-navy-950/40 p-1 lg:flex" aria-label="Secciones del delegado">
+          <a
+            href="/admin/delegado"
+            class:list={[
+              'rounded-md px-3 py-2 text-xs font-bold transition-colors',
+              seccionActiva === 'inicio' ? 'bg-orange-500 text-ink' : 'text-paper-muted hover:bg-navy-800 hover:text-paper',
+            ]}
+          >
+            Mis partidos
+          </a>
+          <a
+            href="/admin/delegado/club"
+            class:list={[
+              'rounded-md px-3 py-2 text-xs font-bold transition-colors',
+              seccionActiva === 'club' ? 'bg-orange-500 text-ink' : 'text-paper-muted hover:bg-navy-800 hover:text-paper',
+            ]}
+          >
+            Mi club
+          </a>
+          <a
+            href="/admin/delegado/sanciones"
+            class:list={[
+              'rounded-md px-3 py-2 text-xs font-bold transition-colors',
+              seccionActiva === 'sanciones' ? 'bg-orange-500 text-ink' : 'text-paper-muted hover:bg-navy-800 hover:text-paper',
+            ]}
+          >
+            Mis sanciones
+          </a>
+        </nav>
+
         <div class="flex items-center gap-2">
           <button
             id="btn-aviso-sitio-publico"

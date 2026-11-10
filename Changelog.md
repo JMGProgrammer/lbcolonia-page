@@ -15,6 +15,9 @@ Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v
 ### Verificación
 - Check 0 errores, build verde, smoke HTTP 200, queries reales con cuenta liga, pruebas transaccionales de auditoría/resolución y negativas RLS en verde.
 
+### Changed
+- Inicio del delegado rediseñado como tablero operativo: acciones urgentes, estados en manos de la liga, agenda expandible e historial separados; navegación desktop visible para Mis partidos, Mi club y Mis sanciones.
+
 ## 2026-10-22 · IT5 sesión 1: Cara delegado (sin tag)
 
 **Qué puede hacer el delegado de club**: entrar al panel con su cuenta, ver solo los partidos de su club, cargar la planilla del partido en 3 bloques con la foto del papel firmado y disputar si es visitante.

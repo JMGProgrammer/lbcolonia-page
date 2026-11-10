@@ -180,6 +180,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - **Acciones de liga**: guardar correcciones, devolver una disputa al delegado con nota, anular con confirmación + nota, verificar (exige foto; si estaba disputada exige resolución) y publicar. `liga_ayudante` puede corregir/verificar; solo `liga_admin` ve y ejecuta la publicación final. Publicar dispara `/api/revalidate`.
 - **Migración `0008_verificacion_planillas_audit.sql` aplicada**: campos `resolucion_disputa`, `resuelta_por`, `resuelta_at`; guard de nota para anulación; auditoría de cambios de estado/resolución y de cada INSERT/UPDATE/DELETE en `planilla_stats`.
 - **Verificación**: `astro check` 0 errores; build Vercel verde; consultas reales de inbox (4 planillas) y detalle (6 líneas) con cuenta liga; prueba transaccional con rollback de auditoría de corrección y resolución de disputa en verde; negativas RLS en verde; smoke HTTP de `/admin`, `/admin/planillas` y detalle → 200. Barrido visual pendiente: no hay Chrome del sistema ni harness en este entorno.
+- **Rediseño por devolución de Juan**: el inicio del delegado dejó de ser una lista compacta. Ahora prioriza “Requiere tu atención”, separa “En seguimiento”, “Agenda del club” (3 visibles + expansión) e historial colapsado, con contexto explícito de quién tiene el próximo paso. `DelegadoLayout` incorpora navegación desktop visible (Mis partidos / Mi club / Mis sanciones); la cinta inferior sigue en móvil.
 
 ## IT6 — Complejidad del torneo (2-3 sesiones)
 

@@ -1,46 +1,100 @@
 ---
-// Cara delegado · Mis partidos (/admin/delegado)
-// Docs/05 §1B: solo ve los partidos de su club (RLS acompaña, la UI filtra).
+// Cara delegado · Tablero operativo (/admin/delegado)
+// La prioridad no es mostrar todo el fixture compacto, sino responder de un
+// vistazo: qué tengo que hacer, qué está esperando a la liga y qué viene luego.
 import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
 ---
 
 <DelegadoLayout title="Mis partidos" seccionActiva="inicio">
-  <div class="space-y-6">
-    <!-- Encabezado -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">
-            Mi club
-          </span>
-          <h1 class="text-xl font-black uppercase tracking-wider text-paper" id="titulo-club">
-            Mis partidos
-          </h1>
-        </div>
-        <p class="mt-1 text-xs text-paper-muted">
-          Partidos de su club en todas las competencias. Cuando le toque ser local, cargue la planilla con la foto del papel.
+  <div class="space-y-8">
+    <!-- Bienvenida y lectura operativa -->
+    <header class="relative overflow-hidden rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-xl sm:p-8">
+      <div class="absolute inset-y-0 right-0 w-1.5 bg-orange-500"></div>
+      <div class="max-w-3xl">
+        <p id="saludo-club" class="text-xs font-bold uppercase tracking-wider text-gold-400">Panel del club</p>
+        <h1 class="mt-2 text-2xl font-black uppercase tracking-tight text-paper sm:text-3xl">Qué necesita atención</h1>
+        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-paper-muted">
+          Primero aparecen las planillas que requieren una acción. La agenda y los resultados quedan separados para encontrarlos sin revisar partido por partido.
         </p>
       </div>
-      <div class="flex items-center gap-3 text-xs text-paper-muted">
-        <span class="inline-flex items-center gap-1.5">
-          <span id="resumen-pendientes" class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-          <span id="resumen-texto">Sin novedad</span>
-        </span>
+    </header>
+
+    <!-- Resumen legible, no métricas decorativas -->
+    <section aria-label="Resumen del club" class="grid gap-px overflow-hidden rounded-[14px] border border-navy-700 bg-navy-700 sm:grid-cols-3">
+      <div class="bg-navy-900 p-5">
+        <p class="text-xs font-bold text-paper-muted">Requieren una acción</p>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <strong id="cantidad-acciones" class="num text-4xl font-black text-orange-400">—</strong>
+          <span class="mb-1 text-xs text-paper-muted">cargar o revisar</span>
+        </div>
       </div>
+      <div class="bg-navy-900 p-5">
+        <p class="text-xs font-bold text-paper-muted">En manos de la liga</p>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <strong id="cantidad-seguimiento" class="num text-4xl font-black text-gold-400">—</strong>
+          <span class="mb-1 text-xs text-paper-muted">sin acción ahora</span>
+        </div>
+      </div>
+      <div class="bg-navy-900 p-5">
+        <p class="text-xs font-bold text-paper-muted">Agenda abierta</p>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <strong id="cantidad-agenda" class="num text-4xl font-black text-paper">—</strong>
+          <span class="mb-1 text-xs text-paper-muted">partidos por venir</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading con forma similar al contenido final -->
+    <div id="cargando" class="space-y-3" aria-label="Cargando partidos">
+      <div class="h-32 animate-pulse rounded-[14px] border border-navy-700 bg-navy-900"></div>
+      <div class="h-24 animate-pulse rounded-[14px] border border-navy-700 bg-navy-900"></div>
     </div>
 
-    <!-- Cargando -->
-    <div id="cargando" class="flex justify-center p-12">
-      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
-    </div>
-
-    <!-- Vacío -->
     <div id="lista-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
-      <p class="text-sm text-paper-muted">No se encontraron partidos de su club.</p>
+      <h2 class="text-base font-bold text-paper">No hay partidos asignados</h2>
+      <p class="mt-2 text-sm text-paper-muted">Cuando la liga cargue el fixture de su club, aparecerá en este tablero.</p>
     </div>
 
-    <!-- Lista de partidos -->
-    <div id="contenedor-partidos" class="hidden space-y-3"></div>
+    <div id="tablero" class="hidden space-y-10" data-equipos="">
+      <!-- Acciones: las cards más grandes y explícitas del tablero -->
+      <section id="seccion-acciones" class="space-y-4">
+        <div>
+          <h2 class="text-lg font-black uppercase tracking-wider text-paper">Requiere tu atención</h2>
+          <p class="mt-1 text-sm text-paper-muted">Estas tareas se pueden resolver ahora.</p>
+        </div>
+        <div id="lista-acciones" class="grid gap-4 lg:grid-cols-2"></div>
+      </section>
+
+      <!-- Seguimiento: estados que conviene conocer, sin presentar CTA falsa -->
+      <section id="seccion-seguimiento" class="space-y-4">
+        <div>
+          <h2 class="text-lg font-black uppercase tracking-wider text-paper">En seguimiento</h2>
+          <p class="mt-1 text-sm text-paper-muted">La liga o el otro club tienen el próximo paso.</p>
+        </div>
+        <div id="lista-seguimiento" class="grid gap-4 md:grid-cols-2"></div>
+      </section>
+
+      <!-- Agenda: secundaria, no compite con las tareas -->
+      <section id="seccion-agenda" class="space-y-4">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-lg font-black uppercase tracking-wider text-paper">Agenda del club</h2>
+            <p class="mt-1 text-sm text-paper-muted">Próximos encuentros y planillas todavía no iniciadas.</p>
+          </div>
+          <button id="btn-ver-agenda" type="button" class="hidden self-start rounded-lg border border-navy-700 bg-navy-800 px-3 py-2 text-xs font-bold text-paper hover:bg-navy-700 sm:self-auto">Ver agenda completa</button>
+        </div>
+        <div id="lista-agenda" class="space-y-3"></div>
+      </section>
+
+      <!-- Historial colapsado: disponible sin dominar la portada -->
+      <details id="seccion-historial" class="group rounded-[14px] border border-navy-700 bg-navy-900">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-bold text-paper">
+          <span>Resultados y planillas cerradas <span id="cantidad-historial" class="ml-2 text-paper-muted"></span></span>
+          <span class="text-orange-400 transition-transform group-open:rotate-180">⌄</span>
+        </summary>
+        <div id="lista-historial" class="space-y-2 border-t border-navy-700 p-4"></div>
+      </details>
+    </div>
   </div>
 </DelegadoLayout>
 
@@ -48,6 +102,8 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
   import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
 
   let clubId: string | null = null;
+  let agendaCompleta = false;
+  let agendaMemoria: PartidoClasificado[] = [];
 
   interface EquipoClub { id: string }
   interface ClubCorto { nombre: string; escudo_url: string | null }
@@ -71,66 +127,260 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
     partido_id: string;
     estado: 'borrador' | 'disputada' | 'verificada' | 'anulada';
     foto_url: string | null;
-    cargada_por: string | null;
-    verificada_at: string | null;
     motivo_disputa: string | null;
-    disputada_por_club: string | null;
+    resolucion_disputa: string | null;
   }
+  interface PartidoClasificado {
+    partido: PartidoCorto;
+    planilla?: PlanillaCorta;
+    localMio: boolean;
+    tipo: 'accion' | 'seguimiento' | 'agenda' | 'historial';
+    tituloEstado: string;
+    descripcion: string;
+    accion?: { href: string; etiqueta: string; tono: 'primario' | 'secundario' };
+  }
+
+  const esc = (valor: unknown): string => String(valor ?? '')
+    .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 
   function formatearFecha(iso: string): string {
     const f = new Date(iso);
-    return f.toLocaleDateString('es-UY', { weekday: 'short', day: 'numeric', month: 'short' }) +
+    return f.toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long' }) +
       ' · ' + f.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
   }
 
-  function nombreClub(p: PartidoCorto, cual: 'local' | 'visitante'): string {
-    return p[cual]?.clubes?.nombre ?? p[cual]?.nombre_mostrar ?? 'Equipo';
+  function fechaBloque(iso: string): { dia: string; mes: string } {
+    const f = new Date(iso);
+    return {
+      dia: f.toLocaleDateString('es-UY', { day: '2-digit' }),
+      mes: f.toLocaleDateString('es-UY', { month: 'short' }).replace('.', ''),
+    };
   }
 
-  function escudo(p: PartidoCorto, cual: 'local' | 'visitante'): string | null {
-    return p[cual]?.clubes?.escudo_url ?? null;
+  const nombreClub = (p: PartidoCorto, lado: 'local' | 'visitante'): string =>
+    p[lado]?.clubes?.nombre ?? p[lado]?.nombre_mostrar ?? 'Equipo';
+
+  function escudo(url: string | null, nombre: string): string {
+    if (!url) return `<span class="flex h-11 w-11 items-center justify-center rounded-full bg-navy-800 text-xs font-black uppercase text-gold-400">${esc(nombre.slice(0, 2))}</span>`;
+    return `<img src="${esc(url)}" alt="" class="h-11 w-11 rounded-full object-cover" loading="lazy" />`;
   }
 
-  function cadenaEscudo(url: string | null, nombre: string): string {
-    if (!url) return `<span class="flex h-8 w-8 items-center justify-center rounded-full bg-navy-800 text-[0.65rem] font-black uppercase text-gold-400">${nombre.slice(0, 2)}</span>`;
-    return `<img src="${url}" alt="${nombre}" class="h-8 w-8 rounded-full object-cover" loading="lazy" />`;
+  function clasificar(p: PartidoCorto, planilla: PlanillaCorta | undefined, idsEquipo: string[]): PartidoClasificado {
+    const localMio = idsEquipo.includes(p.local?.id ?? '');
+    const visitaMio = idsEquipo.includes(p.visitante?.id ?? '');
+    const base = { partido: p, planilla, localMio };
+
+    if (p.publicado || planilla?.estado === 'verificada' || planilla?.estado === 'anulada') {
+      const anulada = planilla?.estado === 'anulada';
+      return {
+        ...base, tipo: 'historial',
+        tituloEstado: anulada ? 'Planilla anulada' : p.publicado ? 'Resultado oficial' : 'Planilla verificada',
+        descripcion: anulada ? (planilla?.resolucion_disputa ?? 'La liga anuló esta carga.') : 'La carga ya fue revisada por la liga.',
+        accion: planilla ? { href: `/admin/delegado/partidos/${p.id}/planilla`, etiqueta: 'Ver planilla', tono: 'secundario' } : undefined,
+      };
+    }
+
+    if (planilla?.estado === 'disputada') {
+      return {
+        ...base, tipo: 'seguimiento', tituloEstado: 'Disputa en revisión',
+        descripcion: localMio ? 'El visitante presentó una observación. La liga tiene el próximo paso.' : 'Tu disputa fue enviada. La liga está revisando el papel.',
+        accion: { href: `/admin/delegado/partidos/${p.id}/planilla`, etiqueta: 'Ver lo enviado', tono: 'secundario' },
+      };
+    }
+
+    if (localMio && (!planilla || planilla.estado === 'borrador')) {
+      const devuelta = Boolean(planilla?.resolucion_disputa);
+      return {
+        ...base, tipo: 'accion',
+        tituloEstado: devuelta ? 'La liga pidió una corrección' : planilla ? 'Planilla sin terminar' : 'Cargar planilla del partido',
+        descripcion: devuelta
+          ? planilla!.resolucion_disputa!
+          : planilla?.foto_url
+            ? 'La foto ya está cargada. Revise los datos y complete el borrador.'
+            : 'Como club local, cargue los jugadores y la foto del papel firmado.',
+        accion: { href: `/admin/delegado/partidos/${p.id}/planilla`, etiqueta: planilla ? 'Continuar planilla' : 'Cargar planilla', tono: 'primario' },
+      };
+    }
+
+    if (visitaMio && planilla?.estado === 'borrador') {
+      return {
+        ...base, tipo: 'accion', tituloEstado: 'Revisar carga del local',
+        descripcion: 'El club local cargó la planilla. Revise los datos y dispute solo si encuentra una diferencia.',
+        accion: { href: `/admin/delegado/partidos/${p.id}/disputar`, etiqueta: 'Revisar planilla', tono: 'primario' },
+      };
+    }
+
+    return {
+      ...base, tipo: 'agenda',
+      tituloEstado: localMio ? 'Serás local' : 'Serás visitante',
+      descripcion: visitaMio ? 'El club local cargará la planilla después del partido.' : 'La carga se habilita para tu club al finalizar.',
+    };
   }
 
-  window.addEventListener('delegado-auth-ok', async (e: any) => {
-    const estado: EstadoAdmin = e.detail;
-    clubId = estado.clubId;
-    if (estado.clubNombre) document.getElementById('titulo-club')!.textContent = `Mis partidos · ${estado.clubNombre}`;
-    await cargarPartidos();
-  });
+  function equiposHTML(p: PartidoCorto): string {
+    const local = nombreClub(p, 'local');
+    const visita = nombreClub(p, 'visitante');
+    return `
+      <div class="flex min-w-0 items-center gap-3">
+        ${escudo(p.local?.clubes?.escudo_url ?? null, local)}
+        <div class="min-w-0">
+          <p class="truncate text-sm font-black text-paper">${esc(local)}</p>
+          <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Local</p>
+        </div>
+      </div>
+      <span class="text-xs font-black text-orange-400">VS</span>
+      <div class="flex min-w-0 items-center gap-3 text-right sm:flex-row-reverse">
+        ${escudo(p.visitante?.clubes?.escudo_url ?? null, visita)}
+        <div class="min-w-0">
+          <p class="truncate text-sm font-black text-paper">${esc(visita)}</p>
+          <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Visitante</p>
+        </div>
+      </div>`;
+  }
+
+  function tarjetaAccion(item: PartidoClasificado): string {
+    const p = item.partido;
+    const f = fechaBloque(p.fecha_hora);
+    const accion = item.accion!;
+    return `
+      <article class="relative overflow-hidden rounded-[14px] border-2 border-orange-500/60 bg-navy-900 p-5 shadow-xl">
+        <div class="absolute inset-y-0 left-0 w-1 bg-orange-500"></div>
+        <div class="flex items-start justify-between gap-4 pl-2">
+          <div>
+            <p class="text-xs font-black uppercase tracking-wider text-orange-400">${esc(item.tituloEstado)}</p>
+            <p class="mt-2 text-sm leading-relaxed text-paper-muted">${esc(item.descripcion)}</p>
+          </div>
+          <div class="shrink-0 rounded-lg bg-navy-950 px-3 py-2 text-center">
+            <strong class="num block text-2xl leading-none text-paper">${esc(f.dia)}</strong>
+            <span class="text-[0.65rem] font-bold uppercase text-paper-muted">${esc(f.mes)}</span>
+          </div>
+        </div>
+        <div class="mt-5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-y border-navy-700 py-4">${equiposHTML(p)}</div>
+        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0 text-xs text-paper-muted">
+            <p class="font-bold text-paper">${esc(p.torneos?.nombre ?? 'Torneo')} · Fecha ${esc(p.ronda)}</p>
+            <p class="mt-0.5 truncate">${esc(formatearFecha(p.fecha_hora))} · ${esc(p.sede ?? 'Sede a confirmar')}</p>
+          </div>
+          <a href="${esc(accion.href)}" class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg bg-orange-500 px-5 py-3 text-sm font-black text-ink hover:bg-orange-700 active:scale-[0.98]">${esc(accion.etiqueta)}</a>
+        </div>
+      </article>`;
+  }
+
+  function tarjetaSeguimiento(item: PartidoClasificado): string {
+    const p = item.partido;
+    return `
+      <article class="rounded-[14px] border border-gold-400/35 bg-navy-900 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-black uppercase tracking-wider text-gold-400">${esc(item.tituloEstado)}</p>
+            <h3 class="mt-2 text-base font-black text-paper">${esc(nombreClub(p, 'local'))} vs ${esc(nombreClub(p, 'visitante'))}</h3>
+          </div>
+          <span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-gold-400"></span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-paper-muted">${esc(item.descripcion)}</p>
+        <div class="mt-4 flex items-center justify-between gap-3 border-t border-navy-700 pt-4">
+          <span class="text-xs text-paper-muted">Fecha ${esc(p.ronda)} · ${esc(p.torneos?.nombre)}</span>
+          ${item.accion ? `<a href="${esc(item.accion.href)}" class="text-xs font-bold text-gold-400 hover:text-paper">${esc(item.accion.etiqueta)} →</a>` : ''}
+        </div>
+      </article>`;
+  }
+
+  function filaAgenda(item: PartidoClasificado): string {
+    const p = item.partido;
+    const f = fechaBloque(p.fecha_hora);
+    return `
+      <article class="grid gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-4 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:items-center">
+        <div class="flex items-baseline gap-2 sm:block sm:text-center">
+          <strong class="num text-2xl text-paper">${esc(f.dia)}</strong>
+          <span class="text-xs font-bold uppercase text-paper-muted">${esc(f.mes)}</span>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-black text-paper">${esc(nombreClub(p, 'local'))} <span class="text-orange-400">vs</span> ${esc(nombreClub(p, 'visitante'))}</p>
+          <p class="mt-1 text-xs text-paper-muted">${esc(formatearFecha(p.fecha_hora))} · ${esc(p.sede ?? 'Sede a confirmar')}</p>
+          <p class="mt-1 text-xs font-semibold text-gold-400">${esc(item.tituloEstado)} · ${esc(item.descripcion)}</p>
+        </div>
+        <span class="rounded border border-navy-700 bg-navy-800 px-2.5 py-1 text-center text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Fecha ${esc(p.ronda)}</span>
+      </article>`;
+  }
+
+  function filaHistorial(item: PartidoClasificado): string {
+    const p = item.partido;
+    const marcador = p.puntos_local !== null ? `${p.puntos_local} - ${p.puntos_visitante}` : '—';
+    return `
+      <div class="flex flex-col gap-2 rounded-lg bg-navy-950/50 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+          <p class="truncate text-sm font-bold text-paper">${esc(nombreClub(p, 'local'))} vs ${esc(nombreClub(p, 'visitante'))}</p>
+          <p class="text-xs text-paper-muted">${esc(item.tituloEstado)} · Fecha ${esc(p.ronda)}</p>
+        </div>
+        <div class="flex items-center justify-between gap-4 sm:justify-end">
+          <strong class="num text-lg text-paper">${esc(marcador)}</strong>
+          ${item.accion ? `<a href="${esc(item.accion.href)}" class="text-xs font-bold text-orange-400">Ver</a>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function mostrarSeccion(id: string, cantidad: number) {
+    document.getElementById(id)?.classList.toggle('hidden', cantidad === 0);
+  }
+
+  function renderizar(partidos: PartidoCorto[], planillas: PlanillaCorta[]) {
+    const tablero = document.getElementById('tablero');
+    if (!tablero) return;
+    const idsEquipo = (tablero.dataset.equipos ?? '').split(',').filter(Boolean);
+    const clasificados = partidos.map((p) => clasificar(p, planillas.find((pl) => pl.partido_id === p.id), idsEquipo));
+    const acciones = clasificados.filter((i) => i.tipo === 'accion');
+    const seguimiento = clasificados.filter((i) => i.tipo === 'seguimiento');
+    const agenda = clasificados.filter((i) => i.tipo === 'agenda');
+    const historial = clasificados.filter((i) => i.tipo === 'historial').reverse();
+    agendaMemoria = agenda;
+
+    $('cantidad-acciones', acciones.length);
+    $('cantidad-seguimiento', seguimiento.length);
+    $('cantidad-agenda', agenda.length);
+    const cantidadHistorial = document.getElementById('cantidad-historial');
+    if (cantidadHistorial) cantidadHistorial.textContent = `(${historial.length})`;
+
+    document.getElementById('lista-acciones')!.innerHTML = acciones.map(tarjetaAccion).join('');
+    document.getElementById('lista-seguimiento')!.innerHTML = seguimiento.map(tarjetaSeguimiento).join('');
+    document.getElementById('lista-historial')!.innerHTML = historial.map(filaHistorial).join('');
+    mostrarSeccion('seccion-acciones', acciones.length);
+    mostrarSeccion('seccion-seguimiento', seguimiento.length);
+    mostrarSeccion('seccion-agenda', agenda.length);
+    mostrarSeccion('seccion-historial', historial.length);
+    renderAgenda();
+  }
+
+  function $(id: string, valor: number) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(valor);
+  }
+
+  function renderAgenda() {
+    const lista = document.getElementById('lista-agenda');
+    const boton = document.getElementById('btn-ver-agenda');
+    if (!lista) return;
+    const visibles = agendaCompleta ? agendaMemoria : agendaMemoria.slice(0, 3);
+    lista.innerHTML = visibles.map(filaAgenda).join('');
+    if (boton) {
+      boton.classList.toggle('hidden', agendaMemoria.length <= 3);
+      boton.textContent = agendaCompleta ? 'Mostrar menos' : `Ver los ${agendaMemoria.length} partidos`;
+    }
+  }
 
   async function cargarPartidos() {
-    const cargando = document.getElementById('cargando');
-    const contenedor = document.getElementById('contenedor-partidos');
-    const vacio = document.getElementById('lista-vacia');
-    cargando?.classList.remove('hidden');
-    contenedor?.classList.add('hidden');
-    vacio?.classList.add('hidden');
+    const tablero = document.getElementById('tablero');
+    if (!clubId || !tablero) return;
 
-    if (!clubId) {
-      cargando?.classList.add('hidden');
-      vacio?.classList.remove('hidden');
-      return;
-    }
-
-    const { data: equipos } = await supabaseBrowser
-      .from('equipos')
-      .select('id')
-      .eq('club_id', clubId);
-
+    const { data: equipos } = await supabaseBrowser.from('equipos').select('id').eq('club_id', clubId);
     const ids = (equipos ?? []).map((e: EquipoClub) => e.id);
     if (ids.length === 0) {
-      cargando?.classList.add('hidden');
-      vacio?.classList.remove('hidden');
+      document.getElementById('cargando')?.classList.add('hidden');
+      document.getElementById('lista-vacia')?.classList.remove('hidden');
       return;
     }
 
-    const listaIds = ids.join(',');
-    if (contenedor) contenedor.dataset.equipos = listaIds;
+    tablero.dataset.equipos = ids.join(',');
     const { data: partidos, error } = await supabaseBrowser
       .from('partidos')
       .select(`
@@ -139,107 +389,34 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
         visitante:equipo_visitante_id(id, nombre_mostrar, clubes:club_id(nombre, escudo_url)),
         torneos(id, nombre, temporada)
       `)
-      .or(`equipo_local_id.in.(${listaIds}),equipo_visitante_id.in.(${listaIds})`)
+      .or(`equipo_local_id.in.(${ids.join(',')}),equipo_visitante_id.in.(${ids.join(',')})`)
       .order('fecha_hora', { ascending: true });
 
     if (error || !partidos || partidos.length === 0) {
-      cargando?.classList.add('hidden');
-      vacio?.classList.remove('hidden');
+      document.getElementById('cargando')?.classList.add('hidden');
+      document.getElementById('lista-vacia')?.classList.remove('hidden');
       return;
     }
 
-    const partidoIds = partidos.map((p: PartidoCorto) => p.id);
     const { data: planillas } = await supabaseBrowser
       .from('planillas')
-      .select('id, partido_id, estado, foto_url, cargada_por, verificada_at, motivo_disputa, disputada_por_club')
-      .in('partido_id', partidoIds);
+      .select('id, partido_id, estado, foto_url, motivo_disputa, resolucion_disputa')
+      .in('partido_id', partidos.map((p: PartidoCorto) => p.id));
 
-    cargando?.classList.add('hidden');
-    contenedor?.classList.remove('hidden');
+    document.getElementById('cargando')?.classList.add('hidden');
+    tablero.classList.remove('hidden');
     renderizar(partidos as PartidoCorto[], (planillas ?? []) as PlanillaCorta[]);
   }
 
-  function renderizar(partidos: PartidoCorto[], planillas: PlanillaCorta[]) {
-    const contenedor = document.getElementById('contenedor-partidos');
-    if (!contenedor) return;
+  document.getElementById('btn-ver-agenda')?.addEventListener('click', () => {
+    agendaCompleta = !agendaCompleta;
+    renderAgenda();
+  });
 
-    let pendientes = 0;
-
-    // La pertenencia al club la dan los ids de equipos (data-attribute del contenedor)
-    const idsEquipo = (contenedor.dataset.equipos ?? '').split(',').filter(Boolean);
-    const html = partidos.map((p) => {
-      const localMio = idsEquipo.includes(p.local?.id ?? '');
-      const visitaMio = idsEquipo.includes(p.visitante?.id ?? '');
-      const planilla = planillas.find((pl) => pl.partido_id === p.id);
-
-      let accion = '';
-      let etiqueta = '';
-      if (planilla?.estado === 'verificada') {
-        etiqueta = '<span class="rounded bg-emerald-500/15 border border-emerald-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-emerald-400">Verificada</span>';
-        accion = `<a href="/admin/delegado/partidos/${p.id}/planilla" class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors">Ver planilla</a>`;
-      } else if (planilla?.estado === 'disputada') {
-        etiqueta = '<span class="rounded bg-gold-400/15 border border-gold-400/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">En disputa</span>';
-        accion = `<a href="/admin/delegado/partidos/${p.id}/planilla" class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors">Ver planilla</a>`;
-      } else if (localMio) {
-        pendientes += 1;
-        etiqueta = '<span class="rounded bg-orange-500/15 border border-orange-500/40 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-orange-400">Carga pendiente</span>';
-        accion = `<a href="/admin/delegado/partidos/${p.id}/planilla" class="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-ink hover:bg-orange-700 transition-colors">${planilla ? 'Continuar carga' : 'Cargar planilla'}</a>`;
-      } else if (visitaMio && planilla?.estado === 'borrador') {
-        etiqueta = '<span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Visitante</span>';
-        accion = `<a href="/admin/delegado/partidos/${p.id}/disputar" class="rounded-lg border border-gold-400/50 bg-gold-400/10 px-3 py-1.5 text-xs font-bold text-gold-400 hover:bg-gold-400/20 transition-colors">Disputar</a>`;
-      } else {
-        etiqueta = '<span class="rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Visitante</span>';
-        accion = '<span class="text-xs text-paper-muted">Esperando al local</span>';
-      }
-
-      const jugado = p.publicado && p.puntos_local !== null;
-      const marcador = jugado
-        ? `<span class="num text-base font-black text-paper">${p.puntos_local} <span class="text-paper-muted">-</span> ${p.puntos_visitante}</span>`
-        : `<span class="text-xs text-paper-muted">${formatearFecha(p.fecha_hora)}</span>`;
-
-      return `
-        <article class="card-vigor flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="flex items-center gap-2 shrink-0">
-              <div class="flex flex-col items-center gap-1">
-                ${cadenaEscudo(escudo(p, 'local'), nombreClub(p, 'local'))}
-                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-paper-muted">Local</span>
-              </div>
-              <span class="text-paper-muted text-xs font-black">VS</span>
-              <div class="flex flex-col items-center gap-1">
-                ${cadenaEscudo(escudo(p, 'visitante'), nombreClub(p, 'visitante'))}
-                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-paper-muted">Visita</span>
-              </div>
-            </div>
-            <div class="min-w-0">
-              <p class="truncate text-sm font-bold text-paper">${nombreClub(p, 'local')} vs ${nombreClub(p, 'visitante')}</p>
-              <p class="text-xs text-paper-muted truncate">
-                ${p.torneos?.nombre ?? 'Torneo'} · Fecha ${p.ronda} · ${p.sede ?? 'Sede a confirmar'}
-              </p>
-              <div class="mt-1 flex flex-wrap items-center gap-2">
-                ${etiqueta}
-                ${marcador}
-              </div>
-              ${p.nota_publica ? `<p class="mt-1 text-xs text-gold-400">${p.nota_publica}</p>` : ''}
-            </div>
-          </div>
-          <div class="shrink-0">${accion}</div>
-        </article>
-      `;
-    }).join('');
-
-    contenedor.innerHTML = html;
-
-    const resumen = document.getElementById('resumen-texto');
-    const punto = document.getElementById('resumen-pendientes');
-    if (resumen && punto) {
-      if (pendientes > 0) {
-        resumen.textContent = `${pendientes} planilla${pendientes === 1 ? '' : 's'} por cargar`;
-        punto.className = 'h-2.5 w-2.5 rounded-full bg-orange-500';
-      } else {
-        resumen.textContent = 'Sin cargas pendientes';
-        punto.className = 'h-2.5 w-2.5 rounded-full bg-emerald-500';
-      }
-    }
-  }
+  window.addEventListener('delegado-auth-ok', async (e: any) => {
+    const estado: EstadoAdmin = e.detail;
+    clubId = estado.clubId;
+    if (estado.clubNombre) document.getElementById('saludo-club')!.textContent = estado.clubNombre;
+    await cargarPartidos();
+  });
 </script>

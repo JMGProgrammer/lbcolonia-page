@@ -22,27 +22,6 @@ const detalladas = partido.torneos?.estadisticas_detalladas ?? false;
 const inputStat =
   'w-full min-w-[3rem] rounded border border-navy-700 bg-navy-950 px-1.5 py-1.5 text-center text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none';
 
-function filasRoster(lado: 'local' | 'visitante', filas: FichaRoster[]) {
-  return filas.map((f) => {
-    const nombre = f.jugadores?.nombre_completo ?? 'Jugador';
-    const dorsal = f.dorsal ?? '';
-    return `
-      <tr data-ficha="${f.id}" data-lado="${lado}" data-dorsal="${dorsal}" data-nombre="${nombre.replace(/"/g, '&quot;')}">
-        <td class="px-2 py-2 whitespace-nowrap">
-          <span class="num inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-navy-800 px-1 text-[0.7rem] font-black text-gold-400">${dorsal || '—'}</span>
-          <span class="ml-2 text-xs font-semibold text-paper">${nombre}</span>
-        </td>
-        <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="minutos" /></td>
-        <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="puntos" /></td>
-        <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="faltas" /></td>
-        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="rebotes" /></td>` : ''}
-        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="asistencias" /></td>` : ''}
-        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="tapas" /></td>` : ''}
-        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="robos" /></td>` : ''}
-      </tr>
-    `;
-  }).join('');
-}
 ---
 
 <DelegadoLayout title="Cargar planilla" seccionActiva="inicio">
@@ -127,14 +106,28 @@ function filasRoster(lado: 'local' | 'visitante', filas: FichaRoster[]) {
               <th class="px-1 py-2 text-center">MIN</th>
               <th class="px-1 py-2 text-center">PTS</th>
               <th class="px-1 py-2 text-center">FAL</th>
-              ${detalladas ? '<th class="px-1 py-2 text-center">REB</th>' : ''}
-              ${detalladas ? '<th class="px-1 py-2 text-center">AST</th>' : ''}
-              ${detalladas ? '<th class="px-1 py-2 text-center">TAP</th>' : ''}
-              ${detalladas ? '<th class="px-1 py-2 text-center">ROB</th>' : ''}
+              {detalladas && <th class="px-1 py-2 text-center">REB</th>}
+              {detalladas && <th class="px-1 py-2 text-center">AST</th>}
+              {detalladas && <th class="px-1 py-2 text-center">TAP</th>}
+              {detalladas && <th class="px-1 py-2 text-center">ROB</th>}
             </tr>
           </thead>
           <tbody>
-            {filasRoster('local', rosterLocal)}
+            {rosterLocal.map((f) => (
+              <tr data-ficha={f.id} data-lado="local" data-dorsal={f.dorsal ?? ''} data-nombre={f.jugadores?.nombre_completo ?? 'Jugador'}>
+                <td class="px-2 py-2 whitespace-nowrap">
+                  <span class="num inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-navy-800 px-1 text-[0.7rem] font-black text-gold-400">{f.dorsal ?? '—'}</span>
+                  <span class="ml-2 text-xs font-semibold text-paper">{f.jugadores?.nombre_completo ?? 'Jugador'}</span>
+                </td>
+                <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="minutos" /></td>
+                <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="puntos" /></td>
+                <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="faltas" /></td>
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="rebotes" /></td>}
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="asistencias" /></td>}
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="tapas" /></td>}
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="robos" /></td>}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -168,14 +161,28 @@ function filasRoster(lado: 'local' | 'visitante', filas: FichaRoster[]) {
               <th class="px-1 py-2 text-center">MIN</th>
               <th class="px-1 py-2 text-center">PTS</th>
               <th class="px-1 py-2 text-center">FAL</th>
-              ${detalladas ? '<th class="px-1 py-2 text-center">REB</th>' : ''}
-              ${detalladas ? '<th class="px-1 py-2 text-center">AST</th>' : ''}
-              ${detalladas ? '<th class="px-1 py-2 text-center">TAP</th>' : ''}
-              ${detalladas ? '<th class="px-1 py-2 text-center">ROB</th>' : ''}
+              {detalladas && <th class="px-1 py-2 text-center">REB</th>}
+              {detalladas && <th class="px-1 py-2 text-center">AST</th>}
+              {detalladas && <th class="px-1 py-2 text-center">TAP</th>}
+              {detalladas && <th class="px-1 py-2 text-center">ROB</th>}
             </tr>
           </thead>
           <tbody>
-            {filasRoster('visitante', rosterVisitante)}
+            {rosterVisitante.map((f) => (
+              <tr data-ficha={f.id} data-lado="visitante" data-dorsal={f.dorsal ?? ''} data-nombre={f.jugadores?.nombre_completo ?? 'Jugador'}>
+                <td class="px-2 py-2 whitespace-nowrap">
+                  <span class="num inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-navy-800 px-1 text-[0.7rem] font-black text-gold-400">{f.dorsal ?? '—'}</span>
+                  <span class="ml-2 text-xs font-semibold text-paper">{f.jugadores?.nombre_completo ?? 'Jugador'}</span>
+                </td>
+                <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="minutos" /></td>
+                <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="puntos" /></td>
+                <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="faltas" /></td>
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="rebotes" /></td>}
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="asistencias" /></td>}
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="tapas" /></td>}
+                {detalladas && <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class={inputStat} data-stat="robos" /></td>}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

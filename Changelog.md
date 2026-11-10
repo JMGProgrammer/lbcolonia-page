@@ -17,7 +17,8 @@ Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v
 
 ### Verificación
 - `astro check` 0 errores · `npm run build` verde · smoke HTTP de las rutas nuevas (200 / 302 esperado).
-- Pendiente por falta de conectividad a Supabase en el entorno: aplicar `0006`, correr las negativas RLS y el barrido responsive.
+- `0006` aplicada y negativas RLS en verde contra la base real; barrido responsive pendiente.
+- Fix de prueba: las filas de jugadores, que aparecían como HTML literal, ahora usan markup Astro tipado y renderizan correctamente.
 
 ## [v0.4] — 2026-10-22 · Post-IT4: rediseño UI y perfiles de jugador
 

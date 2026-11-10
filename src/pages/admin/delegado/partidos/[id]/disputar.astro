@@ -68,7 +68,12 @@ if (!partido || !partido.local || !partido.visitante) {
   </div>
 
   <!-- Toast -->
-  <div id="toast" class="pointer-events-none fixed bottom-24 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border border-navy-700 bg-navy-900 px-4 py-2.5 text-xs font-bold text-paper shadow-2xl"></div>
+  <div
+    id="toast"
+    role="status"
+    aria-live="polite"
+    class="pointer-events-none fixed bottom-24 right-4 z-50 hidden w-[calc(100vw-2rem)] rounded-xl border-2 border-navy-700 bg-navy-900 px-5 py-4 text-sm font-bold leading-relaxed text-paper shadow-2xl sm:bottom-6 sm:right-6 sm:w-auto sm:min-w-80 sm:max-w-md"
+  ></div>
 
   <!-- Datos del servidor para el script -->
   <div id="datos-partido" class="hidden" data-partido={JSON.stringify(partido)}></div>
@@ -89,11 +94,11 @@ if (!partido || !partido.local || !partido.visitante) {
     const el = $('#toast');
     if (!el) return;
     el.textContent = mensaje;
-    el.className = `pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-lg border px-4 py-2.5 text-xs font-bold shadow-2xl ${
-      tipo === 'error' ? 'border-red-500/50 bg-red-500/15 text-red-400' : 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+    el.className = `pointer-events-none fixed bottom-24 right-4 z-50 w-[calc(100vw-2rem)] rounded-xl border-2 px-5 py-4 text-sm font-bold leading-relaxed shadow-2xl sm:bottom-6 sm:right-6 sm:w-auto sm:min-w-80 sm:max-w-md ${
+      tipo === 'error' ? 'border-red-500 bg-navy-900 text-red-400' : 'border-emerald-500 bg-navy-900 text-emerald-400'
     }`;
     el.classList.remove('hidden');
-    window.setTimeout(() => el.classList.add('hidden'), 3200);
+    window.setTimeout(() => el.classList.add('hidden'), 4200);
   }
 
   function mostrarAviso(texto: string) {

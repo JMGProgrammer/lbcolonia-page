@@ -1,9 +1,9 @@
 # Changelog — lbc-web
 
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
-Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4). El bloque post-IT4 (rediseño UI + perfiles de jugador) quedó **sin tag** pendiente de OK explícito de Juan.
+Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4), `v0.4` = rediseño UI + perfiles de jugador (post-IT4).
 
-## 2026-10-22 · Post-IT4: rediseño UI y perfiles de jugador (18 commits, sin tag)
+## [v0.4] — 2026-10-22 · Post-IT4: rediseño UI y perfiles de jugador
 
 **Qué puede hacer Juan / la liga**: recorrer un sitio público con identidad visual completa (escudos y fotos reales, colores por club, banners de video, sección de campeonatos) y entrar al **perfil personal de cada jugador** con promedios, game log y navegación desde boxscores y rosters.
 

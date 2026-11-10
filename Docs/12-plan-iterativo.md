@@ -15,7 +15,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT2 — Base técnica | ✅ aprobada por Juan ("comenzá IT3") — commit `7b1e751` + tag `v0.1` (`92e23fe`) |
 | IT3 — Sitio público completo | ✅ hecha (`ffb0cd5` + `12e7506`, tag `v0.2`) — checkpoint 3 **OK** 2026-10-21: deploy Vercel probado desde el celu (menús y secciones, criterio "2 toques" cumplido) |
 | IT4 — Panel de la liga | ✅ hecha (sesiones 1, 2 y 3, tag `v0.3`) — Checkpoint 4 **OK** |
-| Post-IT4 — Rediseño UI + perfiles de jugador | ✅ hecha (sesión 4, 18 commits del 22/10, sin tag) — ver nota abajo |
+| Post-IT4 — Rediseño UI + perfiles de jugador | ✅ hecha (sesión 4, 18 commits del 22/10, tag `v0.4`) — ver nota abajo |
 | IT5 — Delegados y planillas | 🟡 activa (siguiente paso) |
 | IT6 — Complejidad del torneo | pendiente |
 | IT7 — Endurecimiento | pendiente |
@@ -147,7 +147,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - **QoL móvil**: scoreboard horizontal en ficha de partido, `ResultCard` rediseñado, corrección de solapamiento de botones en categorías formativas, alineación rígida de partidos y reescalado de logos de sponsors.
 - **Datos**: seed actualizado con categorías formativas U10–U22 (Valdense) y noticias; ajustes en `rls_negativas.sql`.
 - **Verificación**: `npm run check` 0 errores / 0 warnings; `npm run build` verde; 48/48 RLS en verde; barrido responsive 320–1300 px sin overflow en las rutas tocadas.
-- **Nota de proceso**: este bloque se hizo **después del checkpoint 4 OK** y no cierra ninguna IT del plan; es una entrega de valor paralela (rediseño + feature nuevo). Quedó sin tag: se evaluó no crear `v0.4` sin OK explícito de Juan.
+- **Nota de proceso**: este bloque se hizo **después del checkpoint 4 OK** y no cierra ninguna IT del plan; es una entrega de valor paralela (rediseño + feature nuevo). Tag `v0.4` creado con OK de Juan (2026-10-22).
 - Modelos usados: Gemini 3.8 Flash (thinking alto) para implementación; redacción de `Docs/13`.
 
 ## IT5 — Delegados y planillas (2-3 sesiones)

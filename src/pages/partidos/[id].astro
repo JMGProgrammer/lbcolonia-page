@@ -159,28 +159,33 @@ const descFicha = hayPartido
 
         {
           (partido!.cuartos_local?.length ?? 0) > 0 && (partido!.cuartos_visitante?.length ?? 0) > 0 && (
-            <div class="mt-4 overflow-x-auto rounded-panel border border-navy-700 bg-navy-800 p-4">
-              <table class="num w-full min-w-[380px] border-collapse text-center">
+            <div class="mt-3 overflow-x-auto rounded-panel border border-navy-700 bg-navy-800">
+              <table class="num w-full min-w-[380px] table-fixed border-collapse tabular-nums">
+                <colgroup>
+                  <col class="w-[34%]" />
+                  {partido!.cuartos_local!.map(() => <col />)}
+                  <col />
+                </colgroup>
                 <thead>
-                  <tr>
-                    <th class="px-2 py-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-paper-muted">Equipo</th>
+                  <tr class="bg-navy-900/35">
+                    <th scope="col" class="px-4 py-2.5 text-left text-[0.62rem] uppercase tracking-[0.14em] text-paper-muted">Equipo</th>
                     {partido!.cuartos_local!.map((_, i) => (
-                      <th scope="col" class="px-2 py-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-paper-muted">Q{i + 1}</th>
+                      <th scope="col" class="px-1 py-2.5 text-center text-[0.62rem] uppercase tracking-[0.14em] text-paper-muted">Q{i + 1}</th>
                     ))}
-                    <th scope="col" class="px-2 py-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-paper-muted">Total</th>
+                    <th scope="col" class="px-2 py-2.5 text-center text-[0.62rem] uppercase tracking-[0.14em] text-paper-muted">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    ['Local', partido!.cuartos_local!, loc?.clubes.nombre],
-                    ['Visita', partido!.cuartos_visitante!, vis?.clubes.nombre],
-                  ].map(([etiqueta, cuartos, nombre]) => (
+                    [partido!.cuartos_local!, loc?.clubes.nombre],
+                    [partido!.cuartos_visitante!, vis?.clubes.nombre],
+                  ].map(([cuartos, nombre]) => (
                     <tr class="border-t border-navy-700">
-                      <td class="px-2 py-1.5 text-left text-[0.88rem] font-bold">{nombre}</td>
+                      <th scope="row" class="truncate px-4 py-2.5 text-left text-[0.82rem] font-bold text-paper">{nombre}</th>
                       {(cuartos as number[]).map((c) => (
-                        <td class="px-2 py-1.5 text-right">{c}</td>
+                        <td class="px-1 py-2.5 text-center text-sm text-paper/85">{c}</td>
                       ))}
-                      <td class="px-2 py-1.5 text-right font-black text-orange-500">{(cuartos as number[]).reduce((a, b) => a + b, 0)}</td>
+                      <td class="px-2 py-2.5 text-center text-sm font-black text-orange-500">{(cuartos as number[]).reduce((a, b) => a + b, 0)}</td>
                     </tr>
                   ))}
                 </tbody>

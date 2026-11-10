@@ -10,6 +10,7 @@ Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v
 - El mapa y la resolución de escudos se centralizaron en `src/lib/escudos.ts` para mantener la misma prioridad local/Storage en componentes Astro y vistas dinámicas.
 - Nuevo skeleton estructural para resumen, tareas y agenda; el contenido definitivo permanece oculto hasta completar la consulta y cada escudo conserva su skeleton hasta cargar.
 - Las iniciales quedaron como fallback exclusivo de imágenes ausentes o fallidas, evitando su aparición fugaz antes del escudo.
+- Tabla de puntos por cuarto compactada con columnas rígidas y valores centrados bajo Q1–Q4/Total en la ficha pública del partido.
 
 ### Verificación
 - `astro check` sin errores, build Vercel verde, seis assets locales presentes y consulta real del delegado con `slug` de los cuatro clubes del fixture.

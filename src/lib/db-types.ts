@@ -1026,6 +1026,11 @@ isOneToOne: false
                            },
 "rol_en_org":
 { Args: { "_org_id": string }; Returns: Database["public"]['Enums']["rol_org"]
+                           },
+"solicitar_ficha_jugador":
+{ Args: { "_dorsal"?: number,"_equipo_id": string,"_fecha_nacimiento"?: string,"_nombre_completo": string,"_torneo_id": string }; Returns: {
+              "ficha_id": string,"jugador_id": string
+            }[]
                            }
           }
           Enums: {

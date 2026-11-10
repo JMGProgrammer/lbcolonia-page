@@ -144,13 +144,9 @@ const inputStat =
           </h2>
           <p class="mt-1 text-xs text-paper-muted">{partido.visitante.clubes?.nombre} · el papel firma los dos equipos.</p>
         </div>
-        <button
-          type="button"
-          id="btn-nuevo-visitante"
-          class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors"
-        >
-          + Jugador nuevo
-        </button>
+        <span class="max-w-[18rem] text-right text-[0.7rem] leading-snug text-paper-muted">
+          Un jugador faltante del rival debe solicitarlo su delegado o la liga.
+        </span>
       </div>
 
       <div class="mt-4 overflow-x-auto">
@@ -254,9 +250,8 @@ const inputStat =
     class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[92%]"
   >
     <h3 class="text-base font-bold text-paper">Alta rápida de jugador</h3>
-    <p class="mt-1 text-xs text-paper-muted">La ficha nace como <strong>solicitada</strong>; la liga la confirma.</p>
+    <p class="mt-1 text-xs text-paper-muted">La ficha nace como <strong>solicitada</strong> para su club; la liga la confirma.</p>
     <form id="form-nuevo-jugador" class="mt-4 space-y-3">
-      <input type="hidden" id="nuevo-lado" />
       <div>
         <label for="nuevo-nombre" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">Nombre completo</label>
         <input id="nuevo-nombre" type="text" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper focus:border-orange-500 focus:outline-none" />
@@ -595,15 +590,10 @@ const inputStat =
 
   // Alta rápida de jugador
   const modalNuevo = $('#modal-nuevo-jugador') as HTMLDialogElement | null;
-  let ladoNuevo: 'local' | 'visitante' = 'local';
-
-  function abrirNuevo(lado: 'local' | 'visitante') {
-    ladoNuevo = lado;
-    ($('#nuevo-lado') as HTMLInputElement).value = lado;
+  function abrirNuevo() {
     modalNuevo?.showModal();
   }
-  $('#btn-nuevo-local')?.addEventListener('click', () => abrirNuevo('local'));
-  $('#btn-nuevo-visitante')?.addEventListener('click', () => abrirNuevo('visitante'));
+  $('#btn-nuevo-local')?.addEventListener('click', abrirNuevo);
   $('#btn-cancelar-nuevo')?.addEventListener('click', () => modalNuevo?.close());
 
   ($('#form-nuevo-jugador') as HTMLFormElement)?.addEventListener('submit', async (e) => {
@@ -613,30 +603,22 @@ const inputStat =
     const dorsal = Number(($('#nuevo-dorsal') as HTMLInputElement).value) || null;
     if (!nombre) return;
 
-    // 1) jugador (la policy de IT5 permite al delegado crear en su org)
-    const { data: jugador, error: errorJugador } = await supabaseBrowser
-      .from('jugadores')
-      .insert({ org_id: orgId, nombre_completo: nombre, fecha_nacimiento: fecha || null })
-      .select('id')
-      .single();
-    if (errorJugador || !jugador) {
-      toast('No se pudo crear el jugador: ' + (errorJugador?.message ?? ''), 'error');
+    const torneoId = partido.torneos?.id;
+    if (!torneoId) {
+      toast('No se pudo identificar el torneo del partido.', 'error');
       return;
     }
 
-    // 2) ficha solicitada en el equipo y torneo del partido
-    const equipoId = ladoNuevo === 'local' ? partido.local!.id : partido.visitante!.id;
-    const { error: errorFicha } = await supabaseBrowser.from('fichas').insert({
-      org_id: orgId,
-      jugador_id: jugador.id,
-      equipo_id: equipoId,
-      torneo_id: partido.torneos?.id ?? null,
-      dorsal,
-      estado: 'solicitada',
-      desde: new Date().toISOString().slice(0, 10),
+    // RPC atómica: si la ficha falla, tampoco queda un jugador huérfano.
+    const { error } = await supabaseBrowser.rpc('solicitar_ficha_jugador', {
+      _equipo_id: partido.local!.id,
+      _torneo_id: torneoId,
+      _nombre_completo: nombre,
+      _fecha_nacimiento: fecha || undefined,
+      _dorsal: dorsal ?? undefined,
     });
-    if (errorFicha) {
-      toast('El jugador se creó pero la ficha no: ' + errorFicha.message, 'error');
+    if (error) {
+      toast('No se pudo solicitar la ficha: ' + error.message, 'error');
       return;
     }
 

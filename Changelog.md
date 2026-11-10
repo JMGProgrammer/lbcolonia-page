@@ -19,6 +19,7 @@ Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v
 - `astro check` 0 errores · `npm run build` verde · smoke HTTP de las rutas nuevas (200 / 302 esperado).
 - `0006` aplicada y negativas RLS en verde contra la base real; barrido responsive pendiente.
 - Fix de prueba: las filas de jugadores, que aparecían como HTML literal, ahora usan markup Astro tipado y renderizan correctamente.
+- Fix de alta rápida: el delegado ya no puede intentar crear una ficha para el rival; `0007` crea jugador + ficha solicitada en una RPC atómica y acotada a su propio club, evitando jugadores huérfanos ante un error de ficha.
 
 ## [v0.4] — 2026-10-22 · Post-IT4: rediseño UI y perfiles de jugador
 

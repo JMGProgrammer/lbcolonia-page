@@ -3,6 +3,17 @@
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
 Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4), `v0.4` = rediseño UI + perfiles de jugador (post-IT4).
 
+## 2026-11-10 · IT5: carga visual del tablero delegado (sin tag)
+
+### Changed
+- Los encuentros del delegado muestran los escudos locales optimizados de cada club en lugar de abreviaturas.
+- El mapa y la resolución de escudos se centralizaron en `src/lib/escudos.ts` para mantener la misma prioridad local/Storage en componentes Astro y vistas dinámicas.
+- Nuevo skeleton estructural para resumen, tareas y agenda; el contenido definitivo permanece oculto hasta completar la consulta y cada escudo conserva su skeleton hasta cargar.
+- Las iniciales quedaron como fallback exclusivo de imágenes ausentes o fallidas, evitando su aparición fugaz antes del escudo.
+
+### Verificación
+- `astro check` sin errores, build Vercel verde, seis assets locales presentes y consulta real del delegado con `slug` de los cuatro clubes del fixture.
+
 ## 2026-10-22 · IT5 sesión 2: Mesa de verificación de la liga (sin tag)
 
 **Qué puede hacer la secretaría**: abrir una bandeja de planillas, comparar la carga con la foto privada del papel, corregir líneas, resolver disputas, verificar y publicar el resultado oficial.

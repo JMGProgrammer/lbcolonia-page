@@ -11,7 +11,8 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
     <header class="relative overflow-hidden rounded-[14px] border border-navy-700 bg-navy-900 p-6 shadow-xl sm:p-8">
       <div class="absolute inset-y-0 right-0 w-1.5 bg-orange-500"></div>
       <div class="max-w-3xl">
-        <p id="saludo-club" class="text-xs font-bold uppercase tracking-wider text-gold-400">Panel del club</p>
+        <div id="saludo-cargando" class="h-3 w-28 animate-pulse rounded bg-navy-700" aria-hidden="true"></div>
+        <p id="saludo-club" class="hidden text-xs font-bold uppercase tracking-wider text-gold-400"></p>
         <h1 class="mt-2 text-2xl font-black uppercase tracking-tight text-paper sm:text-3xl">Qué necesita atención</h1>
         <p class="mt-2 max-w-2xl text-sm leading-relaxed text-paper-muted">
           Primero aparecen las planillas que requieren una acción. La agenda y los resultados quedan separados para encontrarlos sin revisar partido por partido.
@@ -20,7 +21,7 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
     </header>
 
     <!-- Resumen legible, no métricas decorativas -->
-    <section aria-label="Resumen del club" class="grid gap-px overflow-hidden rounded-[14px] border border-navy-700 bg-navy-700 sm:grid-cols-3">
+    <section id="resumen" aria-label="Resumen del club" class="hidden grid gap-px overflow-hidden rounded-[14px] border border-navy-700 bg-navy-700 sm:grid-cols-3">
       <div class="bg-navy-900 p-5">
         <p class="text-xs font-bold text-paper-muted">Requieren una acción</p>
         <div class="mt-2 flex items-end justify-between gap-3">
@@ -44,10 +45,54 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
       </div>
     </section>
 
-    <!-- Loading con forma similar al contenido final -->
-    <div id="cargando" class="space-y-3" aria-label="Cargando partidos">
-      <div class="h-32 animate-pulse rounded-[14px] border border-navy-700 bg-navy-900"></div>
-      <div class="h-24 animate-pulse rounded-[14px] border border-navy-700 bg-navy-900"></div>
+    <!-- Skeleton fiel: reserva resumen, títulos, escudos, datos y acciones. -->
+    <div id="cargando" class="space-y-9" aria-label="Cargando resumen, tareas y agenda" aria-busy="true">
+      <div class="grid gap-px overflow-hidden rounded-[14px] border border-navy-700 bg-navy-700 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map(() => (
+          <div class="bg-navy-900 p-5">
+            <div class="h-3 w-32 animate-pulse rounded bg-navy-700"></div>
+            <div class="mt-4 flex items-end justify-between gap-3">
+              <div class="h-9 w-10 animate-pulse rounded bg-navy-700"></div>
+              <div class="h-3 w-24 animate-pulse rounded bg-navy-800"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <section class="space-y-4" aria-hidden="true">
+        <div class="h-5 w-56 animate-pulse rounded bg-navy-700"></div>
+        <div class="h-3 w-72 max-w-full animate-pulse rounded bg-navy-800"></div>
+        <div class="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map(() => (
+            <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div class="space-y-3">
+                  <div class="h-3 w-40 animate-pulse rounded bg-navy-700"></div>
+                  <div class="h-3 w-64 max-w-full animate-pulse rounded bg-navy-800"></div>
+                </div>
+                <div class="h-12 w-12 animate-pulse rounded-lg bg-navy-800"></div>
+              </div>
+              <div class="mt-5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 border-y border-navy-700 py-4">
+                <div class="flex items-center gap-3"><div class="h-11 w-11 shrink-0 animate-pulse rounded-full bg-navy-700"></div><div class="h-3 w-20 animate-pulse rounded bg-navy-800"></div></div>
+                <div class="h-3 w-5 animate-pulse rounded bg-navy-700"></div>
+                <div class="flex flex-row-reverse items-center gap-3"><div class="h-11 w-11 shrink-0 animate-pulse rounded-full bg-navy-700"></div><div class="h-3 w-20 animate-pulse rounded bg-navy-800"></div></div>
+              </div>
+              <div class="mt-4 flex items-center justify-between gap-4"><div class="h-3 w-40 animate-pulse rounded bg-navy-800"></div><div class="h-11 w-32 animate-pulse rounded-lg bg-navy-700"></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="space-y-3" aria-hidden="true">
+        <div class="h-5 w-40 animate-pulse rounded bg-navy-700"></div>
+        {Array.from({ length: 2 }).map(() => (
+          <div class="grid gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-4 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto]">
+            <div class="h-10 w-12 animate-pulse rounded bg-navy-700"></div>
+            <div class="space-y-3"><div class="h-3 w-52 max-w-full animate-pulse rounded bg-navy-700"></div><div class="h-3 w-72 max-w-full animate-pulse rounded bg-navy-800"></div></div>
+            <div class="h-7 w-20 animate-pulse rounded bg-navy-800"></div>
+          </div>
+        ))}
+      </section>
     </div>
 
     <div id="lista-vacia" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
@@ -59,7 +104,7 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
       <!-- Acciones: las cards más grandes y explícitas del tablero -->
       <section id="seccion-acciones" class="space-y-4">
         <div>
-          <h2 class="text-lg font-black uppercase tracking-wider text-paper">Requiere tu atención</h2>
+          <h2 class="text-lg font-black uppercase tracking-wider text-paper">Requiere atención</h2>
           <p class="mt-1 text-sm text-paper-muted">Estas tareas se pueden resolver ahora.</p>
         </div>
         <div id="lista-acciones" class="grid gap-4 lg:grid-cols-2"></div>
@@ -100,13 +145,14 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
 
 <script>
   import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+  import { resolverEscudo } from '../../../lib/escudos';
 
   let clubId: string | null = null;
   let agendaCompleta = false;
   let agendaMemoria: PartidoClasificado[] = [];
 
   interface EquipoClub { id: string }
-  interface ClubCorto { nombre: string; escudo_url: string | null }
+  interface ClubCorto { nombre: string; slug: string; escudo_url: string | null }
   interface EquipoPartido { id: string; nombre_mostrar: string | null; clubes: ClubCorto }
   interface PartidoCorto {
     id: string;
@@ -161,10 +207,43 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
   const nombreClub = (p: PartidoCorto, lado: 'local' | 'visitante'): string =>
     p[lado]?.clubes?.nombre ?? p[lado]?.nombre_mostrar ?? 'Equipo';
 
-  function escudo(url: string | null, nombre: string): string {
-    if (!url) return `<span class="flex h-11 w-11 items-center justify-center rounded-full bg-navy-800 text-xs font-black uppercase text-gold-400">${esc(nombre.slice(0, 2))}</span>`;
-    return `<img src="${esc(url)}" alt="" class="h-11 w-11 rounded-full object-cover" loading="lazy" />`;
+  function iniciales(nombre: string): string {
+    return nombre.trim().split(/\s+/).map((parte) => parte[0] ?? '').join('').slice(0, 3).toUpperCase() || '·';
   }
+
+  function escudo(club: ClubCorto | null | undefined, nombre: string): string {
+    const url = resolverEscudo(club);
+    if (!url) {
+      return `<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-navy-700 bg-navy-800 text-xs font-black uppercase text-gold-400" aria-label="Escudo no disponible de ${esc(nombre)}">${esc(iniciales(nombre))}</span>`;
+    }
+    return `<span class="relative flex h-11 w-11 shrink-0 items-center justify-center" data-escudo>
+      <span class="absolute inset-0 animate-pulse rounded-lg bg-navy-700" data-escudo-skeleton aria-hidden="true"></span>
+      <img src="${esc(url)}" alt="Escudo de ${esc(nombre)}" class="h-11 w-11 object-contain opacity-0 drop-shadow-[0_2px_5px_rgba(0,0,0,0.45)] transition-opacity duration-150" loading="eager" decoding="async" data-escudo-img />
+      <span class="hidden h-11 w-11 items-center justify-center rounded-lg border border-navy-700 bg-navy-800 text-xs font-black uppercase text-gold-400" aria-label="Escudo no disponible de ${esc(nombre)}" data-escudo-fallback>${esc(iniciales(nombre))}</span>
+    </span>`;
+  }
+
+  function finalizarEscudo(img: HTMLImageElement, fallo: boolean) {
+    const contenedor = img.closest<HTMLElement>('[data-escudo]');
+    if (!contenedor) return;
+    contenedor.querySelector<HTMLElement>('[data-escudo-skeleton]')?.classList.add('hidden');
+    if (fallo) {
+      img.classList.add('hidden');
+      contenedor.querySelector<HTMLElement>('[data-escudo-fallback]')?.classList.replace('hidden', 'flex');
+    } else {
+      img.classList.remove('opacity-0');
+      img.classList.add('opacity-100');
+    }
+  }
+
+  document.addEventListener('load', (evento) => {
+    const img = evento.target;
+    if (img instanceof HTMLImageElement && img.matches('[data-escudo-img]')) finalizarEscudo(img, false);
+  }, true);
+  document.addEventListener('error', (evento) => {
+    const img = evento.target;
+    if (img instanceof HTMLImageElement && img.matches('[data-escudo-img]')) finalizarEscudo(img, true);
+  }, true);
 
   function clasificar(p: PartidoCorto, planilla: PlanillaCorta | undefined, idsEquipo: string[]): PartidoClasificado {
     const localMio = idsEquipo.includes(p.local?.id ?? '');
@@ -184,7 +263,7 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
     if (planilla?.estado === 'disputada') {
       return {
         ...base, tipo: 'seguimiento', tituloEstado: 'Disputa en revisión',
-        descripcion: localMio ? 'El visitante presentó una observación. La liga tiene el próximo paso.' : 'Tu disputa fue enviada. La liga está revisando el papel.',
+        descripcion: localMio ? 'El visitante presentó una observación. La liga tiene el próximo paso.' : 'La disputa fue enviada. La liga está revisando el papel.',
         accion: { href: `/admin/delegado/partidos/${p.id}/planilla`, etiqueta: 'Ver lo enviado', tono: 'secundario' },
       };
     }
@@ -213,8 +292,8 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
 
     return {
       ...base, tipo: 'agenda',
-      tituloEstado: localMio ? 'Serás local' : 'Serás visitante',
-      descripcion: visitaMio ? 'El club local cargará la planilla después del partido.' : 'La carga se habilita para tu club al finalizar.',
+      tituloEstado: localMio ? 'El club será local' : 'El club será visitante',
+      descripcion: visitaMio ? 'El club local cargará la planilla después del partido.' : 'La carga se habilita para el club al finalizar.',
     };
   }
 
@@ -223,7 +302,7 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
     const visita = nombreClub(p, 'visitante');
     return `
       <div class="flex min-w-0 items-center gap-3">
-        ${escudo(p.local?.clubes?.escudo_url ?? null, local)}
+        ${escudo(p.local?.clubes, local)}
         <div class="min-w-0">
           <p class="truncate text-sm font-black text-paper">${esc(local)}</p>
           <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Local</p>
@@ -231,7 +310,7 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
       </div>
       <span class="text-xs font-black text-orange-400">VS</span>
       <div class="flex min-w-0 items-center gap-3 text-right sm:flex-row-reverse">
-        ${escudo(p.visitante?.clubes?.escudo_url ?? null, visita)}
+        ${escudo(p.visitante?.clubes, visita)}
         <div class="min-w-0">
           <p class="truncate text-sm font-black text-paper">${esc(visita)}</p>
           <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">Visitante</p>
@@ -385,8 +464,8 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
       .from('partidos')
       .select(`
         id, ronda, fecha_hora, sede, estado, puntos_local, puntos_visitante, publicado, nota_publica,
-        local:equipo_local_id(id, nombre_mostrar, clubes:club_id(nombre, escudo_url)),
-        visitante:equipo_visitante_id(id, nombre_mostrar, clubes:club_id(nombre, escudo_url)),
+        local:equipo_local_id(id, nombre_mostrar, clubes:club_id(nombre, slug, escudo_url)),
+        visitante:equipo_visitante_id(id, nombre_mostrar, clubes:club_id(nombre, slug, escudo_url)),
         torneos(id, nombre, temporada)
       `)
       .or(`equipo_local_id.in.(${ids.join(',')}),equipo_visitante_id.in.(${ids.join(',')})`)
@@ -404,6 +483,7 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
       .in('partido_id', partidos.map((p: PartidoCorto) => p.id));
 
     document.getElementById('cargando')?.classList.add('hidden');
+    document.getElementById('resumen')?.classList.remove('hidden');
     tablero.classList.remove('hidden');
     renderizar(partidos as PartidoCorto[], (planillas ?? []) as PlanillaCorta[]);
   }
@@ -416,7 +496,14 @@ import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
   window.addEventListener('delegado-auth-ok', async (e: any) => {
     const estado: EstadoAdmin = e.detail;
     clubId = estado.clubId;
-    if (estado.clubNombre) document.getElementById('saludo-club')!.textContent = estado.clubNombre;
+    if (estado.clubNombre) {
+      const saludo = document.getElementById('saludo-club');
+      if (saludo) {
+        saludo.textContent = estado.clubNombre;
+        saludo.classList.remove('hidden');
+      }
+      document.getElementById('saludo-cargando')?.classList.add('hidden');
+    }
     await cargarPartidos();
   });
 </script>

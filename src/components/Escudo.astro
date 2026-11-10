@@ -1,5 +1,6 @@
 ---
 // Escudo de club: prioridad escudo local optimizado, luego CDN de Storage, luego iniciales.
+import { resolverEscudo } from '../lib/escudos';
 interface Props {
   club?: { nombre: string; slug: string; escudo_url: string | null; color1: string | null; color2: string | null };
   tam?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -16,42 +17,7 @@ const medidas: Record<string, string> = {
 };
 const clase = medidas[tam] ?? medidas.md;
 
-const ESCUDOS_MAP: Record<string, string> = {
-  'plaza-colonia': '/escudos/plaza-colonia-rbg-logo.webp',
-  'colonia-rowing': '/escudos/colonia-rowing-rbg-logo.webp',
-  'estudiantes-el-colla': '/escudos/ceec-rbg-logo.webp',
-  'ceec': '/escudos/ceec-rbg-logo.webp',
-  'juventud-caj': '/escudos/juventud-rbg-logo.webp',
-  'juventud': '/escudos/juventud-rbg-logo.webp',
-  'cac-valdense': '/escudos/cac-valdense-rbg-logo.webp',
-  'valdense': '/escudos/cac-valdense-rbg-logo.webp',
-  'independiente-jl': '/escudos/independiente-jl-rbg-logo.webp',
-  'independiente': '/escudos/independiente-jl-rbg-logo.webp',
-};
-
-// Normalizar slug o nombre
-const slugBuscado = (club?.slug ?? '')
-  .toLowerCase()
-  .replace(/\s+/g, '-');
-const nombreNormalizado = (club?.nombre ?? '')
-  .toLowerCase()
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '');
-
-let urlLocal = ESCUDOS_MAP[slugBuscado] ?? null;
-if (!urlLocal) {
-  if (nombreNormalizado.includes('plaza')) urlLocal = ESCUDOS_MAP['plaza-colonia'];
-  else if (nombreNormalizado.includes('rowing')) urlLocal = ESCUDOS_MAP['colonia-rowing'];
-  else if (nombreNormalizado.includes('colla') || nombreNormalizado.includes('estudiantes')) urlLocal = ESCUDOS_MAP['estudiantes-el-colla'];
-  else if (nombreNormalizado.includes('juventud')) urlLocal = ESCUDOS_MAP['juventud'];
-  else if (nombreNormalizado.includes('valdense')) urlLocal = ESCUDOS_MAP['cac-valdense'];
-  else if (nombreNormalizado.includes('independiente')) urlLocal = ESCUDOS_MAP['independiente-jl'];
-}
-
-let url = urlLocal ?? club?.escudo_url ?? null;
-if (url && url.includes('/storage/v1/object/') && !url.includes('?')) {
-  url = `${url}?width=256&quality=80&format=webp`;
-}
+const url = resolverEscudo(club);
 
 const iniciales =
   (club?.nombre ?? '')

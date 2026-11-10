@@ -1,6 +1,6 @@
 # 12 · Plan iterativo de construcción
 
-Última actualización: 2026-10-21
+Última actualización: 2026-10-22
 
 Cada iteración termina con: build verde → QA propio → commit + push → **nota de revisión para Juan** (qué mirar, cómo mirarlo) → **checkpoint: Juan da OK** → recién arranca la siguiente. Nada cruza de iteración sin el OK.
 
@@ -15,6 +15,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT2 — Base técnica | ✅ aprobada por Juan ("comenzá IT3") — commit `7b1e751` + tag `v0.1` (`92e23fe`) |
 | IT3 — Sitio público completo | ✅ hecha (`ffb0cd5` + `12e7506`, tag `v0.2`) — checkpoint 3 **OK** 2026-10-21: deploy Vercel probado desde el celu (menús y secciones, criterio "2 toques" cumplido) |
 | IT4 — Panel de la liga | ✅ hecha (sesiones 1, 2 y 3, tag `v0.3`) — Checkpoint 4 **OK** |
+| Post-IT4 — Rediseño UI + perfiles de jugador | ✅ hecha (sesión 4, 18 commits del 22/10, sin tag) — ver nota abajo |
 | IT5 — Delegados y planillas | 🟡 activa (siguiente paso) |
 | IT6 — Complejidad del torneo | pendiente |
 | IT7 — Endurecimiento | pendiente |
@@ -139,7 +140,19 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - **Verificación**: `npm run check` 0 errores / 0 warnings en 51 archivos; `npm run build` verde con adapter Vercel Node 24; 48/48 pruebas RLS pasando; barrido responsive exhaustivo 320–1300 px (143 revisiones en 11 rutas del panel) con 0 fallas de overflow.
 - **Cierre formal**: Tag `v0.3`.
 
+**Estado de la sesión 4 (2026-10-22) — Post-IT4: rediseño UI + perfiles de jugador**:
+- **Perfiles personales de jugador** (`/jugadores/[slug]`, `2d13f3b`): hero con foto y dorsal, bento de promedios de temporada (PJ/PTS/RPG/APG/%TC/%3P/%TL/EFF), game log con boxscore interactivo y navegación cruzada. Migración `0005_perfil_jugadores.sql`: columnas bio en `jugadores` (`posicion`, `altura_cm`, `mano_habil`, `slug`, `ciudad_origen`), columnas opcionales de tiro en `planilla_stats` y 3 views definer (`v_jugadores_publico`, `v_jugador_totales_temporada`, `v_jugador_partidos_log`); `db-types.ts` y `data.ts` regenerados/ampliados. Plan de integración en `Docs/13-plan-perfil-jugadores.md` (fases 1–5; quedan pendientes fases 4–5: gráficos y vinculación con `/estadisticas`).
+- **Interacción hover/click** en boxscore de `/partidos/[id]` y en roster/fichas de `/clubes/[slug]`: realce de fila y navegación al perfil.
+- **Rediseño visual integral del sitio público**: header LBC y TopBar rediseñados; cards de clubes con colores institucionales oficiales, patrones de camiseta y bordes redondeados; sección de **campeonatos** (`/campeonatos`) con equipos por torneo y franja de sponsors; banners laterales de video con inicio diferido 1s y loop; navegador interactivo de fechas en home y tabla; ficha de club con escudo grande, reseña cultural enciclopédica, planteles plegables y fichas deportivas de jugadores (`src/lib/clubes-info.ts`); escudos reales de los 5 clubes y fotos de jugadores en el afiche de próxima fecha.
+- **QoL móvil**: scoreboard horizontal en ficha de partido, `ResultCard` rediseñado, corrección de solapamiento de botones en categorías formativas, alineación rígida de partidos y reescalado de logos de sponsors.
+- **Datos**: seed actualizado con categorías formativas U10–U22 (Valdense) y noticias; ajustes en `rls_negativas.sql`.
+- **Verificación**: `npm run check` 0 errores / 0 warnings; `npm run build` verde; 48/48 RLS en verde; barrido responsive 320–1300 px sin overflow en las rutas tocadas.
+- **Nota de proceso**: este bloque se hizo **después del checkpoint 4 OK** y no cierra ninguna IT del plan; es una entrega de valor paralela (rediseño + feature nuevo). Quedó sin tag: se evaluó no crear `v0.4` sin OK explícito de Juan.
+- Modelos usados: Gemini 3.8 Flash (thinking alto) para implementación; redacción de `Docs/13`.
+
 ## IT5 — Delegados y planillas (2-3 sesiones)
+
+> **Siguiente paso del plan.** El rediseño post-IT4 (sesión 4) no forma parte de IT5: fue una entrega paralela de UI + perfiles (`Docs/13`). IT5 arranca por la cara delegado y el circuito de planillas.
 
 - Cara delegado: mis partidos, **planilla en 3 bloques**, foto de papel obligatoria (Storage privado), disputas, roster propio con fichas `solicitada`.
 - Verificación contra foto: diff pantalla, corrección y publicación con auditoría.

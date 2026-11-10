@@ -1,7 +1,26 @@
 # Changelog — lbc-web
 
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
-Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4).
+Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4). El bloque post-IT4 (rediseño UI + perfiles de jugador) quedó **sin tag** pendiente de OK explícito de Juan.
+
+## 2026-10-22 · Post-IT4: rediseño UI y perfiles de jugador (18 commits, sin tag)
+
+**Qué puede hacer Juan / la liga**: recorrer un sitio público con identidad visual completa (escudos y fotos reales, colores por club, banners de video, sección de campeonatos) y entrar al **perfil personal de cada jugador** con promedios, game log y navegación desde boxscores y rosters.
+
+### Added
+- **Perfiles de jugador** (`/jugadores/[slug]`): hero con foto/dorsal, bento de promedios de temporada (PJ, PTS, RPG, APG, %TC, %3P, %TL, EFF) y game log con boxscore interactivo; enlaces cruzados desde `/partidos/[id]` (hover + clic en filas) y `/clubes/[slug]` (tarjetas de jugador).
+- Migración `0005_perfil_jugadores.sql`: columnas bio en `jugadores` (`posicion`, `altura_cm`, `mano_habil`, `slug`, `ciudad_origen`), columnas opcionales de tiro en `planilla_stats` (`tc_*`, `t3_*`, `tl_*`) y views definer `v_jugadores_publico`, `v_jugador_totales_temporada`, `v_jugador_partidos_log`.
+- Sección **campeonatos** (`/campeonatos`) con equipos por torneo y franja de sponsors oficiales; banners laterales de video con inicio diferido a 1s y loop; navegador interactivo de fechas en home y tabla.
+- Ficha de club con escudo grande, reseña cultural enciclopédica (`src/lib/clubes-info.ts`), planteles plegables y fichas deportivas de jugadores; escudos reales de los 5 clubes y fotos de jugadores en el afiche de próxima fecha.
+- `Docs/13-plan-perfil-jugadores.md`: plan de integración de perfiles y estadísticas avanzadas (fases 1–5; pendientes gráficos y vinculación con `/estadisticas`).
+
+### Changed
+- Rediseño visual integral: header LBC y `TopBar` rediseñados; cards de clubes con colores institucionales oficiales, patrones de camiseta y bordes redondeados; `ResultCard`, `PartidoFila`, `NoticiaCard` y `Btn` ajustados al nuevo sistema.
+- Seed: categorías formativas U10–U22 (Valdense) y noticias; ajustes en `rls_negativas.sql`.
+
+### Fixed
+- QoL móvil: scoreboard horizontal en ficha de partido, corrección de solapamiento de botones en categorías formativas, alineación rígida de partidos, reescalado de logos de sponsors y remoción de texto duplicado.
+- QA del cierre: `npm run check` 0 errores / 0 warnings; `npm run build` verde; 48/48 RLS en verde; barrido responsive 320–1300 px sin overflow en las rutas tocadas.
 
 ## [v0.3] — 2026-10-22 · IT4: Panel de la Liga completo
 

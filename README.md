@@ -1,6 +1,6 @@
 # LBC Web — Liga de Basquetbol de Colonia
 
-Última actualización: 2026-10-21
+Última actualización: 2026-10-22
 
 ## Summary
 
@@ -18,9 +18,9 @@ Remote: `https://github.com/JMGProgrammer/lbcolonia-page.git` (rama `main`)
 
 ## Stack
 
-- **Astro** + Tailwind CSS 4: sitio público estático on-demand + islands para lo interactivo
+- **Astro 7 + Tailwind CSS 4**: sitio público con rendering SSR on-demand (`output: 'server'`) + islands solo donde hace falta
 - **Supabase**: Postgres + Auth + Storage, control por RLS, solo anon key en el público
-- **Panel admin** (`/admin`): liga (verifica/publica/todo el torneo) + delegados (planillas, fichas)
+- **Panel admin** (`/admin`): liga (verifica/publica/todo el torneo) + delegados (planillas, fichas) — delegados en IT5
 - **Deploy**: Vercel (SSR mínimo para multiliga por dominio)
 - Next.js queda como opción de evolución futura si el sitio demanda tiempo real — decisión registrada en `Docs/01-stack.md`
 
@@ -43,6 +43,7 @@ Serie numerada, se lee en orden:
 | 10 | `10-qa-performance.md` | QA, accesibilidad, rendimiento, datos de prueba |
 | 11 | `11-diseno.md` | Dirección visual: paleta, tipografía, home, componentes, decisión de modo oscuro |
 | 12 | `12-plan-iterativo.md` | Plan iterativo con iteraciones, entregables, checkpoints y tablero de estado en vivo |
+| 13 | `13-plan-perfil-jugadores.md` | Plan de integración de perfiles de jugador y estadísticas avanzadas |
 
 ## Convenciones de documentación (igual que lgrestoreuy)
 
@@ -61,14 +62,15 @@ La identidad visual del sitio arranca de acá: azul marino + rojo + naranja/dora
 
 ## Estado actual
 
-**Fase 0 — definición completa** (2026-10-21): este directorio con toda la serie de docs. No hay código todavía. Lo próximo es la Fase 1 (`docs/09-fases.md`): scaffolding Astro + migración `0001` de Supabase con el esquema de `Docs/02`.
+**IT4 — Panel de la liga cerrada** (2026-10-22, tag `v0.3`, checkpoint 4 OK) + entrega post-IT4 de rediseño UI y perfiles de jugador. El tablero vivo está en `Docs/12-plan-iterativo.md`; **IT5 — Delegados y planillas** es el siguiente paso. Deploy real en Vercel (runtime `nodejs24.x`).
 
-## Cómo arrancar (pendiente Fase 1)
+## Cómo arrancar
 
 ```bash
-npm create astro@latest . -- --template minimal --typescript strict
-npm install @tailwindcss/vite tailwindcss @supabase/supabase-js @astrojs/vercel
-npm run dev   # localhost (no 127.0.0.1, es IPv6); --host para probar desde el celular
+npm install
+npm run dev     # http://127.0.0.1:4321 (SSR, lee .env); --host para probar desde el celular
+npm run build   # debe pasar verde antes de cada commit
+npm run check   # astro check (0 errores esperado)
 ```
 
 Variables de entorno (`.env`, gitignored; solo anon key):
@@ -85,4 +87,5 @@ Variables de entorno (`.env`, gitignored; solo anon key):
 ## Known issues
 
 - `npm install` en esta máquina es lento (SD al 87%): mantenerlo en background.
-- Reglas exactas de la liga (sistema de puntos de tabla, walkovers, cortes de edad de formativas, nombres reales de categorías) están marcadas como **[a confirmar con la liga]** en cada doc y se resuelven con la secretaría antes de la Fase 1.
+- Reglas exactas de la liga (sistema de puntos de tabla, walkovers, cortes de edad de formativas, nombres reales de categorías) están marcadas como **[a confirmar con la liga]** en cada doc y se resuelven con la secretaría antes del piloto real (IT8).
+- Deuda de advisories para IT7: `path-to-regexp` (ReDoS) vía `@astrojs/vercel@11` sin fix publicado; `audit fix --force` prohibido sin pedido explícito. Detalle en `Changelog.md`.

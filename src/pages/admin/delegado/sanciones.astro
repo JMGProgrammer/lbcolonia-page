@@ -1,0 +1,25 @@
+---
+// Cara delegado · Mis sanciones (/admin/delegado/sanciones)
+// Docs/05 §1B: ver las sanciones activas de sus jugadores con partidos pendientes.
+// Sección completa en la sesión 3 de IT5.
+import DelegadoLayout from '../../../layouts/DelegadoLayout.astro';
+---
+
+<DelegadoLayout title="Mis sanciones" seccionActiva="sanciones">
+  <div class="space-y-6">
+    <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <h1 class="text-xl font-black uppercase tracking-wider text-paper">Mis sanciones</h1>
+      <p class="mt-1 text-xs text-paper-muted">Sanciones activas de los jugadores de su club.</p>
+    </div>
+
+    <div class="rounded-[14px] border border-gold-400/40 bg-gold-400/10 p-6 text-center">
+      <h2 class="text-base font-bold text-gold-400">Sección en preparación</h2>
+      <p class="mt-2 text-sm text-paper-muted">
+        La vista de sanciones activas de su club llega en la sesión 3 de IT5.
+      </p>
+      <a href="/admin/delegado" class="mt-4 inline-block rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-xs font-bold text-paper hover:bg-navy-700 transition-colors">
+        &larr; Volver a mis partidos
+      </a>
+    </div>
+  </div>
+</DelegadoLayout>

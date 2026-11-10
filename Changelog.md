@@ -3,6 +3,22 @@
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
 Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4), `v0.4` = rediseño UI + perfiles de jugador (post-IT4).
 
+## 2026-10-22 · IT5 sesión 1: Cara delegado (sin tag)
+
+**Qué puede hacer el delegado de club**: entrar al panel con su cuenta, ver solo los partidos de su club, cargar la planilla del partido en 3 bloques con la foto del papel firmado y disputar si es visitante.
+
+### Added
+- Layout propio del delegado (`DelegadoLayout`) con navegación institucional, badge de rol/club y confirmaciones CSP-safe.
+- Hub **Mis partidos** (`/admin/delegado`): partidos de su club con acciones (cargar/continuar planilla, ver, disputar) y resumen de cargas pendientes.
+- **Planilla en 3 bloques** (`/admin/delegado/partidos/[id]/planilla`): resultado calculado por suma de puntos, jugadores locales y visitantes con guardado por bloque, foto del papel obligatoria (bucket privado `planillas/{org}/{partido}`) y alta rápida de jugador (ficha `solicitada`).
+- **Disputa del visitante** (`/admin/delegado/partidos/[id]/disputar`) con motivo obligatorio.
+- Migración `0006_planillas_endurecer.sql`: disputa con motivo obligatorio, verificación con foto obligatoria, `cargada_por = auth.uid()` y alta rápida de jugadores para delegados.
+- Login: los delegados entran a su cara; la secretaría sigue en `/admin`.
+
+### Verificación
+- `astro check` 0 errores · `npm run build` verde · smoke HTTP de las rutas nuevas (200 / 302 esperado).
+- Pendiente por falta de conectividad a Supabase en el entorno: aplicar `0006`, correr las negativas RLS y el barrido responsive.
+
 ## [v0.4] — 2026-10-22 · Post-IT4: rediseño UI y perfiles de jugador
 
 **Qué puede hacer Juan / la liga**: recorrer un sitio público con identidad visual completa (escudos y fotos reales, colores por club, banners de video, sección de campeonatos) y entrar al **perfil personal de cada jugador** con promedios, game log y navegación desde boxscores y rosters.

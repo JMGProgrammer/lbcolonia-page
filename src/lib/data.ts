@@ -31,6 +31,7 @@ export interface TorneoInfo {
 
 export interface PartidoVista {
   id: string;
+  org_id: string;
   ronda: string;
   estado: 'programado' | 'en_juego' | 'finalizado' | 'postergado' | 'suspendido' | 'walkover';
   publicado: boolean;
@@ -44,7 +45,7 @@ export interface PartidoVista {
   walkover_ganador_id: string | null;
   local: EquipoAsociado | null;
   visitante: EquipoAsociado | null;
-  torneos: { id: string; nombre: string; temporada: number; categorias: { nombre: string; acronimo: string | null } } | null;
+  torneos: { id: string; nombre: string; temporada: number; estadisticas_detalladas: boolean; categorias: { nombre: string; acronimo: string | null } } | null;
 }
 
 export interface FilaTabla {
@@ -148,11 +149,11 @@ export interface ClubDetalle {
 const CLUBES_FIELDS = 'nombre,slug,escudo_url,color1,color2';
 
 const SELECT_PARTIDO = `
-  id, ronda, estado, publicado, fecha_hora, sede, nota_publica,
+  id, org_id, ronda, estado, publicado, fecha_hora, sede, nota_publica,
   puntos_local, puntos_visitante, cuartos_local, cuartos_visitante, walkover_ganador_id,
   local:equipos!partidos_equipo_local_id_fkey(id, nombre_mostrar, clubes(${CLUBES_FIELDS})),
   visitante:equipos!partidos_equipo_visitante_id_fkey(id, nombre_mostrar, clubes(${CLUBES_FIELDS})),
-  torneos(id, nombre, temporada, categorias(nombre, acronimo))
+  torneos(id, nombre, temporada, estadisticas_detalladas, categorias(nombre, acronimo))
 `.trim();
 
 const SELECT_TORNEO = 'id,nombre,temporada,estado,formato,estadisticas_detalladas,categorias(nombre,acronimo,orden)';

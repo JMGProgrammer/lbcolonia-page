@@ -1,0 +1,321 @@
+---
+// Layout exclusivo de la cara delegado del panel (/admin/delegado).
+// Docs/05 §1B y §5: mismo lenguaje visual que el panel de la liga, nav móvil con
+// touch targets >= 68px, confirmaciones CSP-safe y aviso al salir al público.
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  seccionActiva?: 'inicio' | 'club' | 'sanciones';
+}
+
+const { title = 'Panel del Delegado', seccionActiva = 'inicio' } = Astro.props;
+const tituloFinal = `${title} · Panel LBC`;
+---
+
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-navy-950 text-paper">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{tituloFinal}</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="icon" type="image/png" href="/logo-lbc-bgr.png" />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-navy-950 bg-court-overlay bg-fixed font-display pb-28 md:pb-12 text-paper antialiased">
+    <!-- Header institucional del panel de delegado -->
+    <header class="border-b border-navy-700/80 bg-navy-900/90 backdrop-blur-md sticky top-0 z-40 shadow-lg shadow-navy-950/40">
+      <div class="mx-auto flex max-w-[1240px] items-center justify-between px-4 py-3.5">
+        <div class="flex items-center gap-3">
+          <a href="/admin/delegado" class="flex items-center gap-3 focus:outline-none group">
+            <img src="/logo-lbc-bgr.png" alt="LBC" class="h-10 w-10 object-contain drop-shadow" />
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base font-black uppercase tracking-wider text-paper group-hover:text-orange-500 transition-colors">LBC · Delegado</span>
+                <span id="badge-rol" class="rounded bg-navy-800/90 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-gold-400 border border-gold-400/30">
+                  Verificando...
+                </span>
+              </div>
+              <p id="subtitulo-club" class="text-xs text-paper-muted font-medium">Cargando club...</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-aviso-sitio-publico"
+            type="button"
+            class="hidden sm:inline-flex items-center gap-1 rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1.5 text-xs text-paper-muted hover:text-paper hover:border-navy-600 transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Sitio público
+          </button>
+
+          <button
+            id="btn-cerrar-sesion"
+            type="button"
+            class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-paper transition-colors"
+          >
+            Salir
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Estado de carga mientras verifica sesión -->
+    <div id="admin-cargando" class="flex flex-1 items-center justify-center p-8">
+      <div class="flex flex-col items-center gap-3 text-center">
+        <div class="h-8 w-8 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+        <p class="text-sm text-paper-muted">Comprobando su sesión de delegado...</p>
+      </div>
+    </div>
+
+    <!-- Contenedor principal (oculto hasta confirmar auth) -->
+    <main id="admin-contenido" class="hidden mx-auto w-full max-w-[1200px] flex-1 px-4 py-6">
+      <slot />
+    </main>
+
+    <!-- Cinta de navegación móvil inferior (touch targets >= 68px) -->
+    <nav
+      class="fixed bottom-0 left-0 right-0 z-40 flex h-[68px] items-stretch overflow-x-auto border-t border-navy-700 bg-navy-900/95 backdrop-blur lg:hidden scrollbar-none"
+    >
+      <a
+        href="/admin/delegado"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'inicio' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Partidos</span>
+      </a>
+
+      <a
+        href="/admin/delegado/club"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'club' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Mi club</span>
+      </a>
+
+      <a
+        href="/admin/delegado/sanciones"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'sanciones' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Sanciones</span>
+      </a>
+
+      <button
+        id="btn-movil-sitio"
+        type="button"
+        class="flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 text-paper-muted hover:text-paper transition-colors"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Público</span>
+      </button>
+    </nav>
+
+    <!-- Diálogo de confirmación destructiva (data-confirm) -->
+    <dialog
+      id="dialogo-confirmacion"
+      class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[90%]"
+    >
+      <div class="flex flex-col gap-4">
+        <div class="flex items-start gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/20 text-orange-500">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-paper">Confirmar acción</h3>
+            <p id="dialogo-confirmacion-texto" class="mt-1 text-sm text-paper-muted">
+              ¿Está seguro de que desea continuar?
+            </p>
+          </div>
+        </div>
+        <div class="mt-2 flex justify-end gap-2">
+          <button
+            id="dialogo-confirmacion-cancelar"
+            type="button"
+            class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-700 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            id="dialogo-confirmacion-aceptar"
+            type="button"
+            class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink hover:bg-orange-700 transition-colors"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Diálogo de salida al sitio público -->
+    <dialog
+      id="dialogo-salida-publico"
+      class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[90%]"
+    >
+      <div class="flex flex-col gap-4">
+        <div>
+          <h3 class="text-base font-bold text-paper">Pasar al sitio público</h3>
+          <p class="mt-1 text-sm text-paper-muted">
+            Está a punto de salir del panel para visualizar el sitio como lo ven los hinchas. Podrá regresar en cualquier momento navegando a <code class="text-orange-500">/admin</code>.
+          </p>
+        </div>
+        <div class="mt-2 flex justify-end gap-2">
+          <button
+            id="dialogo-salida-cancelar"
+            type="button"
+            class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-700 transition-colors"
+          >
+            Quedarme en el panel
+          </button>
+          <a
+            href="/"
+            class="inline-flex items-center justify-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink hover:bg-orange-700 transition-colors"
+          >
+            Ir al sitio público
+          </a>
+        </div>
+      </div>
+    </dialog>
+  </body>
+</html>
+
+<script>
+  import { obtenerEstadoAdmin, cerrarSesion } from '../lib/supabase-browser';
+
+  async function inicializarDelegado() {
+    const estado = await obtenerEstadoAdmin();
+
+    const cargando = document.getElementById('admin-cargando');
+    const contenido = document.getElementById('admin-contenido');
+    const badgeRol = document.getElementById('badge-rol');
+    const subtitulo = document.getElementById('subtitulo-club');
+
+    if (!estado.autenticado) {
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/admin/login?redirect=${redirect}`;
+      return;
+    }
+
+    // Un organizador que cae acá se manda a su panel (no a la cara delegado)
+    if (estado.esOrganizador) {
+      window.location.href = '/admin';
+      return;
+    }
+
+    if (estado.rol !== 'delegado') {
+      if (cargando) {
+        cargando.innerHTML = `
+          <div class="max-w-md rounded-xl border border-navy-700 bg-navy-900 p-6 text-center">
+            <h2 class="text-base font-bold text-paper">Acceso restringido</h2>
+            <p class="mt-2 text-sm text-paper-muted">
+              Su cuenta tiene rol <strong>${estado.rol ?? 'invitado'}</strong>. Esta sección es para delegados de club.
+            </p>
+            <button id="btn-cerrar-restringido" class="mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink">
+              Cerrar sesión
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-cerrar-restringido')?.addEventListener('click', async () => {
+          await cerrarSesion();
+          window.location.href = '/admin/login';
+        });
+      }
+      return;
+    }
+
+    if (badgeRol) {
+      badgeRol.textContent = 'DELEGADO';
+      badgeRol.className = 'rounded bg-gold-400/20 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400 border border-gold-400/30';
+    }
+    if (subtitulo) subtitulo.textContent = estado.clubNombre ?? 'Club';
+
+    if (cargando) cargando.classList.add('hidden');
+    if (contenido) contenido.classList.remove('hidden');
+
+    window.dispatchEvent(new CustomEvent('delegado-auth-ok', { detail: estado }));
+  }
+
+  document.getElementById('btn-cerrar-sesion')?.addEventListener('click', async () => {
+    await cerrarSesion();
+    window.location.href = '/admin/login';
+  });
+
+  const dialogoSalida = document.getElementById('dialogo-salida-publico') as HTMLDialogElement | null;
+  document.getElementById('btn-aviso-sitio-publico')?.addEventListener('click', () => dialogoSalida?.showModal());
+  document.getElementById('btn-movil-sitio')?.addEventListener('click', () => dialogoSalida?.showModal());
+  document.getElementById('dialogo-salida-cancelar')?.addEventListener('click', () => dialogoSalida?.close());
+
+  // Confirmaciones globales CSP-safe con [data-confirm]
+  const dialogoConfirm = document.getElementById('dialogo-confirmacion') as HTMLDialogElement | null;
+  const textoConfirm = document.getElementById('dialogo-confirmacion-texto');
+  const btnAceptarConfirm = document.getElementById('dialogo-confirmacion-aceptar');
+  const btnCancelarConfirm = document.getElementById('dialogo-confirmacion-cancelar');
+
+  btnCancelarConfirm?.addEventListener('click', () => dialogoConfirm?.close());
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest('[data-confirm]') as HTMLElement | null;
+    if (!el) return;
+
+    const mensaje = el.getAttribute('data-confirm');
+    if (!mensaje) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (dialogoConfirm && textoConfirm && btnAceptarConfirm) {
+      textoConfirm.textContent = mensaje;
+      dialogoConfirm.showModal();
+
+      const onConfirm = () => {
+        dialogoConfirm.close();
+        btnAceptarConfirm.removeEventListener('click', onConfirm);
+
+        const form = el.closest('form');
+        if (el.getAttribute('type') === 'submit' && form) {
+          form.requestSubmit(el);
+        } else {
+          el.dispatchEvent(new CustomEvent('confirmado', { bubbles: true }));
+        }
+      };
+
+      btnAceptarConfirm.addEventListener('click', onConfirm, { once: true });
+    }
+  });
+
+  inicializarDelegado();
+</script>

@@ -465,13 +465,19 @@ const tituloFinal = `${title} · Panel LBC`;
       return;
     }
 
+    // El delegado tiene su propia cara del panel (Docs/05 §1B)
+    if (estado.rol === 'delegado') {
+      window.location.href = '/admin/delegado';
+      return;
+    }
+
     if (!estado.esOrganizador) {
       if (cargando) {
         cargando.innerHTML = `
           <div class="max-w-md rounded-xl border border-navy-700 bg-navy-900 p-6 text-center">
             <h2 class="text-base font-bold text-paper">Acceso restringido</h2>
             <p class="mt-2 text-sm text-paper-muted">
-              Su cuenta tiene rol <strong>${estado.rol ?? 'invitado'}</strong>. El portal para delegados de clubes se habilitará en la siguiente fase (IT5).
+              Su cuenta tiene rol <strong>${estado.rol ?? 'invitado'}</strong>. Este portal es para la secretaría de la liga.
             </p>
             <button id="btn-cerrar-restringido" class="mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink">
               Cerrar sesión

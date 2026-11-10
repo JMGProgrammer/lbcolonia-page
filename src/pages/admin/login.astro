@@ -114,12 +114,16 @@ const titulo = 'Iniciar sesión · Panel LBC';
   const alertaError = document.getElementById('alerta-error');
   const alertaErrorTexto = document.getElementById('alerta-error-texto');
 
-  // Si ya tiene sesión válida de organizador, redirigir directo
+  // Si ya tiene sesión válida, redirigir directo a su cara del panel
+  function destinoSegunRol(rol: string | null): string {
+    return rol === 'delegado' ? '/admin/delegado' : '/admin';
+  }
+
   async function verificarSesionPrevia() {
     const estado = await obtenerEstadoAdmin();
-    if (estado.autenticado && estado.esOrganizador) {
+    if (estado.autenticado && (estado.esOrganizador || estado.rol === 'delegado')) {
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect') ?? '/admin';
+      const redirect = params.get('redirect') ?? destinoSegunRol(estado.rol);
       window.location.href = redirect;
     }
   }
@@ -151,9 +155,9 @@ const titulo = 'Iniciar sesión · Panel LBC';
 
       if (data.session) {
         const estado = await obtenerEstadoAdmin();
-        if (!estado.esOrganizador) {
+        if (!estado.esOrganizador && estado.rol !== 'delegado') {
           if (alertaError && alertaErrorTexto) {
-            alertaErrorTexto.textContent = 'Su cuenta no cuenta con permisos de secretaría para este panel.';
+            alertaErrorTexto.textContent = 'Su cuenta no cuenta con permisos para este panel.';
             alertaError.classList.remove('hidden');
           }
           await supabaseBrowser.auth.signOut();
@@ -164,7 +168,7 @@ const titulo = 'Iniciar sesión · Panel LBC';
         }
 
         const params = new URLSearchParams(window.location.search);
-        const redirect = params.get('redirect') ?? '/admin';
+        const redirect = params.get('redirect') ?? destinoSegunRol(estado.rol);
         window.location.href = redirect;
       }
     } catch (err: any) {

@@ -24,6 +24,8 @@ export interface EstadoAdmin {
   email: string | null;
   nombre: string | null;
   orgId: string | null;
+  clubId: string | null;
+  clubNombre: string | null;
   rol: 'liga_admin' | 'liga_ayudante' | 'delegado' | null;
   isSuperadmin: boolean;
   esAdmin: boolean; // liga_admin o superadmin (puede publicar)
@@ -40,6 +42,8 @@ export async function obtenerEstadoAdmin(): Promise<EstadoAdmin> {
       email: null,
       nombre: null,
       orgId: null,
+      clubId: null,
+      clubNombre: null,
       rol: null,
       isSuperadmin: false,
       esAdmin: false,
@@ -68,16 +72,28 @@ export async function obtenerEstadoAdmin(): Promise<EstadoAdmin> {
   const orgId = config?.valor ?? null;
 
   let rol: 'liga_admin' | 'liga_ayudante' | 'delegado' | null = null;
+  let clubId: string | null = null;
+  let clubNombre: string | null = null;
 
   if (orgId) {
     const { data: miembro } = await supabaseBrowser
       .from('org_members')
-      .select('rol')
+      .select('rol, club_id')
       .eq('org_id', orgId)
       .eq('user_id', user.id)
       .single();
 
     rol = (miembro?.rol as 'liga_admin' | 'liga_ayudante' | 'delegado') ?? null;
+    clubId = (miembro?.club_id as string | null) ?? null;
+
+    if (clubId) {
+      const { data: club } = await supabaseBrowser
+        .from('clubes')
+        .select('nombre')
+        .eq('id', clubId)
+        .single();
+      clubNombre = club?.nombre ?? null;
+    }
   }
 
   const esAdmin = isSuperadmin || rol === 'liga_admin';
@@ -89,6 +105,8 @@ export async function obtenerEstadoAdmin(): Promise<EstadoAdmin> {
     email: user.email ?? null,
     nombre: profile?.nombre ?? user.email?.split('@')[0] ?? 'Usuario',
     orgId,
+    clubId,
+    clubNombre,
     rol,
     isSuperadmin,
     esAdmin,

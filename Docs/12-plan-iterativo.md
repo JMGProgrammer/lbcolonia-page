@@ -16,7 +16,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT3 — Sitio público completo | ✅ hecha (`ffb0cd5` + `12e7506`, tag `v0.2`) — checkpoint 3 **OK** 2026-10-21: deploy Vercel probado desde el celu (menús y secciones, criterio "2 toques" cumplido) |
 | IT4 — Panel de la liga | ✅ hecha (sesiones 1, 2 y 3, tag `v0.3`) — Checkpoint 4 **OK** |
 | Post-IT4 — Rediseño UI + perfiles de jugador | ✅ hecha (sesión 4, 18 commits del 22/10, tag `v0.4`) — ver nota abajo |
-| IT5 — Delegados y planillas | 🟡 activa (siguiente paso) |
+| IT5 — Delegados y planillas | 🟡 activa (sesión 1 hecha: cara delegado + planilla + disputa) |
 | IT6 — Complejidad del torneo | pendiente |
 | IT7 — Endurecimiento | pendiente |
 | IT8 — Piloto real con la LBC | pendiente (condicionada a reunión con la liga) |
@@ -159,6 +159,17 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - Policies duras + las 6 negativas de `Docs/03 §5` en verde.
 
 **Checkpoint 5**: simulacro de jornada completa con Juan actuando dos roles (delegado local, luego liga): carga, disputa, verifica, publica. OK = el circuito real del sábado cerrado.
+
+**Estado de la sesión 1 (2026-10-22) — Cara delegado: andamio, planilla y disputa**:
+- **Layout propio del delegado** (`src/layouts/DelegadoLayout.astro`): nav institucional con sus secciones (Partidos / Mi club / Sanciones), badge de rol y club, confirmaciones CSP-safe (`data-confirm` + `<dialog>`) y aviso al salir al sitio público.
+- **Hub "Mis partidos"** (`/admin/delegado`): solo los partidos de su club (local y visitante) con acciones según el caso: cargar/continuar planilla, ver planilla (verificada o en disputa), disputar (visitante con borrador) o "esperando al local". Resumen de cargas pendientes.
+- **Planilla en 3 bloques** (`/admin/delegado/partidos/[id]/planilla`): (1) resultado calculado por suma de puntos, (2) jugadores locales y (3) visitantes con guardado por bloque; foto del papel **obligatoria** (bucket privado `planillas/{org}/{partido}`, con preview firmado) y alta rápida de jugador (crea `jugadores` + ficha `solicitada`). El marcador del partido se deriva de la suma de stats al verificar (trigger `planilla_verificada_cierre` de `0001`).
+- **Disputa del visitante** (`/admin/delegado/partidos/[id]/disputar`): motivo obligatorio; actualiza la planilla a `disputada` con `disputada_por_club`. La policy de `0001` ya lo permitía; el trigger nuevo refuerza el motivo.
+- **Login y redirección**: los delegados entran directo a `/admin/delegado`; la secretaría sigue en `/admin`; `AdminLayout` redirige al delegado a su cara.
+- **Migración `0006_planillas_endurecer.sql`** (lista, **pendiente de aplicar**: sin conectividad a Supabase en el entorno de la sesión): disputa con motivo obligatorio, verificación con foto obligatoria, `cargada_por = auth.uid()` en el insert de planilla y policy de alta rápida de jugadores para delegados.
+- **Verificación**: `astro check` 0 errores; `npm run build` verde; smoke HTTP de las rutas nuevas (`/admin/login`, `/admin`, `/admin/delegado`, `/club`, `/sanciones` → 200; planilla con id falso → 302). Barrido responsive y negativas RLS **pendientes** por la falta de conectividad a Supabase (el harness de QA no existe en `/tmp/opencode/qa` en esta sesión).
+- **Pendiente para la sesión 2**: verificación de la liga (inbox de planillas, diff contra la foto, corrección y publicación con auditoría) y resolución de disputas. Sesión 3: Mi club (roster) y Mis sanciones.
+- Modelos usados: Gemini 3.8 Flash (thinking alto).
 
 ## IT6 — Complejidad del torneo (2-3 sesiones)
 

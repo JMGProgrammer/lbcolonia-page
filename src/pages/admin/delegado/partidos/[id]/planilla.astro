@@ -1,0 +1,640 @@
+---
+// Cara delegado · Carga de planilla (/admin/delegado/partidos/[id]/planilla)
+// Docs/05 §2: planilla en 3 bloques (resultado + locales + visitantes) con
+// guardado por bloque, foto del papel obligatoria y alta rápida de jugador.
+// El marcador del partido se deriva de la suma de stats (trigger de verificación);
+// el delegado solo carga lo que dice el papel.
+import DelegadoLayout from '../../../../../layouts/DelegadoLayout.astro';
+import { partidoPorId, rosterDeEquipos, type FichaRoster } from '../../../../../lib/data';
+
+const { id } = Astro.params;
+const partido = id ? await partidoPorId(id) : null;
+
+if (!partido || !partido.local || !partido.visitante) {
+  return Astro.redirect('/admin/delegado');
+}
+
+const roster = await rosterDeEquipos([partido.local.id, partido.visitante.id]);
+const rosterLocal = roster.filter((r) => r.equipo_id === partido.local!.id);
+const rosterVisitante = roster.filter((r) => r.equipo_id === partido.visitante!.id);
+const detalladas = partido.torneos?.estadisticas_detalladas ?? false;
+
+const inputStat =
+  'w-full min-w-[3rem] rounded border border-navy-700 bg-navy-950 px-1.5 py-1.5 text-center text-xs text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none';
+
+function filasRoster(lado: 'local' | 'visitante', filas: FichaRoster[]) {
+  return filas.map((f) => {
+    const nombre = f.jugadores?.nombre_completo ?? 'Jugador';
+    const dorsal = f.dorsal ?? '';
+    return `
+      <tr data-ficha="${f.id}" data-lado="${lado}" data-dorsal="${dorsal}" data-nombre="${nombre.replace(/"/g, '&quot;')}">
+        <td class="px-2 py-2 whitespace-nowrap">
+          <span class="num inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-navy-800 px-1 text-[0.7rem] font-black text-gold-400">${dorsal || '—'}</span>
+          <span class="ml-2 text-xs font-semibold text-paper">${nombre}</span>
+        </td>
+        <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="minutos" /></td>
+        <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="puntos" /></td>
+        <td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="faltas" /></td>
+        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="rebotes" /></td>` : ''}
+        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="asistencias" /></td>` : ''}
+        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="tapas" /></td>` : ''}
+        ${detalladas ? `<td class="px-1 py-2"><input type="number" min="0" inputmode="numeric" placeholder="0" class="${inputStat}" data-stat="robos" /></td>` : ''}
+      </tr>
+    `;
+  }).join('');
+}
+---
+
+<DelegadoLayout title="Cargar planilla" seccionActiva="inicio">
+  <div class="space-y-6">
+    <!-- Encabezado del partido -->
+    <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3 min-w-0">
+          <a href="/admin/delegado" class="shrink-0 rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors">
+            &larr; Mis partidos
+          </a>
+          <div class="min-w-0">
+            <h1 class="truncate text-lg font-black uppercase tracking-wider text-paper">
+              {partido.local.clubes?.nombre} <span class="text-orange-500">vs</span> {partido.visitante.clubes?.nombre}
+            </h1>
+            <p class="text-xs text-paper-muted">
+              {partido.torneos?.nombre} · Fecha {partido.ronda} · {new Date(partido.fecha_hora).toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {partido.sede ? ` · ${partido.sede}` : ''}
+            </p>
+          </div>
+        </div>
+        <span id="badge-estado" class="hidden shrink-0 rounded bg-navy-800 border border-navy-700 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+          Borrador
+        </span>
+      </div>
+    </div>
+
+    <!-- Aviso de solo lectura cuando la planilla ya no es editable -->
+    <div id="aviso-solo-lectura" class="hidden rounded-[14px] border border-gold-400/40 bg-gold-400/10 p-4 text-sm text-gold-400">
+      Esta planilla ya no puede editarse: está <strong id="aviso-solo-lectura-estado">verificada</strong>. Si necesita corregirla, comuníquese con la secretaría de la liga.
+    </div>
+
+    <!-- Bloque 1 · Resultado (se deriva de la suma del papel) -->
+    <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-black uppercase tracking-wider text-paper flex items-center gap-2">
+            <span class="flex h-6 w-6 items-center justify-center rounded bg-orange-500 text-[0.7rem] font-black text-ink">1</span>
+            Resultado
+          </h2>
+          <p class="mt-1 text-xs text-paper-muted">El marcador se calcula con la suma de los puntos cargados en el papel.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-center">
+            <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">{partido.local.clubes?.nombre}</p>
+            <p id="marcador-local" class="num text-3xl font-black text-paper">0</p>
+          </div>
+          <span class="text-xl font-black text-paper-muted">-</span>
+          <div class="text-center">
+            <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">{partido.visitante.clubes?.nombre}</p>
+            <p id="marcador-visitante" class="num text-3xl font-black text-paper">0</p>
+          </div>
+        </div>
+      </div>
+      <p id="aviso-suma" class="mt-3 hidden text-xs text-gold-400"></p>
+    </section>
+
+    <!-- Bloque 2 · Jugadores locales -->
+    <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-black uppercase tracking-wider text-paper flex items-center gap-2">
+            <span class="flex h-6 w-6 items-center justify-center rounded bg-orange-500 text-[0.7rem] font-black text-ink">2</span>
+            Jugadores locales
+          </h2>
+          <p class="mt-1 text-xs text-paper-muted">{partido.local.clubes?.nombre} · complete los datos de los que jugaron.</p>
+        </div>
+        <button
+          type="button"
+          id="btn-nuevo-local"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors"
+        >
+          + Jugador nuevo
+        </button>
+      </div>
+
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full min-w-[720px] text-left">
+          <thead>
+            <tr class="border-b border-navy-700 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              <th class="px-2 py-2">Jugador</th>
+              <th class="px-1 py-2 text-center">MIN</th>
+              <th class="px-1 py-2 text-center">PTS</th>
+              <th class="px-1 py-2 text-center">FAL</th>
+              ${detalladas ? '<th class="px-1 py-2 text-center">REB</th>' : ''}
+              ${detalladas ? '<th class="px-1 py-2 text-center">AST</th>' : ''}
+              ${detalladas ? '<th class="px-1 py-2 text-center">TAP</th>' : ''}
+              ${detalladas ? '<th class="px-1 py-2 text-center">ROB</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            {filasRoster('local', rosterLocal)}
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-xs text-paper-muted">Complete los datos y guarde el bloque; puede continuar con el otro equipo y volver después.</p>
+    </section>
+
+    <!-- Bloque 3 · Jugadores visitantes -->
+    <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-black uppercase tracking-wider text-paper flex items-center gap-2">
+            <span class="flex h-6 w-6 items-center justify-center rounded bg-orange-500 text-[0.7rem] font-black text-ink">3</span>
+            Jugadores visitantes
+          </h2>
+          <p class="mt-1 text-xs text-paper-muted">{partido.visitante.clubes?.nombre} · el papel firma los dos equipos.</p>
+        </div>
+        <button
+          type="button"
+          id="btn-nuevo-visitante"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors"
+        >
+          + Jugador nuevo
+        </button>
+      </div>
+
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full min-w-[720px] text-left">
+          <thead>
+            <tr class="border-b border-navy-700 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              <th class="px-2 py-2">Jugador</th>
+              <th class="px-1 py-2 text-center">MIN</th>
+              <th class="px-1 py-2 text-center">PTS</th>
+              <th class="px-1 py-2 text-center">FAL</th>
+              ${detalladas ? '<th class="px-1 py-2 text-center">REB</th>' : ''}
+              ${detalladas ? '<th class="px-1 py-2 text-center">AST</th>' : ''}
+              ${detalladas ? '<th class="px-1 py-2 text-center">TAP</th>' : ''}
+              ${detalladas ? '<th class="px-1 py-2 text-center">ROB</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            {filasRoster('visitante', rosterVisitante)}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Foto del papel (obligatoria) -->
+    <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <h2 class="text-sm font-black uppercase tracking-wider text-paper flex items-center gap-2">
+        <span class="flex h-6 w-6 items-center justify-center rounded bg-orange-500 text-[0.7rem] font-black text-ink">4</span>
+        Foto del papel firmado
+      </h2>
+      <p class="mt-1 text-xs text-paper-muted">Obligatoria para verificar: la secretaría contrasta los datos contra esta foto.</p>
+
+      <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
+        <label class="flex min-h-[7rem] flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy-700 bg-navy-950/60 p-4 text-center hover:border-orange-500/60 transition-colors">
+          <input id="input-foto" type="file" accept="image/*" capture="environment" class="hidden" />
+          <svg class="h-8 w-8 text-paper-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          <span class="text-xs text-paper-muted" id="foto-texto">Tocá para sacar la foto del papel</span>
+        </label>
+        <div class="flex-1">
+          <img id="foto-preview" class="hidden max-h-56 w-full rounded-lg border border-navy-700 object-contain" alt="Vista previa de la planilla" />
+          <p id="foto-estado" class="mt-2 text-xs text-paper-muted">Sin foto cargada.</p>
+          <button
+            id="btn-subir-foto"
+            type="button"
+            class="mt-3 hidden rounded-lg border border-navy-700 bg-navy-800 px-3.5 py-2 text-xs font-bold text-paper hover:bg-navy-700 transition-colors"
+          >
+            Subir foto
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra de acciones -->
+    <div class="sticky bottom-20 lg:bottom-6 flex flex-col gap-2 rounded-[14px] border border-navy-700 bg-navy-900/95 p-4 shadow-2xl backdrop-blur md:flex-row md:items-center md:justify-between">
+      <p id="texto-guardado" class="text-xs text-paper-muted">Sin cambios guardados todavía.</p>
+      <div class="flex flex-wrap gap-2">
+        <button
+          id="btn-guardar-local"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-3.5 py-2.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Guardar locales
+        </button>
+        <button
+          id="btn-guardar-visitante"
+          type="button"
+          class="rounded-lg border border-navy-700 bg-navy-800 px-3.5 py-2.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors"
+        >
+          Guardar visitantes
+        </button>
+        <button
+          id="btn-guardar-borrador"
+          type="button"
+          class="rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-ink hover:bg-orange-700 transition-colors"
+        >
+          Guardar borrador
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de alta rápida de jugador -->
+  <dialog
+    id="modal-nuevo-jugador"
+    class="fixed inset-0 m-auto rounded-xl border border-navy-700 bg-navy-900 p-6 text-paper shadow-2xl backdrop:bg-navy-950/80 max-w-md w-[92%]"
+  >
+    <h3 class="text-base font-bold text-paper">Alta rápida de jugador</h3>
+    <p class="mt-1 text-xs text-paper-muted">La ficha nace como <strong>solicitada</strong>; la liga la confirma.</p>
+    <form id="form-nuevo-jugador" class="mt-4 space-y-3">
+      <input type="hidden" id="nuevo-lado" />
+      <div>
+        <label for="nuevo-nombre" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">Nombre completo</label>
+        <input id="nuevo-nombre" type="text" required class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper focus:border-orange-500 focus:outline-none" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="nuevo-fecha" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">Nacimiento</label>
+          <input id="nuevo-fecha" type="date" class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper focus:border-orange-500 focus:outline-none" />
+        </div>
+        <div>
+          <label for="nuevo-dorsal" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">Dorsal</label>
+          <input id="nuevo-dorsal" type="number" min="0" class="mt-1 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper focus:border-orange-500 focus:outline-none" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" id="btn-cancelar-nuevo" class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-700 transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-ink hover:bg-orange-700 transition-colors">
+          Guardar jugador
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Toast -->
+  <div id="toast" class="pointer-events-none fixed bottom-24 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border border-navy-700 bg-navy-900 px-4 py-2.5 text-xs font-bold text-paper shadow-2xl"></div>
+
+  <!-- Datos del servidor para el script (progresivo: sin esto la página no carga) -->
+  <div
+    id="datos-planilla"
+    class="hidden"
+    data-partido={JSON.stringify(partido)}
+    data-org-id={partido.org_id}
+    data-detalladas={detalladas ? '1' : '0'}
+  ></div>
+</DelegadoLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../../../lib/supabase-browser';
+
+  const datosEl = document.getElementById('datos-planilla') as HTMLElement | null;
+  const partido = JSON.parse(datosEl?.dataset.partido ?? '{}');
+  const orgId: string = datosEl?.dataset.orgId ?? '';
+  const detalladas: boolean = datosEl?.dataset.detalladas === '1';
+
+  let userId: string | null = null;
+  let planillaId: string | null = null;
+  let planillaEstado: string | null = null;
+  let fotoUrlGuardada: string | null = null;
+  let archivoFoto: File | null = null;
+
+  const $ = (sel: string) => document.querySelector(sel) as HTMLElement | null;
+  const $$ = (sel: string) => Array.from(document.querySelectorAll(sel)) as HTMLElement[];
+
+  function toast(mensaje: string, tipo: 'ok' | 'error' = 'ok') {
+    const el = $('#toast');
+    if (!el) return;
+    el.textContent = mensaje;
+    el.className = `pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-lg border px-4 py-2.5 text-xs font-bold shadow-2xl ${
+      tipo === 'error' ? 'border-red-500/50 bg-red-500/15 text-red-400' : 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+    }`;
+    el.classList.remove('hidden');
+    window.setTimeout(() => el.classList.add('hidden'), 3200);
+  }
+
+  function estadoEditable(): boolean {
+    return planillaEstado === null || planillaEstado === 'borrador';
+  }
+
+  function marcarSoloLectura() {
+    const badge = $('#badge-estado');
+    const aviso = $('#aviso-solo-lectura');
+    const avisoEstado = $('#aviso-solo-lectura-estado');
+    if (badge && planillaEstado) {
+      badge.classList.remove('hidden');
+      badge.textContent = planillaEstado.charAt(0).toUpperCase() + planillaEstado.slice(1);
+    }
+    if (!estadoEditable()) {
+      aviso?.classList.remove('hidden');
+      if (avisoEstado) avisoEstado.textContent = planillaEstado ?? '';
+      $$('input[data-stat]').forEach((input) => ((input as HTMLInputElement).disabled = true));
+      $$('button[id^="btn-nuevo-"]').forEach((b) => ((b as HTMLButtonElement).disabled = true));
+      const guardar = $('#btn-guardar-borrador') as HTMLButtonElement | null;
+      if (guardar) guardar.disabled = true;
+    }
+  }
+
+  function numero(v: string | undefined): number {
+    const n = Number(v ?? 0);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function leerFilas(lado: 'local' | 'visitante') {
+    return $$(`tr[data-lado="${lado}"]`).map((tr) => {
+      const get = (stat: string) => numero((tr.querySelector(`[data-stat="${stat}"]`) as HTMLInputElement)?.value);
+      return {
+        ficha_id: tr.getAttribute('data-ficha') as string,
+        dorsal: Number(tr.getAttribute('data-dorsal') || 0) || null,
+        minutos: get('minutos'),
+        puntos: get('puntos'),
+        faltas: get('faltas'),
+        rebotes: get('rebotes'),
+        asistencias: get('asistencias'),
+        tapas: get('tapas'),
+        robos: get('robos'),
+      };
+    });
+  }
+
+  function actualizarMarcador() {
+    const locales = leerFilas('local');
+    const visitantes = leerFilas('visitante');
+    const sumaLocal = locales.reduce((acc, f) => acc + f.puntos, 0);
+    const sumaVisita = visitantes.reduce((acc, f) => acc + f.puntos, 0);
+    const ml = $('#marcador-local');
+    const mv = $('#marcador-visitante');
+    if (ml) ml.textContent = String(sumaLocal);
+    if (mv) mv.textContent = String(sumaVisita);
+    const aviso = $('#aviso-suma');
+    if (aviso) {
+      if (sumaLocal === 0 && sumaVisita === 0) {
+        aviso.classList.add('hidden');
+      } else {
+        aviso.classList.remove('hidden');
+        aviso.textContent = `Marcador según la carga: ${sumaLocal} - ${sumaVisita}. Revisá que coincida con el total del papel antes de guardar.`;
+      }
+    }
+  }
+
+  async function asegurarPlanilla(): Promise<string | null> {
+    if (planillaId) return planillaId;
+    if (!userId) {
+      toast('Sesión no disponible. Volvé a iniciar sesión.', 'error');
+      return null;
+    }
+    const { data, error } = await supabaseBrowser
+      .from('planillas')
+      .insert({ org_id: orgId, partido_id: partido.id, estado: 'borrador', cargada_por: userId })
+      .select('id')
+      .single();
+    if (error || !data) {
+      toast('No se pudo crear la planilla: ' + (error?.message ?? 'error desconocido'), 'error');
+      return null;
+    }
+    planillaId = data.id;
+    planillaEstado = 'borrador';
+    return planillaId;
+  }
+
+  async function guardarStats(lado: 'local' | 'visitante'): Promise<boolean> {
+    if (!estadoEditable()) {
+      toast('La planilla ya no es editable.', 'error');
+      return false;
+    }
+    const idPlanilla = await asegurarPlanilla();
+    if (!idPlanilla) return false;
+
+    const filas = leerFilas(lado);
+    const fichaIds = filas.map((f) => f.ficha_id);
+
+    // Borra solo las líneas de ese lado (la planilla puede tener el otro ya cargado)
+    if (fichaIds.length > 0) {
+      const { error: errorBorrado } = await supabaseBrowser
+        .from('planilla_stats')
+        .delete()
+        .eq('planilla_id', idPlanilla)
+        .in('ficha_id', fichaIds);
+      if (errorBorrado) {
+        toast('No se pudieron actualizar los datos: ' + errorBorrado.message, 'error');
+        return false;
+      }
+    }
+
+    const paraInsertar = filas
+      .filter((f) => f.minutos > 0 || f.puntos > 0 || f.faltas > 0 || f.rebotes > 0 || f.asistencias > 0 || f.tapas > 0 || f.robos > 0)
+      .map((f) => ({
+        org_id: orgId,
+        planilla_id: idPlanilla,
+        ficha_id: f.ficha_id,
+        dorsal: f.dorsal,
+        minutos: f.minutos,
+        puntos: f.puntos,
+        faltas: f.faltas,
+        rebotes: detalladas ? f.rebotes : null,
+        asistencias: detalladas ? f.asistencias : null,
+        tapas: detalladas ? f.tapas : null,
+        robos: detalladas ? f.robos : null,
+      }));
+
+    if (paraInsertar.length > 0) {
+      const { error: errorInsercion } = await supabaseBrowser.from('planilla_stats').insert(paraInsertar);
+      if (errorInsercion) {
+        toast('No se pudieron guardar los datos: ' + errorInsercion.message, 'error');
+        return false;
+      }
+    }
+
+    $('#texto-guardado')!.textContent = `Bloque guardado · ${new Date().toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' })}`;
+    toast('Bloque guardado');
+    return true;
+  }
+
+  async function cargarPlanilla() {
+    const { data: pl, error } = await supabaseBrowser
+      .from('planillas')
+      .select('id, estado, foto_url, cargada_por')
+      .eq('partido_id', partido.id)
+      .maybeSingle();
+
+    if (error) {
+      toast('No se pudo leer la planilla: ' + error.message, 'error');
+      return;
+    }
+    if (!pl) {
+      $('#badge-estado')!.classList.remove('hidden');
+      $('#badge-estado')!.textContent = 'Borrador';
+      actualizarMarcador();
+      return;
+    }
+
+    planillaId = pl.id;
+    planillaEstado = pl.estado;
+    fotoUrlGuardada = pl.foto_url;
+    if (pl.foto_url) {
+      $('#foto-estado')!.textContent = 'Foto del papel cargada.';
+      $('#foto-preview')!.classList.remove('hidden');
+      // bucket privado: se genera una URL firmada para el preview
+      const { data: signed } = await supabaseBrowser.storage
+        .from('planillas')
+        .createSignedUrl(pl.foto_url, 600);
+      if (signed?.signedUrl) ($('#foto-preview') as HTMLImageElement).src = signed.signedUrl;
+    }
+
+    const { data: stats } = await supabaseBrowser
+      .from('planilla_stats')
+      .select('ficha_id, minutos, puntos, faltas, rebotes, asistencias, tapas, robos')
+      .eq('planilla_id', pl.id);
+
+    (stats ?? []).forEach((s: any) => {
+      const tr = document.querySelector(`tr[data-ficha="${s.ficha_id}"]`);
+      if (!tr) return;
+      (['minutos', 'puntos', 'faltas', 'rebotes', 'asistencias', 'tapas', 'robos'] as const).forEach((campo) => {
+        const input = tr.querySelector(`[data-stat="${campo}"]`) as HTMLInputElement | null;
+        if (input && s[campo] !== null && s[campo] !== undefined) input.value = String(s[campo]);
+      });
+    });
+
+    actualizarMarcador();
+    marcarSoloLectura();
+  }
+
+  async function subirFoto(): Promise<boolean> {
+    if (!archivoFoto) {
+      toast('Elegí la foto del papel primero.', 'error');
+      return false;
+    }
+    if (!estadoEditable()) {
+      toast('La planilla ya no es editable.', 'error');
+      return false;
+    }
+    const idPlanilla = await asegurarPlanilla();
+    if (!idPlanilla) return false;
+
+    const limpio = archivoFoto.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase();
+    const path = `planillas/${orgId}/${partido.id}/${Date.now()}-${limpio}`;
+    const { error: errorSubida } = await supabaseBrowser.storage
+      .from('planillas')
+      .upload(path, archivoFoto, { upsert: true, contentType: archivoFoto.type });
+
+    if (errorSubida) {
+      toast('No se pudo subir la foto: ' + errorSubida.message, 'error');
+      return false;
+    }
+
+    const { error: errorUpdate } = await supabaseBrowser
+      .from('planillas')
+      .update({ foto_url: path })
+      .eq('id', idPlanilla);
+
+    if (errorUpdate) {
+      toast('La foto subió pero no se vinculó: ' + errorUpdate.message, 'error');
+      return false;
+    }
+
+    fotoUrlGuardada = path;
+    $('#foto-estado')!.textContent = 'Foto del papel cargada.';
+    toast('Foto cargada');
+    return true;
+  }
+
+  window.addEventListener('delegado-auth-ok', async (e: any) => {
+    const estado: EstadoAdmin = e.detail;
+    userId = estado.userId;
+    await cargarPlanilla();
+  });
+
+  // Recalcular marcador al escribir
+  document.addEventListener('input', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.matches('input[data-stat]')) actualizarMarcador();
+  });
+
+  // Foto: preview local + botón subir
+  const inputFoto = $('#input-foto') as HTMLInputElement | null;
+  inputFoto?.addEventListener('change', () => {
+    archivoFoto = inputFoto.files?.[0] ?? null;
+    const preview = $('#foto-preview') as HTMLImageElement | null;
+    const btn = $('#btn-subir-foto');
+    const texto = $('#foto-texto');
+    if (archivoFoto && preview) {
+      preview.src = URL.createObjectURL(archivoFoto);
+      preview.classList.remove('hidden');
+      btn?.classList.remove('hidden');
+      if (texto) texto.textContent = archivoFoto.name;
+    }
+  });
+  $('#btn-subir-foto')?.addEventListener('click', () => subirFoto());
+
+  // Guardados por bloque
+  $('#btn-guardar-local')?.addEventListener('click', () => guardarStats('local'));
+  $('#btn-guardar-visitante')?.addEventListener('click', () => guardarStats('visitante'));
+  $('#btn-guardar-borrador')?.addEventListener('click', async () => {
+    if (!fotoUrlGuardada && !archivoFoto) {
+      toast('La foto del papel es obligatoria para guardar el borrador.', 'error');
+      return;
+    }
+    if (archivoFoto && !fotoUrlGuardada) {
+      const ok = await subirFoto();
+      if (!ok) return;
+    }
+    const okL = await guardarStats('local');
+    const okV = await guardarStats('visitante');
+    if (okL && okV) toast('Borrador guardado. La liga lo verificará contra el papel.');
+  });
+
+  // Alta rápida de jugador
+  const modalNuevo = $('#modal-nuevo-jugador') as HTMLDialogElement | null;
+  let ladoNuevo: 'local' | 'visitante' = 'local';
+
+  function abrirNuevo(lado: 'local' | 'visitante') {
+    ladoNuevo = lado;
+    ($('#nuevo-lado') as HTMLInputElement).value = lado;
+    modalNuevo?.showModal();
+  }
+  $('#btn-nuevo-local')?.addEventListener('click', () => abrirNuevo('local'));
+  $('#btn-nuevo-visitante')?.addEventListener('click', () => abrirNuevo('visitante'));
+  $('#btn-cancelar-nuevo')?.addEventListener('click', () => modalNuevo?.close());
+
+  ($('#form-nuevo-jugador') as HTMLFormElement)?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nombre = ($('#nuevo-nombre') as HTMLInputElement).value.trim();
+    const fecha = ($('#nuevo-fecha') as HTMLInputElement).value;
+    const dorsal = Number(($('#nuevo-dorsal') as HTMLInputElement).value) || null;
+    if (!nombre) return;
+
+    // 1) jugador (la policy de IT5 permite al delegado crear en su org)
+    const { data: jugador, error: errorJugador } = await supabaseBrowser
+      .from('jugadores')
+      .insert({ org_id: orgId, nombre_completo: nombre, fecha_nacimiento: fecha || null })
+      .select('id')
+      .single();
+    if (errorJugador || !jugador) {
+      toast('No se pudo crear el jugador: ' + (errorJugador?.message ?? ''), 'error');
+      return;
+    }
+
+    // 2) ficha solicitada en el equipo y torneo del partido
+    const equipoId = ladoNuevo === 'local' ? partido.local!.id : partido.visitante!.id;
+    const { error: errorFicha } = await supabaseBrowser.from('fichas').insert({
+      org_id: orgId,
+      jugador_id: jugador.id,
+      equipo_id: equipoId,
+      torneo_id: partido.torneos?.id ?? null,
+      dorsal,
+      estado: 'solicitada',
+      desde: new Date().toISOString().slice(0, 10),
+    });
+    if (errorFicha) {
+      toast('El jugador se creó pero la ficha no: ' + errorFicha.message, 'error');
+      return;
+    }
+
+    modalNuevo?.close();
+    toast('Jugador agregado. Actualizando roster...');
+    window.setTimeout(() => window.location.reload(), 900);
+  });
+</script>

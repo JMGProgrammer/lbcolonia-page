@@ -1,0 +1,189 @@
+---
+// Cara delegado · Disputa de planilla (/admin/delegado/partidos/[id]/disputar)
+// Docs/05 §1B y Docs/06 §1: el visitante puede disputar dentro de la ventana;
+// la liga resuelve el caso. La policy exige estado borrador y club visitante.
+import DelegadoLayout from '../../../../../layouts/DelegadoLayout.astro';
+import { partidoPorId } from '../../../../../lib/data';
+
+const { id } = Astro.params;
+const partido = id ? await partidoPorId(id) : null;
+
+if (!partido || !partido.local || !partido.visitante) {
+  return Astro.redirect('/admin/delegado');
+}
+---
+
+<DelegadoLayout title="Disputar planilla" seccionActiva="inicio">
+  <div class="space-y-6">
+    <div class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+          <h1 class="truncate text-lg font-black uppercase tracking-wider text-paper">
+            {partido.local.clubes?.nombre} <span class="text-orange-500">vs</span> {partido.visitante.clubes?.nombre}
+          </h1>
+          <p class="text-xs text-paper-muted">
+            {partido.torneos?.nombre} · Fecha {partido.ronda} · {new Date(partido.fecha_hora).toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+        </div>
+        <a href="/admin/delegado" class="shrink-0 rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700 transition-colors">
+          &larr; Mis partidos
+        </a>
+      </div>
+    </div>
+
+    <div id="aviso" class="hidden rounded-[14px] border border-gold-400/40 bg-gold-400/10 p-4 text-sm text-gold-400"></div>
+
+    <!-- Resumen de la planilla cargada por el local -->
+    <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+      <h2 class="text-sm font-black uppercase tracking-wider text-paper">Planilla cargada por el local</h2>
+      <p class="mt-1 text-xs text-paper-muted">Revisá los datos antes de disputar. El motivo es obligatorio: la liga lo usa para resolver.</p>
+
+      <div id="cargando" class="mt-4 flex justify-center p-6">
+        <div class="h-6 w-6 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+      </div>
+
+      <div id="resumen" class="hidden mt-4 space-y-3"></div>
+
+      <form id="form-disputa" class="mt-5 hidden space-y-4">
+        <div>
+          <label for="motivo" class="block text-xs font-bold uppercase tracking-wider text-paper-muted">Motivo de la disputa</label>
+          <textarea
+            id="motivo"
+            required
+            rows="4"
+            placeholder="Ej.: la suma del tercer cuarto no coincide con el marcador del papel."
+            class="mt-1.5 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"
+          ></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button
+            type="submit"
+            class="rounded-lg bg-gold-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-ink hover:bg-gold-400/85 transition-colors"
+          >
+            Enviar disputa a la liga
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="pointer-events-none fixed bottom-24 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border border-navy-700 bg-navy-900 px-4 py-2.5 text-xs font-bold text-paper shadow-2xl"></div>
+
+  <!-- Datos del servidor para el script -->
+  <div id="datos-partido" class="hidden" data-partido={JSON.stringify(partido)}></div>
+</DelegadoLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../../../lib/supabase-browser';
+
+  const datosEl = document.getElementById('datos-partido') as HTMLElement | null;
+  const partido = JSON.parse(datosEl?.dataset.partido ?? '{}');
+
+  let clubId: string | null = null;
+  let planillaId: string | null = null;
+
+  const $ = (sel: string) => document.querySelector(sel) as HTMLElement | null;
+
+  function toast(mensaje: string, tipo: 'ok' | 'error' = 'ok') {
+    const el = $('#toast');
+    if (!el) return;
+    el.textContent = mensaje;
+    el.className = `pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-lg border px-4 py-2.5 text-xs font-bold shadow-2xl ${
+      tipo === 'error' ? 'border-red-500/50 bg-red-500/15 text-red-400' : 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+    }`;
+    el.classList.remove('hidden');
+    window.setTimeout(() => el.classList.add('hidden'), 3200);
+  }
+
+  function mostrarAviso(texto: string) {
+    const aviso = $('#aviso');
+    if (aviso) {
+      aviso.textContent = texto;
+      aviso.classList.remove('hidden');
+    }
+    $('#cargando')?.classList.add('hidden');
+  }
+
+  function fila(nombre: string, dorsal: number | null, puntos: number) {
+    return `<div class="flex items-center justify-between gap-3 border-b border-navy-800 py-1.5 last:border-0">
+      <span class="text-xs text-paper"><span class="num mr-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-navy-800 px-1 text-[0.65rem] font-black text-gold-400">${dorsal ?? '—'}</span>${nombre}</span>
+      <span class="num text-xs font-black text-paper">${puntos}</span>
+    </div>`;
+  }
+
+  async function cargar() {
+    const { data: planilla } = await supabaseBrowser
+      .from('planillas')
+      .select('id, estado, foto_url, motivo_disputa, disputada_por_club')
+      .eq('partido_id', partido.id)
+      .maybeSingle();
+
+    $('#cargando')?.classList.add('hidden');
+
+    if (!planilla) {
+      mostrarAviso('El club local todavía no cargó la planilla. Cuando la cargue, podrás revisarla y disputarla.');
+      return;
+    }
+    if (planilla.estado !== 'borrador') {
+      mostrarAviso(`La planilla ya está "${planilla.estado}". No se puede disputar.`);
+      return;
+    }
+
+    planillaId = planilla.id;
+    const { data: stats } = await supabaseBrowser
+      .from('planilla_stats')
+      .select('dorsal, puntos, ficha_id, fichas: ficha_id ( jugadores ( nombre_completo ) )')
+      .eq('planilla_id', planilla.id)
+      .order('dorsal', { ascending: true, nullsFirst: false });
+
+    // El nombre viene por la ficha; si el embed no resuelve, se muestra el dorsal.
+    const filas = (stats ?? []).map((s: any) => fila(s?.fichas?.nombre_completo ?? 'Jugador', s.dorsal, s.puntos)).join('');
+    const resumen = $('#resumen');
+    if (resumen) {
+      resumen.innerHTML = `
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-lg bg-navy-950/70 p-3">
+            <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">${partido.local!.clubes?.nombre}</p>
+            <div class="mt-1">${filas || '<p class="text-xs text-paper-muted">Sin jugadores cargados.</p>'}</div>
+          </div>
+          <div class="rounded-lg bg-navy-950/70 p-3">
+            <p class="text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">${partido.visitante!.clubes?.nombre}</p>
+            <p class="mt-1 text-xs text-paper-muted">Los datos de ambos equipos están en la misma planilla.</p>
+          </div>
+        </div>
+      `;
+      resumen.classList.remove('hidden');
+    }
+    $('#form-disputa')?.classList.remove('hidden');
+  }
+
+  window.addEventListener('delegado-auth-ok', async (e: any) => {
+    const estado: EstadoAdmin = e.detail;
+    clubId = estado.clubId;
+    await cargar();
+  });
+
+  ($('#form-disputa') as HTMLFormElement)?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const motivo = ($('#motivo') as HTMLTextAreaElement).value.trim();
+    if (!motivo) {
+      toast('El motivo es obligatorio.', 'error');
+      return;
+    }
+    if (!planillaId || !clubId) {
+      toast('No se pudo identificar la planilla o el club.', 'error');
+      return;
+    }
+    const { error } = await supabaseBrowser
+      .from('planillas')
+      .update({ estado: 'disputada', disputada_por_club: clubId, motivo_disputa: motivo })
+      .eq('id', planillaId);
+    if (error) {
+      toast('No se pudo enviar la disputa: ' + error.message, 'error');
+      return;
+    }
+    toast('Disputa enviada. La liga la revisará.');
+    window.setTimeout(() => (window.location.href = '/admin/delegado'), 1400);
+  });
+</script>

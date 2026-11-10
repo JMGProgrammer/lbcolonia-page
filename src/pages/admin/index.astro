@@ -123,19 +123,20 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         </a>
 
         <!-- Pendiente 4: Planillas con disputa / por verificar -->
-        <div
+        <a
+          href="/admin/planillas"
           id="card-pendiente-disputas"
-          class="card-vigor rounded-xl p-5"
+          class="card-vigor group rounded-xl p-5"
         >
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-paper-muted">Planillas en disputa</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-paper-muted">Planillas por revisar</span>
             <span id="indicador-disputas" class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
           </div>
           <p id="inbox-disputas" class="mt-2 text-3xl font-black num text-paper">0</p>
-          <p class="mt-3 text-xs text-paper-muted">
-            Observaciones de delegados
+          <p class="mt-3 text-xs font-semibold text-paper-muted group-hover:text-orange-400 transition-colors">
+            Verificar contra la foto
           </p>
-        </div>
+        </a>
       </div>
     </div>
 
@@ -557,14 +558,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         }
       }
 
-      // 3. Planillas en disputa
+      // 3. Planillas pendientes de revisión (borrador o disputada)
       const { data: planillas } = await supabaseBrowser
         .from('planillas')
         .select('id, estado');
 
       let totalDisputas = 0;
       if (planillas) {
-        totalDisputas = planillas.filter((p) => p.estado === 'disputada').length;
+        totalDisputas = planillas.filter((p) => p.estado === 'borrador' || p.estado === 'disputada').length;
         const elDisputas = document.getElementById('inbox-disputas');
         const indDisputas = document.getElementById('indicador-disputas');
         if (elDisputas) elDisputas.textContent = String(totalDisputas);

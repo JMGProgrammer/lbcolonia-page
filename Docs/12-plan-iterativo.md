@@ -16,7 +16,7 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 | IT3 — Sitio público completo | ✅ hecha (`ffb0cd5` + `12e7506`, tag `v0.2`) — checkpoint 3 **OK** 2026-10-21: deploy Vercel probado desde el celu (menús y secciones, criterio "2 toques" cumplido) |
 | IT4 — Panel de la liga | ✅ hecha (sesiones 1, 2 y 3, tag `v0.3`) — Checkpoint 4 **OK** |
 | Post-IT4 — Rediseño UI + perfiles de jugador | ✅ hecha (sesión 4, 18 commits del 22/10, tag `v0.4`) — ver nota abajo |
-| IT5 — Delegados y planillas | 🟡 activa (sesión 1 hecha: cara delegado + planilla + disputa) |
+| IT5 — Delegados y planillas | 🟡 activa (sesiones 1–2 hechas: circuito delegado → liga; falta Mi club + sanciones + checkpoint) |
 | IT6 — Complejidad del torneo | pendiente |
 | IT7 — Endurecimiento | pendiente |
 | IT8 — Piloto real con la LBC | pendiente (condicionada a reunión con la liga) |
@@ -171,8 +171,15 @@ Medición de duración: en **sesiones de trabajo** (una sesión = un par de hora
 - **Fix durante la prueba de Juan**: las filas de jugadores se estaban imprimiendo como HTML literal por interpolar strings en el template Astro; reemplazadas por markup Astro tipado (sin `set:html`) para render correcto y escape seguro de nombres.
 - **Fix de alta rápida durante la prueba**: el botón del visitante permitía intentar crear una ficha para el rival, que RLS rechazaba correctamente después de haber creado el jugador. Se eliminó esa acción del rival y la migración `0007_alta_jugador_delegado_atomica.sql` agrega la RPC transaccional `solicitar_ficha_jugador`: jugador + ficha `solicitada` se crean juntos y solo para un equipo del club del delegado. Migración aplicada, tipos regenerados y prueba positiva con rollback en verde.
 - **QoL de feedback**: toasts de carga y disputa movidas a la esquina inferior derecha, con mayor tamaño, contraste, duración (4,2 s) y `aria-live`; en móvil quedan por encima de la nav inferior.
-- **Pendiente para la sesión 2**: verificación de la liga (inbox de planillas, diff contra la foto, corrección y publicación con auditoría) y resolución de disputas. Sesión 3: Mi club (roster) y Mis sanciones.
+- **Pendiente para la sesión 3**: Mi club (roster), Mis sanciones, QA responsive y simulacro completo del checkpoint 5.
 - Modelos usados: Gemini 3.8 Flash (thinking alto).
+
+**Estado de la sesión 2 (2026-10-22) — Mesa de verificación de la liga**:
+- **Inbox de planillas** (`/admin/planillas`): bandeja con filtros Pendientes / En disputa / Verificadas / Todas, estado de foto, motivo de disputa y acceso a revisión. Integrado al nav desktop/móvil y a la tarjeta de pendientes del hub de secretaría (ahora cuenta borradores + disputadas).
+- **Comparación papel vs pantalla** (`/admin/planillas/[id]`): foto privada mediante signed URL (10 min) en columna sticky y boxscore editable al lado, agrupado por equipo; marcador recalculado en vivo para contrastar con el papel.
+- **Acciones de liga**: guardar correcciones, devolver una disputa al delegado con nota, anular con confirmación + nota, verificar (exige foto; si estaba disputada exige resolución) y publicar. `liga_ayudante` puede corregir/verificar; solo `liga_admin` ve y ejecuta la publicación final. Publicar dispara `/api/revalidate`.
+- **Migración `0008_verificacion_planillas_audit.sql` aplicada**: campos `resolucion_disputa`, `resuelta_por`, `resuelta_at`; guard de nota para anulación; auditoría de cambios de estado/resolución y de cada INSERT/UPDATE/DELETE en `planilla_stats`.
+- **Verificación**: `astro check` 0 errores; build Vercel verde; consultas reales de inbox (4 planillas) y detalle (6 líneas) con cuenta liga; prueba transaccional con rollback de auditoría de corrección y resolución de disputa en verde; negativas RLS en verde; smoke HTTP de `/admin`, `/admin/planillas` y detalle → 200. Barrido visual pendiente: no hay Chrome del sistema ni harness en este entorno.
 
 ## IT6 — Complejidad del torneo (2-3 sesiones)
 

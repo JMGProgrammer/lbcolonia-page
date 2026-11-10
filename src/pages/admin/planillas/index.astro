@@ -1,0 +1,159 @@
+---
+// Inbox de verificación de planillas (/admin/planillas)
+// Docs/05 §1A: borradores, disputas y verificadas en una única bandeja.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Planillas" seccionActiva="planillas">
+  <div class="space-y-6">
+    <div class="flex flex-col gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="rounded border border-gold-400/30 bg-gold-400/10 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-gold-400">Mesa de control</span>
+          <h1 class="text-xl font-black uppercase tracking-wider text-paper">Planillas</h1>
+        </div>
+        <p class="mt-1 text-xs text-paper-muted">Verifique los datos contra la foto del papel antes de publicar.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="contador-pendientes" class="rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1 text-xs font-bold text-orange-400">— pendientes</span>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex gap-2 overflow-x-auto rounded-[14px] border border-navy-700 bg-navy-900/70 p-3">
+      <button type="button" data-filtro="pendientes" class="filtro shrink-0 rounded-full border border-orange-500 bg-orange-500 px-3 py-1.5 text-xs font-bold text-ink">Pendientes</button>
+      <button type="button" data-filtro="disputadas" class="filtro shrink-0 rounded-full border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper">En disputa</button>
+      <button type="button" data-filtro="verificadas" class="filtro shrink-0 rounded-full border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper">Verificadas</button>
+      <button type="button" data-filtro="todas" class="filtro shrink-0 rounded-full border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper">Todas</button>
+    </div>
+
+    <div id="cargando" class="flex justify-center p-12">
+      <div class="h-7 w-7 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <div id="vacio" class="hidden rounded-[14px] border border-navy-700 bg-navy-900 p-8 text-center">
+      <p class="text-sm text-paper-muted">No hay planillas para este filtro.</p>
+    </div>
+
+    <div id="lista" class="hidden space-y-3"></div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser } from '../../../lib/supabase-browser';
+
+  let planillas: any[] = [];
+  let filtro = 'pendientes';
+
+  const esc = (valor: unknown): string => String(valor ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+
+  function fecha(iso: string): string {
+    return new Date(iso).toLocaleString('es-UY', {
+      weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  function badge(estado: string): string {
+    const clases: Record<string, string> = {
+      borrador: 'border-orange-500/40 bg-orange-500/15 text-orange-400',
+      disputada: 'border-gold-400/50 bg-gold-400/15 text-gold-400',
+      verificada: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400',
+      anulada: 'border-red-500/40 bg-red-500/10 text-red-400',
+    };
+    return `<span class="rounded border px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider ${clases[estado] ?? clases.borrador}">${esc(estado)}</span>`;
+  }
+
+  function coincide(pl: any): boolean {
+    if (filtro === 'pendientes') return pl.estado === 'borrador' || pl.estado === 'disputada';
+    if (filtro === 'disputadas') return pl.estado === 'disputada';
+    if (filtro === 'verificadas') return pl.estado === 'verificada';
+    return true;
+  }
+
+  function render() {
+    const lista = document.getElementById('lista');
+    const vacio = document.getElementById('vacio');
+    if (!lista || !vacio) return;
+
+    const visibles = planillas.filter(coincide);
+    if (visibles.length === 0) {
+      lista.classList.add('hidden');
+      vacio.classList.remove('hidden');
+      return;
+    }
+
+    vacio.classList.add('hidden');
+    lista.classList.remove('hidden');
+    lista.innerHTML = visibles.map((pl) => {
+      const p = pl.partidos;
+      const local = p?.local?.clubes?.nombre ?? p?.local?.nombre_mostrar ?? 'Local';
+      const visita = p?.visitante?.clubes?.nombre ?? p?.visitante?.nombre_mostrar ?? 'Visitante';
+      return `
+        <a href="/admin/planillas/${esc(pl.id)}" class="card-vigor group flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              ${badge(pl.estado)}
+              ${pl.foto_url ? '<span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-400">Foto cargada</span>' : '<span class="text-[0.65rem] font-bold uppercase tracking-wider text-red-400">Sin foto</span>'}
+            </div>
+            <h2 class="mt-2 truncate text-base font-black text-paper group-hover:text-orange-400 transition-colors">${esc(local)} <span class="text-orange-500">vs</span> ${esc(visita)}</h2>
+            <p class="mt-0.5 text-xs text-paper-muted">${esc(p?.torneos?.nombre)} · Fecha ${esc(p?.ronda)} · ${esc(fecha(p?.fecha_hora))}</p>
+            ${pl.estado === 'disputada' ? `<p class="mt-2 line-clamp-2 text-xs text-gold-400"><strong>Motivo:</strong> ${esc(pl.motivo_disputa)}</p>` : ''}
+          </div>
+          <div class="flex shrink-0 items-center gap-3">
+            <span class="text-xs text-paper-muted">Actualizada ${esc(fecha(pl.updated_at ?? pl.created_at))}</span>
+            <span class="rounded-lg bg-orange-500 px-3 py-2 text-xs font-black text-ink">Revisar</span>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  async function cargar() {
+    const { data, error } = await supabaseBrowser
+      .from('planillas')
+      .select(`
+        id, created_at, updated_at, estado, foto_url, motivo_disputa,
+        partidos:partido_id (
+          id, ronda, fecha_hora,
+          torneos ( nombre ),
+          local:equipo_local_id ( nombre_mostrar, clubes:club_id ( nombre ) ),
+          visitante:equipo_visitante_id ( nombre_mostrar, clubes:club_id ( nombre ) )
+        )
+      `)
+      .order('updated_at', { ascending: false, nullsFirst: false });
+
+    document.getElementById('cargando')?.classList.add('hidden');
+    if (error) {
+      const vacio = document.getElementById('vacio');
+      if (vacio) {
+        vacio.textContent = `No se pudieron cargar las planillas: ${error.message}`;
+        vacio.classList.remove('hidden');
+      }
+      return;
+    }
+
+    planillas = data ?? [];
+    const pendientes = planillas.filter((pl) => pl.estado === 'borrador' || pl.estado === 'disputada').length;
+    const contador = document.getElementById('contador-pendientes');
+    if (contador) contador.textContent = `${pendientes} pendiente${pendientes === 1 ? '' : 's'}`;
+    render();
+  }
+
+  document.querySelectorAll('.filtro').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filtro = btn.getAttribute('data-filtro') ?? 'pendientes';
+      document.querySelectorAll('.filtro').forEach((otro) => {
+        otro.className = otro === btn
+          ? 'filtro shrink-0 rounded-full border border-orange-500 bg-orange-500 px-3 py-1.5 text-xs font-bold text-ink'
+          : 'filtro shrink-0 rounded-full border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper';
+      });
+      render();
+    });
+  });
+
+  window.addEventListener('admin-auth-ok', cargar);
+</script>

@@ -479,14 +479,14 @@ isOneToOne: false
                   ]
                 },"planillas": {
                   Row: {
-                    "cargada_por": string | null,"created_at": string,"disputada_por_club": string | null,"estado": Database["public"]['Enums']["estado_planilla"],"foto_url": string | null,"id": string,"motivo_disputa": string | null,"org_id": string,"partido_id": string,"updated_at": string | null,"verificada_at": string | null,"verificada_por": string | null
+                    "cargada_por": string | null,"created_at": string,"disputada_por_club": string | null,"estado": Database["public"]['Enums']["estado_planilla"],"foto_url": string | null,"id": string,"motivo_disputa": string | null,"org_id": string,"partido_id": string,"resolucion_disputa": string | null,"resuelta_at": string | null,"resuelta_por": string | null,"updated_at": string | null,"verificada_at": string | null,"verificada_por": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "cargada_por"?: string | null,"created_at"?: string,"disputada_por_club"?: string | null,"estado"?: Database["public"]['Enums']["estado_planilla"],"foto_url"?: string | null,"id"?: string,"motivo_disputa"?: string | null,"org_id": string,"partido_id": string,"updated_at"?: string | null,"verificada_at"?: string | null,"verificada_por"?: string | null
+                    "cargada_por"?: string | null,"created_at"?: string,"disputada_por_club"?: string | null,"estado"?: Database["public"]['Enums']["estado_planilla"],"foto_url"?: string | null,"id"?: string,"motivo_disputa"?: string | null,"org_id": string,"partido_id": string,"resolucion_disputa"?: string | null,"resuelta_at"?: string | null,"resuelta_por"?: string | null,"updated_at"?: string | null,"verificada_at"?: string | null,"verificada_por"?: string | null
                   }
                   Update: {
-                    "cargada_por"?: string | null,"created_at"?: string,"disputada_por_club"?: string | null,"estado"?: Database["public"]['Enums']["estado_planilla"],"foto_url"?: string | null,"id"?: string,"motivo_disputa"?: string | null,"org_id"?: string,"partido_id"?: string,"updated_at"?: string | null,"verificada_at"?: string | null,"verificada_por"?: string | null
+                    "cargada_por"?: string | null,"created_at"?: string,"disputada_por_club"?: string | null,"estado"?: Database["public"]['Enums']["estado_planilla"],"foto_url"?: string | null,"id"?: string,"motivo_disputa"?: string | null,"org_id"?: string,"partido_id"?: string,"resolucion_disputa"?: string | null,"resuelta_at"?: string | null,"resuelta_por"?: string | null,"updated_at"?: string | null,"verificada_at"?: string | null,"verificada_por"?: string | null
                   }
                   Relationships: [
                     {
@@ -543,6 +543,12 @@ isOneToOne: true
 isOneToOne: true
       referencedRelation: "v_jugador_partidos_log"
       referencedColumns: ["partido_id"]
+    },{
+      foreignKeyName: "planillas_resuelta_por_fkey"
+      columns: ["resuelta_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "planillas_verificada_por_fkey"
       columns: ["verificada_por"]

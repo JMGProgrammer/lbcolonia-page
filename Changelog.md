@@ -3,6 +3,18 @@
 Web oficial de la Liga de Básquetbol de Colonia (Uruguay).
 Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v0.1` = web pública (IT1+IT2), `v0.2` = web pública SSR completa (IT3), `v0.3` = Panel de la Liga (IT4), `v0.4` = rediseño UI + perfiles de jugador (post-IT4).
 
+## 2026-10-22 · IT5 sesión 2: Mesa de verificación de la liga (sin tag)
+
+**Qué puede hacer la secretaría**: abrir una bandeja de planillas, comparar la carga con la foto privada del papel, corregir líneas, resolver disputas, verificar y publicar el resultado oficial.
+
+### Added
+- `/admin/planillas`: inbox con filtros por estado, pendientes, foto y motivo de disputa; integrado al nav y al resumen de secretaría.
+- `/admin/planillas/[id]`: comparación foto/pantalla, boxscore editable por equipo, totales en vivo, resolución con nota, devolución al delegado, anulación, verificación y publicación exclusiva de `liga_admin`.
+- `0008_verificacion_planillas_audit.sql`: resolución de disputas y auditoría granular de planillas y estadísticas.
+
+### Verificación
+- Check 0 errores, build verde, smoke HTTP 200, queries reales con cuenta liga, pruebas transaccionales de auditoría/resolución y negativas RLS en verde.
+
 ## 2026-10-22 · IT5 sesión 1: Cara delegado (sin tag)
 
 **Qué puede hacer el delegado de club**: entrar al panel con su cuenta, ver solo los partidos de su club, cargar la planilla del partido en 3 bloques con la foto del papel firmado y disputar si es visitante.

@@ -1,0 +1,320 @@
+---
+// Mesa de verificación de una planilla (/admin/planillas/[id])
+// Foto del papel y datos cargados lado a lado; corrección, resolución, verificación
+// y publicación. Todo cambio sensible queda auditado por 0003/0008.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const { id } = Astro.params;
+---
+
+<AdminLayout title="Verificar planilla" seccionActiva="planillas">
+  <div class="space-y-6">
+    <div class="flex flex-col gap-4 rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="/admin/planillas" class="shrink-0 rounded-lg border border-navy-700 bg-navy-800 px-2.5 py-1.5 text-xs font-bold text-paper hover:bg-navy-700">&larr; Bandeja</a>
+        <div class="min-w-0">
+          <h1 id="titulo" class="truncate text-lg font-black uppercase tracking-wider text-paper">Cargando planilla...</h1>
+          <p id="subtitulo" class="text-xs text-paper-muted">Mesa de verificación</p>
+        </div>
+      </div>
+      <span id="badge-estado-planilla" class="hidden shrink-0 rounded border px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider"></span>
+    </div>
+
+    <div id="cargando" class="flex justify-center p-12">
+      <div class="h-8 w-8 animate-spin rounded-full border-2 border-navy-700 border-t-orange-500"></div>
+    </div>
+
+    <div id="error-carga" class="hidden rounded-[14px] border border-red-500/40 bg-red-500/10 p-5 text-sm text-red-400"></div>
+
+    <div id="contenido" class="hidden space-y-6">
+      <!-- Disputa -->
+      <section id="panel-disputa" class="hidden rounded-[14px] border border-gold-400/50 bg-gold-400/10 p-5">
+        <div class="flex items-start gap-3">
+          <span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-gold-400 animate-pulse"></span>
+          <div>
+            <h2 class="text-sm font-black uppercase tracking-wider text-gold-400">Planilla disputada por el visitante</h2>
+            <p id="motivo-disputa" class="mt-2 text-sm text-paper"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Comparación: papel vs pantalla -->
+      <div class="grid gap-6 xl:grid-cols-[minmax(20rem,0.8fr)_minmax(0,1.4fr)]">
+        <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl xl:sticky xl:top-24 xl:self-start">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-black uppercase tracking-wider text-paper">1 · Foto del papel</h2>
+              <p class="mt-1 text-xs text-paper-muted">Fuente oficial para la comparación.</p>
+            </div>
+            <a id="abrir-foto" href="#" target="_blank" rel="noreferrer" class="hidden rounded-lg border border-navy-700 bg-navy-800 px-3 py-1.5 text-xs font-bold text-paper hover:bg-navy-700">Abrir grande</a>
+          </div>
+          <div id="sin-foto" class="mt-4 rounded-lg border-2 border-dashed border-red-500/50 bg-red-500/10 p-8 text-center text-sm text-red-400">La planilla no tiene foto. No puede verificarse.</div>
+          <img id="foto-planilla" class="mt-4 hidden max-h-[70vh] w-full rounded-lg border border-navy-700 bg-navy-950 object-contain" alt="Foto del papel firmado" />
+        </section>
+
+        <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl min-w-0">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-sm font-black uppercase tracking-wider text-paper">2 · Datos cargados</h2>
+              <p class="mt-1 text-xs text-paper-muted">Corrija la pantalla hasta que coincida con el papel.</p>
+            </div>
+            <div class="flex items-center gap-3 rounded-lg bg-navy-950/70 px-4 py-2">
+              <div class="text-center"><span id="nombre-local-mini" class="block text-[0.6rem] font-bold uppercase text-paper-muted">Local</span><strong id="total-local" class="num text-2xl text-paper">0</strong></div>
+              <span class="font-black text-paper-muted">-</span>
+              <div class="text-center"><span id="nombre-visita-mini" class="block text-[0.6rem] font-bold uppercase text-paper-muted">Visita</span><strong id="total-visita" class="num text-2xl text-paper">0</strong></div>
+            </div>
+          </div>
+
+          <div id="tablas-stats" class="mt-5 space-y-6"></div>
+
+          <div class="mt-5 flex justify-end">
+            <button id="btn-guardar-correcciones" type="button" class="rounded-lg border border-navy-700 bg-navy-800 px-4 py-2.5 text-xs font-bold text-paper hover:bg-navy-700">Guardar correcciones</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Resolución y acciones -->
+      <section class="rounded-[14px] border border-navy-700 bg-navy-900 p-5 shadow-xl">
+        <h2 class="text-sm font-black uppercase tracking-wider text-paper">3 · Resolución de la liga</h2>
+        <p class="mt-1 text-xs text-paper-muted">La nota es obligatoria al devolver, corregir una disputa o anular.</p>
+        <textarea id="nota-resolucion" rows="3" placeholder="Detalle de la decisión o corrección realizada..." class="mt-4 w-full rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-paper placeholder:text-navy-700 focus:border-orange-500 focus:outline-none"></textarea>
+
+        <div class="mt-4 flex flex-wrap justify-end gap-2">
+          <button id="btn-devolver" type="button" class="hidden rounded-lg border border-gold-400/50 bg-gold-400/10 px-4 py-2.5 text-xs font-bold text-gold-400 hover:bg-gold-400/20">Devolver al delegado</button>
+          <button id="btn-anular" type="button" data-confirm="¿Anular esta planilla? El partido quedará sin resultado verificado." class="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400 hover:bg-red-500 hover:text-paper">Anular</button>
+          <button id="btn-verificar" type="button" class="rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-ink hover:bg-orange-700">Verificar planilla</button>
+          <button id="btn-publicar" type="button" data-confirm="¿Publicar este resultado? Se actualizarán el sitio público y la tabla." class="hidden rounded-lg bg-emerald-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-ink hover:brightness-110">Publicar resultado</button>
+        </div>
+        <p id="aviso-ayudante" class="mt-3 hidden text-right text-xs text-paper-muted">La planilla puede verificarse; la publicación final requiere rol liga_admin.</p>
+      </section>
+    </div>
+
+    <div id="datos-planilla" class="hidden" data-id={id}></div>
+    <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed bottom-24 right-4 z-50 hidden w-[calc(100vw-2rem)] rounded-xl border-2 border-navy-700 bg-navy-900 px-5 py-4 text-sm font-bold leading-relaxed text-paper shadow-2xl sm:bottom-6 sm:right-6 sm:w-auto sm:min-w-80 sm:max-w-md"></div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabaseBrowser, type EstadoAdmin } from '../../../lib/supabase-browser';
+
+  const planillaId = (document.getElementById('datos-planilla') as HTMLElement)?.dataset.id ?? '';
+  let estadoAdmin: EstadoAdmin | null = null;
+  let planilla: any = null;
+  let stats: any[] = [];
+
+  const $ = (id: string) => document.getElementById(id);
+  const esc = (valor: unknown): string => String(valor ?? '')
+    .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+
+  function toast(mensaje: string, tipo: 'ok' | 'error' = 'ok') {
+    const el = $('toast');
+    if (!el) return;
+    el.textContent = mensaje;
+    el.className = `pointer-events-none fixed bottom-24 right-4 z-50 w-[calc(100vw-2rem)] rounded-xl border-2 bg-navy-900 px-5 py-4 text-sm font-bold leading-relaxed shadow-2xl sm:bottom-6 sm:right-6 sm:w-auto sm:min-w-80 sm:max-w-md ${tipo === 'error' ? 'border-red-500 text-red-400' : 'border-emerald-500 text-emerald-400'}`;
+    window.setTimeout(() => el.classList.add('hidden'), 4200);
+  }
+
+  const numero = (valor: unknown): number => Math.max(0, Number(valor) || 0);
+
+  function nombreEquipo(eq: any): string {
+    return eq?.clubes?.nombre ?? eq?.nombre_mostrar ?? 'Equipo';
+  }
+
+  function actualizarTotales() {
+    const localId = planilla?.partidos?.local?.id;
+    const visitaId = planilla?.partidos?.visitante?.id;
+    let local = 0;
+    let visita = 0;
+    document.querySelectorAll<HTMLTableRowElement>('tr[data-stat-id]').forEach((tr) => {
+      const puntos = numero((tr.querySelector('[data-campo="puntos"]') as HTMLInputElement)?.value);
+      if (tr.dataset.equipoId === localId) local += puntos;
+      if (tr.dataset.equipoId === visitaId) visita += puntos;
+    });
+    if ($('total-local')) $('total-local')!.textContent = String(local);
+    if ($('total-visita')) $('total-visita')!.textContent = String(visita);
+  }
+
+  function tablaEquipo(titulo: string, equipoId: string): string {
+    const filas = stats.filter((s) => s.fichas?.equipo_id === equipoId);
+    return `
+      <div>
+        <h3 class="text-xs font-black uppercase tracking-wider text-gold-400">${esc(titulo)}</h3>
+        <div class="mt-2 overflow-x-auto">
+          <table class="w-full min-w-[720px] text-left">
+            <thead><tr class="border-b border-navy-700 text-[0.65rem] font-bold uppercase tracking-wider text-paper-muted">
+              <th class="px-2 py-2">Jugador</th><th class="px-1 py-2 text-center">MIN</th><th class="px-1 py-2 text-center">PTS</th><th class="px-1 py-2 text-center">FAL</th><th class="px-1 py-2 text-center">REB</th><th class="px-1 py-2 text-center">AST</th><th class="px-1 py-2 text-center">TAP</th><th class="px-1 py-2 text-center">ROB</th>
+            </tr></thead>
+            <tbody>${filas.map((s) => `
+              <tr data-stat-id="${esc(s.id)}" data-equipo-id="${esc(equipoId)}" class="border-b border-navy-800 last:border-0">
+                <td class="whitespace-nowrap px-2 py-2"><span class="num mr-2 inline-flex min-w-6 justify-center rounded bg-navy-800 px-1 text-[0.7rem] font-black text-gold-400">${esc(s.dorsal ?? '—')}</span><span class="text-xs font-semibold text-paper">${esc(s.fichas?.jugadores?.nombre_completo ?? 'Jugador')}</span></td>
+                ${['minutos','puntos','faltas','rebotes','asistencias','tapas','robos'].map((campo) => `<td class="px-1 py-2"><input data-campo="${campo}" type="number" min="0" inputmode="numeric" value="${numero(s[campo])}" class="w-full min-w-[3rem] rounded border border-navy-700 bg-navy-950 px-1.5 py-1.5 text-center text-xs text-paper focus:border-orange-500 focus:outline-none" /></td>`).join('')}
+              </tr>`).join('') || '<tr><td colspan="8" class="px-2 py-4 text-center text-xs text-paper-muted">Sin líneas cargadas.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  function pintarEstado() {
+    const estado = planilla.estado;
+    const badge = $('badge-estado-planilla');
+    if (badge) {
+      const clases: Record<string, string> = {
+        borrador: 'border-orange-500/40 bg-orange-500/15 text-orange-400',
+        disputada: 'border-gold-400/50 bg-gold-400/15 text-gold-400',
+        verificada: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400',
+        anulada: 'border-red-500/40 bg-red-500/10 text-red-400',
+      };
+      badge.textContent = estado;
+      badge.className = `shrink-0 rounded border px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider ${clases[estado]}`;
+      badge.classList.remove('hidden');
+    }
+
+    $('panel-disputa')?.classList.toggle('hidden', estado !== 'disputada');
+    if (estado === 'disputada' && $('motivo-disputa')) $('motivo-disputa')!.textContent = planilla.motivo_disputa ?? 'Sin motivo informado.';
+    $('btn-devolver')?.classList.toggle('hidden', estado !== 'disputada');
+    $('btn-verificar')?.classList.toggle('hidden', estado === 'verificada' || estado === 'anulada');
+    $('btn-anular')?.classList.toggle('hidden', estado === 'verificada' || estado === 'anulada');
+    $('btn-publicar')?.classList.toggle('hidden', !(estado === 'verificada' && !planilla.partidos.publicado && estadoAdmin?.esAdmin));
+    $('aviso-ayudante')?.classList.toggle('hidden', !(estado === 'verificada' && !planilla.partidos.publicado && !estadoAdmin?.esAdmin));
+
+    const soloLectura = estado === 'verificada' || estado === 'anulada';
+    document.querySelectorAll<HTMLInputElement>('input[data-campo]').forEach((input) => input.disabled = soloLectura);
+    ($('btn-guardar-correcciones') as HTMLButtonElement | null)?.toggleAttribute('disabled', soloLectura);
+  }
+
+  async function cargar() {
+    const { data: pl, error } = await supabaseBrowser
+      .from('planillas')
+      .select(`
+        id, org_id, partido_id, estado, foto_url, motivo_disputa, resolucion_disputa,
+        verificada_por, verificada_at, resuelta_por, resuelta_at,
+        partidos:partido_id (
+          id, ronda, fecha_hora, publicado, puntos_local, puntos_visitante,
+          torneos ( nombre ),
+          local:equipo_local_id ( id, nombre_mostrar, clubes:club_id ( nombre ) ),
+          visitante:equipo_visitante_id ( id, nombre_mostrar, clubes:club_id ( nombre ) )
+        )
+      `)
+      .eq('id', planillaId)
+      .single();
+
+    if (error || !pl) {
+      $('cargando')?.classList.add('hidden');
+      const err = $('error-carga');
+      if (err) { err.textContent = error?.message ?? 'Planilla no encontrada.'; err.classList.remove('hidden'); }
+      return;
+    }
+    planilla = pl;
+
+    const { data: lineas, error: errorStats } = await supabaseBrowser
+      .from('planilla_stats')
+      .select(`
+        id, ficha_id, dorsal, minutos, puntos, faltas, rebotes, asistencias, tapas, robos,
+        fichas:ficha_id ( equipo_id, jugadores:jugador_id ( nombre_completo ) )
+      `)
+      .eq('planilla_id', planillaId)
+      .order('dorsal', { ascending: true, nullsFirst: false });
+    if (errorStats) toast('No se pudieron cargar las estadísticas: ' + errorStats.message, 'error');
+    stats = lineas ?? [];
+
+    const p = planilla.partidos;
+    const local = nombreEquipo(p.local);
+    const visita = nombreEquipo(p.visitante);
+    $('titulo')!.textContent = `${local} vs ${visita}`;
+    $('subtitulo')!.textContent = `${p.torneos?.nombre ?? 'Torneo'} · Fecha ${p.ronda} · ${new Date(p.fecha_hora).toLocaleString('es-UY')}`;
+    $('nombre-local-mini')!.textContent = local;
+    $('nombre-visita-mini')!.textContent = visita;
+    $('tablas-stats')!.innerHTML = tablaEquipo(local, p.local.id) + tablaEquipo(visita, p.visitante.id);
+    if (planilla.resolucion_disputa) ($('nota-resolucion') as HTMLTextAreaElement).value = planilla.resolucion_disputa;
+
+    if (planilla.foto_url) {
+      const { data: firma, error: errorFirma } = await supabaseBrowser.storage.from('planillas').createSignedUrl(planilla.foto_url, 600);
+      if (firma?.signedUrl) {
+        const img = $('foto-planilla') as HTMLImageElement;
+        const link = $('abrir-foto') as HTMLAnchorElement;
+        img.src = firma.signedUrl;
+        link.href = firma.signedUrl;
+        img.classList.remove('hidden');
+        link.classList.remove('hidden');
+        $('sin-foto')?.classList.add('hidden');
+      } else if (errorFirma && $('sin-foto')) {
+        $('sin-foto')!.textContent = 'La referencia de foto existe, pero el archivo no está disponible en Storage. Solicite una nueva carga.';
+      }
+    }
+
+    $('cargando')?.classList.add('hidden');
+    $('contenido')?.classList.remove('hidden');
+    actualizarTotales();
+    pintarEstado();
+  }
+
+  async function guardarCorrecciones(silencioso = false): Promise<boolean> {
+    const filas = Array.from(document.querySelectorAll<HTMLTableRowElement>('tr[data-stat-id]'));
+    const resultados = await Promise.all(filas.map((tr) => {
+      const valor = (campo: string) => numero((tr.querySelector(`[data-campo="${campo}"]`) as HTMLInputElement)?.value);
+      return supabaseBrowser.from('planilla_stats').update({
+        minutos: valor('minutos'), puntos: valor('puntos'), faltas: valor('faltas'),
+        rebotes: valor('rebotes'), asistencias: valor('asistencias'), tapas: valor('tapas'), robos: valor('robos'),
+      }).eq('id', tr.dataset.statId!);
+    }));
+    const error = resultados.find((r) => r.error)?.error;
+    if (error) { toast('No se guardaron las correcciones: ' + error.message, 'error'); return false; }
+    if (!silencioso) toast('Correcciones guardadas y auditadas.');
+    return true;
+  }
+
+  async function verificar() {
+    if (!planilla.foto_url) { toast('No se puede verificar sin la foto del papel.', 'error'); return; }
+    const nota = ($('nota-resolucion') as HTMLTextAreaElement).value.trim();
+    if (planilla.estado === 'disputada' && !nota) { toast('La resolución de una disputa requiere una nota.', 'error'); return; }
+    if (!(await guardarCorrecciones(true))) return;
+    const { error } = await supabaseBrowser.from('planillas').update({
+      estado: 'verificada', verificada_por: estadoAdmin?.userId, resolucion_disputa: nota || null,
+    }).eq('id', planillaId);
+    if (error) { toast('No se pudo verificar: ' + error.message, 'error'); return; }
+    toast('Planilla verificada. El resultado está listo para publicar.');
+    window.setTimeout(() => window.location.reload(), 1200);
+  }
+
+  async function devolver() {
+    const nota = ($('nota-resolucion') as HTMLTextAreaElement).value.trim();
+    if (!nota) { toast('Escriba qué debe corregir el delegado.', 'error'); return; }
+    const { error } = await supabaseBrowser.from('planillas').update({ estado: 'borrador', resolucion_disputa: nota }).eq('id', planillaId);
+    if (error) { toast('No se pudo devolver la planilla: ' + error.message, 'error'); return; }
+    toast('Planilla devuelta al delegado local.');
+    window.setTimeout(() => window.location.href = '/admin/planillas', 1200);
+  }
+
+  async function anular() {
+    const nota = ($('nota-resolucion') as HTMLTextAreaElement).value.trim();
+    if (!nota) { toast('Anular requiere una nota de resolución.', 'error'); return; }
+    const { error } = await supabaseBrowser.from('planillas').update({ estado: 'anulada', resolucion_disputa: nota }).eq('id', planillaId);
+    if (error) { toast('No se pudo anular: ' + error.message, 'error'); return; }
+    toast('Planilla anulada y auditada.');
+    window.setTimeout(() => window.location.href = '/admin/planillas', 1200);
+  }
+
+  async function publicar() {
+    const { error } = await supabaseBrowser.from('partidos').update({ publicado: true }).eq('id', planilla.partido_id);
+    if (error) { toast('No se pudo publicar: ' + error.message, 'error'); return; }
+    await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ partido_id: planilla.partido_id }) });
+    toast('Resultado publicado en el sitio y la tabla.');
+    window.setTimeout(() => window.location.reload(), 1200);
+  }
+
+  document.addEventListener('input', (e) => {
+    if ((e.target as HTMLElement).matches('input[data-campo]')) actualizarTotales();
+  });
+  $('btn-guardar-correcciones')?.addEventListener('click', () => guardarCorrecciones());
+  $('btn-verificar')?.addEventListener('click', verificar);
+  $('btn-devolver')?.addEventListener('click', devolver);
+  $('btn-anular')?.addEventListener('confirmado', anular);
+  $('btn-publicar')?.addEventListener('confirmado', publicar);
+
+  window.addEventListener('admin-auth-ok', async (e: any) => {
+    estadoAdmin = e.detail;
+    await cargar();
+  });
+</script>

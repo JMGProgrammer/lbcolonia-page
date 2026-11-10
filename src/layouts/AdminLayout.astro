@@ -7,8 +7,9 @@ interface Props {
   title?: string;
   seccionActiva?:
     | 'resumen'
-    | 'fixture'
-    | 'importar'
+     | 'fixture'
+     | 'importar'
+     | 'planillas'
     | 'torneos'
     | 'clubes'
     | 'jugadores'
@@ -85,6 +86,17 @@ const tituloFinal = `${title} · Panel LBC`;
             ]}
           >
             Torneos
+          </a>
+          <a
+            href="/admin/planillas"
+            class:list={[
+              'rounded-lg px-2 py-1.5 transition-colors',
+              seccionActiva === 'planillas'
+                ? 'bg-orange-500 font-bold text-ink'
+                : 'text-paper hover:bg-navy-800',
+            ]}
+          >
+            Planillas
           </a>
           <a
             href="/admin/clubes"
@@ -256,6 +268,21 @@ const tituloFinal = `${title} · Panel LBC`;
           <path d="M6 4h12v7a6 6 0 0 1-12 0V4Z"></path>
         </svg>
         <span class="text-[0.65rem] uppercase tracking-wider">Torneos</span>
+      </a>
+
+      <a
+        href="/admin/planillas"
+        class:list={[
+          'flex min-w-[4.75rem] flex-1 shrink-0 flex-col items-center justify-center gap-1 text-center px-2 transition-colors',
+          seccionActiva === 'planillas' ? 'text-orange-500 font-bold' : 'text-paper-muted hover:text-paper',
+        ]}
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <path d="m9 15 2 2 4-4"></path>
+        </svg>
+        <span class="text-[0.65rem] uppercase tracking-wider">Planillas</span>
       </a>
 
       <a

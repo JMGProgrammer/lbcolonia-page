@@ -114,6 +114,19 @@ const titulo = 'Iniciar sesión · Panel LBC';
   const alertaError = document.getElementById('alerta-error');
   const alertaErrorTexto = document.getElementById('alerta-error-texto');
 
+  function mensajeDeAcceso(error: unknown): string {
+    const detalle = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+    const esRed =
+      detalle.includes('failed to fetch') ||
+      detalle.includes('fetch failed') ||
+      detalle.includes('network') ||
+      detalle.includes('enotfound');
+
+    return esRed
+      ? 'No se pudo conectar con el servicio de acceso. Compruebe la conexión o el estado de Supabase e intente nuevamente.'
+      : 'Credenciales no válidas. Compruebe el correo y la contraseña.';
+  }
+
   // Si ya tiene sesión válida, redirigir directo a su cara del panel
   function destinoSegunRol(rol: string | null): string {
     return rol === 'delegado' ? '/admin/delegado' : '/admin';
@@ -171,9 +184,9 @@ const titulo = 'Iniciar sesión · Panel LBC';
         const redirect = params.get('redirect') ?? destinoSegunRol(estado.rol);
         window.location.href = redirect;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (alertaError && alertaErrorTexto) {
-        alertaErrorTexto.textContent = 'Credenciales no válidas. Compruebe el correo y la contraseña.';
+        alertaErrorTexto.textContent = mensajeDeAcceso(err);
         alertaError.classList.remove('hidden');
       }
       btnSubmit.disabled = false;

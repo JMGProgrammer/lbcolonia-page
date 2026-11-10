@@ -18,7 +18,7 @@ if (!portada) {
   } else if (noticia.slug?.includes('arranco') || noticia.slug?.includes('primera')) {
     portada = '/images/afiche-1era-lbc.jpg';
   } else {
-    portada = '/images/action-hero.jpg';
+    portada = '/images/action-hero.webp';
   }
 }
 
@@ -32,13 +32,15 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
   variante === 'destacada' ? (
     <article class="card-vigor group relative overflow-hidden transition-colors duration-300 hover:border-orange-500/50 md:grid md:grid-cols-12">
       <!-- imagen: absoluta, la altura la marca la columna de texto; se ve entera sobre su propio fondo difuminado -->
-      <a href={`/noticias/${noticia.slug}`} class="relative block h-72 overflow-hidden bg-navy-950 sm:h-96 md:col-span-6 md:h-auto md:min-h-[460px]" tabindex="-1" aria-hidden="true">
+      <a href={`/noticias/${noticia.slug}`} class="image-skeleton relative block h-72 overflow-hidden bg-navy-950 sm:h-96 md:col-span-6 md:h-auto md:min-h-[460px]" tabindex="-1" aria-hidden="true" data-image-shell>
         <img src={portada} alt="" class="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" loading="lazy" />
         <img
           src={portada}
           alt={`Portada: ${noticia.titulo}`}
           class="absolute inset-0 h-full w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           loading="lazy"
+          decoding="async"
+          data-skeleton-image
         />
         <span class="absolute left-4 top-4 bg-orange-500 px-3 py-1 text-xs font-black uppercase tracking-wider text-ink shadow-lg">Destacado</span>
       </a>
@@ -67,8 +69,8 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
     </article>
   ) : variante === 'mini' ? (
     <a href={`/noticias/${noticia.slug}`} class="group/mini flex items-center gap-3.5 border-t border-navy-700/60 py-3 no-underline first:border-t-0">
-      <span class="relative h-14 w-20 shrink-0 overflow-hidden border border-navy-800 bg-navy-950">
-        <img src={portada} alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover/mini:scale-105" loading="lazy" />
+      <span class="image-skeleton relative h-14 w-20 shrink-0 overflow-hidden border border-navy-800 bg-navy-950" data-image-shell>
+        <img src={portada} alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover/mini:scale-105" loading="lazy" decoding="async" data-skeleton-image />
       </span>
       <span class="flex min-w-0 flex-col gap-0.5">
         <time datetime={fechaIso} class="text-[0.68rem] font-black uppercase tracking-wider text-gold-400">{fecha ? fechaCorta(fecha) : 'Oficial'}</time>
@@ -78,12 +80,14 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
   ) : variante === 'horizontal' ? (
     <article class="card-vigor group relative overflow-hidden p-3.5 transition-all duration-200 hover:border-orange-500/50 hover:shadow-xl">
       <a href={`/noticias/${noticia.slug}`} class="flex items-center gap-4 no-underline">
-        <div class="relative h-20 w-24 sm:h-24 sm:w-28 shrink-0 overflow-hidden bg-navy-950 border border-navy-800">
+        <div class="image-skeleton relative h-20 w-24 sm:h-24 sm:w-28 shrink-0 overflow-hidden bg-navy-950 border border-navy-800" data-image-shell>
           <img
             src={portada}
             alt={`Portada: ${noticia.titulo}`}
             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
+            data-skeleton-image
           />
         </div>
         <div class="flex min-w-0 flex-1 flex-col gap-1">
@@ -104,12 +108,14 @@ const fechaIso = fecha ? new Date(fecha).toISOString().slice(0, 10) : undefined;
   ) : (
     <article class="card-vigor group flex flex-col overflow-hidden transition-all duration-300 hover:border-orange-500/50 hover:shadow-2xl">
       <a href={`/noticias/${noticia.slug}`} class="flex h-full flex-col no-underline">
-        <div class="relative aspect-video overflow-hidden bg-navy-950 border-b border-navy-800">
+        <div class="image-skeleton relative aspect-video overflow-hidden bg-navy-950 border-b border-navy-800" data-image-shell>
           <img
             src={portada}
             alt={`Portada: ${noticia.titulo}`}
             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
+            data-skeleton-image
             width="768"
             height="432"
           />

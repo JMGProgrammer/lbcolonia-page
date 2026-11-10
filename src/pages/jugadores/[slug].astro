@@ -106,12 +106,14 @@ const clubClubObj = jugador?.club_slug
 
           <div class="relative z-10 grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
             <!-- Foto de perfil oficial con halo -->
-            <div class="relative mx-auto flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold-400/60 bg-navy-950 p-2 shadow-2xl">
+            <div class="image-skeleton relative mx-auto flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold-400/60 bg-navy-950 p-2 shadow-2xl" data-image-shell>
               <img
                 src={jugador.foto_url || '/images/without-photo.webp'}
                 alt={jugador.nombre_completo ?? 'Foto de jugador'}
                 class="h-full w-full object-cover rounded-full"
                 loading="eager"
+                decoding="async"
+                data-skeleton-image
               />
               {jugador.dorsal != null && (
                 <span class="absolute bottom-1 right-2 rounded-full bg-orange-500 px-2.5 py-0.5 num text-xs font-black text-ink shadow-md">

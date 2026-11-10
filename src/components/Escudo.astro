@@ -34,12 +34,24 @@ const texto = club?.color2 ?? '#f4f1ea';
 
 {
   url ? (
-    <img
-      src={url}
-      alt={`Escudo de ${club?.nombre ?? 'club'}`}
-      loading="lazy"
-      class={`object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] ${clase}`}
-    />
+    <span class={`image-skeleton relative inline-flex shrink-0 items-center justify-center ${clase}`} data-image-shell>
+      <img
+        src={url}
+        alt={`Escudo de ${club?.nombre ?? 'club'}`}
+        loading="lazy"
+        decoding="async"
+        class="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
+        data-skeleton-image
+      />
+      <span
+        class="hidden h-full w-full items-center justify-center rounded-lg font-black text-xs shadow-sm"
+        style={`background:${fundido};color:${texto};border:1px solid ${texto}30`}
+        aria-label={`Escudo no disponible de ${club?.nombre ?? 'club'}`}
+        data-image-fallback
+      >
+        {iniciales}
+      </span>
+    </span>
   ) : (
     <span
       class={`flex shrink-0 place-items-center justify-center rounded-lg font-black text-xs shadow-sm ${clase}`}

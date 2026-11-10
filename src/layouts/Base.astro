@@ -3,7 +3,6 @@
 // Cada página aporta título, descripción y (opcional) JSON-LD extra.
 import TopBar from '../components/TopBar.astro';
 import Footer from '../components/Footer.astro';
-import BannersLateralesVideo from '../components/BannersLateralesVideo.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -50,7 +49,7 @@ const ldFinal = [ligaLd, ...jsonLd];
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href={url} />
-    <link rel="icon" type="image/png" href="/logo-lbc-bgr.png" />
+    <link rel="icon" type="image/png" href="/logo-lbc-favicon.png" />
     <link rel="alternate" type="application/rss+xml" title="Noticias de la LBC" href="/rss.xml" />
 
     <meta property="og:type" content="website" />
@@ -67,7 +66,7 @@ const ldFinal = [ligaLd, ...jsonLd];
 
     <script is:inline type="application/ld+json" set:html={JSON.stringify(ldFinal)} />
   </head>
-  <body class="flex min-h-dvh flex-col bg-court-overlay bg-fixed text-paper antialiased">
+  <body class="flex min-h-dvh flex-col bg-court-overlay text-paper antialiased">
     <a
       href="#contenido"
       class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-orange-500 focus:px-4 focus:py-2.5 focus:font-bold focus:text-ink"
@@ -81,11 +80,35 @@ const ldFinal = [ligaLd, ...jsonLd];
         </p>
       )
     }
-    <BannersLateralesVideo />
     <TopBar />
     <main id="contenido" class="relative z-10 mx-auto w-full max-w-[1200px] flex-1 px-4">
       <slot />
     </main>
     <Footer />
+    <script>
+      function resolverImagen(img: HTMLImageElement, fallo: boolean) {
+        const contenedor = img.closest<HTMLElement>('[data-image-shell]');
+        if (!contenedor) return;
+        contenedor.classList.add(fallo ? 'image-failed' : 'image-loaded');
+        if (fallo) {
+          img.classList.add('hidden');
+          contenedor.querySelector<HTMLElement>('[data-image-fallback]')?.classList.replace('hidden', 'flex');
+        }
+      }
+
+      document.addEventListener('load', (evento) => {
+        const img = evento.target;
+        if (img instanceof HTMLImageElement && img.matches('[data-skeleton-image]')) resolverImagen(img, false);
+      }, true);
+
+      document.addEventListener('error', (evento) => {
+        const img = evento.target;
+        if (img instanceof HTMLImageElement && img.matches('[data-skeleton-image]')) resolverImagen(img, true);
+      }, true);
+
+      document.querySelectorAll<HTMLImageElement>('img[data-skeleton-image]').forEach((img) => {
+        if (img.complete) resolverImagen(img, img.naturalWidth === 0);
+      });
+    </script>
   </body>
 </html>

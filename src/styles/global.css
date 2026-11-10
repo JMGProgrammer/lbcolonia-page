@@ -71,26 +71,48 @@
 .bg-court-overlay {
   background-image:
     linear-gradient(to bottom, rgba(19, 31, 61, 0.88), rgba(19, 31, 61, 0.96)),
-    url('/images/court-bg.jpg');
-  background-size: cover;
+    url('/images/court-bg.webp');
+  background-size: 100% auto;
   background-position: center top;
+  background-repeat: no-repeat;
 }
 
 .bg-leather-subtle {
   background-image:
     linear-gradient(to bottom, rgba(28, 43, 86, 0.85), rgba(19, 31, 61, 0.95)),
-    url('/images/leather-pattern.jpg');
+    url('/images/leather-pattern.webp');
   background-size: 260px 260px;
 }
 
 .card-vigor {
-  background-color: rgba(28, 43, 86, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(28, 43, 86, 0.94);
   border: 1px solid rgba(46, 68, 132, 0.8);
   border-radius: 0px;
   box-shadow: 0 12px 35px -8px rgba(10, 16, 36, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Reserva visual para imágenes públicas sin ocultar contenido SSR. */
+.image-skeleton {
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--color-navy-800);
+}
+.image-skeleton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(100deg, var(--color-navy-800) 20%, var(--color-navy-700) 45%, var(--color-navy-800) 70%);
+  transform: translateX(-100%);
+  animation: image-skeleton-sweep 1.3s ease-in-out 2 forwards;
+}
+.image-skeleton.image-loaded::before,
+.image-skeleton.image-failed::before {
+  display: none;
+}
+@keyframes image-skeleton-sweep {
+  to { transform: translateX(100%); }
 }
 
 a.card-vigor:hover,
@@ -135,5 +157,7 @@ button.card-vigor:hover,
     transition: none !important;
     animation: none !important;
   }
+  .image-skeleton::before {
+    display: none;
+  }
 }
-

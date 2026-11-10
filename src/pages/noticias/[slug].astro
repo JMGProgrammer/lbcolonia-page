@@ -61,7 +61,9 @@ const jsonLd =
 
         {
           portada && (
-            <img src={portada} alt={`Portada: ${noticia.titulo}`} class="mt-6 w-full rounded-panel border border-navy-700" loading="lazy" width="1536" height="864" />
+            <div class="image-skeleton mt-6 aspect-video w-full rounded-panel border border-navy-700" data-image-shell>
+              <img src={portada} alt={`Portada: ${noticia.titulo}`} class="h-full w-full object-cover" loading="lazy" decoding="async" width="1536" height="864" data-skeleton-image />
+            </div>
           )
         }
 

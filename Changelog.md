@@ -11,6 +11,9 @@ Historial invertido (lo nuevo arriba). Los tags marcan versiones entregables: `v
 - Nuevo skeleton estructural para resumen, tareas y agenda; el contenido definitivo permanece oculto hasta completar la consulta y cada escudo conserva su skeleton hasta cargar.
 - Las iniciales quedaron como fallback exclusivo de imágenes ausentes o fallidas, evitando su aparición fugaz antes del escudo.
 - Tabla de puntos por cuarto compactada con columnas rígidas y valores centrados bajo Q1–Q4/Total en la ficha pública del partido.
+- Retirados los videos laterales fijos: el archivo fuente pesaba 58 MB y se decodificaba dos veces, generando recortes visuales y scroll entrecortado.
+- Fondo de cancha y textura convertidos a WebP (624→28 KB y 852→64 KB), logo visible reducido de 520→8 KB y favicon dedicado de 5 KB; se eliminó `background-attachment: fixed` y el desenfoque continuo de tarjetas públicas.
+- Skeletons de imagen en escudos, noticias y fichas/perfiles de jugadores del sitio público, sin retrasar ni ocultar el contenido SSR.
 
 ### Verificación
 - `astro check` sin errores, build Vercel verde, seis assets locales presentes y consulta real del delegado con `slug` de los cuatro clubes del fixture.

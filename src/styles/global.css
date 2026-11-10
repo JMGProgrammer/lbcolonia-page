@@ -115,6 +115,12 @@
   overflow: visible;
   background: transparent;
 }
+.image-skeleton-shield > img[data-skeleton-image] {
+  opacity: 0;
+}
+.image-skeleton-shield.image-loaded > img[data-skeleton-image] {
+  opacity: 1;
+}
 @keyframes image-skeleton-sweep {
   to { transform: translateX(100%); }
 }

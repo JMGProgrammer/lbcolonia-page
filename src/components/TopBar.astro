@@ -40,13 +40,17 @@ const links = [
   <div class="mx-auto flex min-h-[64px] max-w-[1240px] items-center justify-between gap-4 px-4 py-2">
     <!-- Brand / Escudo -->
     <a href="/" class="flex shrink-0 items-center gap-3.5 no-underline group py-1">
-      <img
-        src="/logo-lbc-bgr.webp"
-        alt="Escudo de la Liga de Básquetbol de Colonia"
-        width="46"
-        height="54"
-        class="h-10 sm:h-11 w-auto object-contain drop-shadow-[0_4px_12px_rgba(238,107,31,0.25)] transition-transform group-hover:scale-105"
-      />
+      <span class="image-skeleton image-skeleton-shield relative inline-flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11" data-image-shell>
+        <img
+          src="/logo-lbc-bgr.webp"
+          alt="Escudo de la Liga de Básquetbol de Colonia"
+          width="46"
+          height="54"
+          decoding="async"
+          class="h-full w-full object-contain drop-shadow-[0_4px_12px_rgba(238,107,31,0.25)] transition-transform group-hover:scale-105"
+          data-skeleton-image
+        />
+      </span>
       <div class="flex flex-col leading-none">
         <span class="flex items-baseline gap-1.5">
           <strong class="text-xl sm:text-2xl font-black tracking-tight text-paper group-hover:text-gold-400 transition-colors">LBC</strong>

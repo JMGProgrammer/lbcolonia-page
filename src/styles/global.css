@@ -111,6 +111,10 @@
 .image-skeleton.image-failed::before {
   display: none;
 }
+.image-skeleton-shield.image-loaded {
+  overflow: visible;
+  background: transparent;
+}
 @keyframes image-skeleton-sweep {
   to { transform: translateX(100%); }
 }
